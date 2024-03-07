@@ -1,10 +1,8 @@
-package test.main;
+package main;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import main.Persona;
 
 public class PersonaTest {
     @Test

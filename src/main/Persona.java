@@ -15,6 +15,4 @@ public class Persona {
         this.nome = name;
     }
 
-    
-
 }
