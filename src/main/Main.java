@@ -1,36 +1,53 @@
 package main;
 
-import java.util.List;
+// import java.util.List;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
         Main main = new Main();
-        RawMaterialType raw1 = new RawMaterialType("raw1", 1);
-        RawMaterialType raw2 = new RawMaterialType("raw2", 2);
+        RawMaterialType d = new RawMaterialType("d", 1);
+        RawMaterialType e = new RawMaterialType("e", 2);
+        RawMaterialType f = new RawMaterialType("f", 2);
 
-        RequirementType rrw1 = new RequirementType("rrw1", 1, raw1);
+        TransformationType t1 = new TransformationType("t1", 100, 
+            new HashMap<>() {{
+                put(d, 10);
+                put(e, 5);
+            }});
+        
+        TransformationType t2 = new TransformationType("t1", 200, 
+            new HashMap<>() {{
+                put(f, 15);
+            }});
 
-        TrasformationType t1 = new TrasformationType("t1", 1, List.of(rrw1));
+        ProcessedType b = new ProcessedType("b", 1, t1);
+        ProcessedType c = new ProcessedType("c", 1, t2);
 
-        RequirementType rt1 = new RequirementType("rt1", 1, t1);
-        RequirementType rrw2 = new RequirementType("rrw2", 1, raw2);
-        TrasformationType t2 = new TrasformationType("t2", 2, List.of(rt1, rrw2));
+        TransformationType t3 = new TransformationType("t3", 300, 
+            new HashMap<>() {{
+                put(b, 2);
+                put(c, 3);
+            }});
+        
+        ProcessedType a = new ProcessedType("a", 1, t3);    
 
-        main.getSubGraph(t2);
+        Graph graph = new Graph(a);
 
-
+        graph.generateGraph();
+        graph.serializeGraphToJson("./output/test.json");
 
     }
 
-    public void getSubGraph(ProductType product){
-        List<RequirementType> requirements = product.getRequirements();
-        if (requirements.isEmpty()){
-        } 
-        else {
-            for (RequirementType requirement : requirements) {
-                System.out.println(requirement.getProductType().getNameType());
-                getSubGraph(requirement.getProductType());
-            }
-        }
-    }
+    // public void getSubGraph(ProductType product){
+    //     List<TransformationType> requirements = product.getRequirements();
+    //     if (requirements.isEmpty()){
+    //     } 
+    //     else {
+    //         for (TransformationType requirement : requirements) {
+    //             System.out.println(requirement.getProductType().getNameType());
+    //             getSubGraph(requirement.getProductType());
+    //         }
+    //     }
+    // }
 }
