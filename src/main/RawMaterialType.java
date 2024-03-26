@@ -1,19 +1,15 @@
 package main;
 
-import java.util.List;
+import java.util.HashMap;
+// import java.util.List;
 
 public class RawMaterialType implements ProductType {
     private String rawMaterialName;
-    private int quantity;
+    private int quantityInStock;
 
     protected RawMaterialType(String rawMaterialName, int quantity){
         this.rawMaterialName = rawMaterialName;
-        this.quantity = quantity;
-    }
-
-    @Override
-    public List<RequirementType> getRequirements() {
-        return List.of();
+        this.quantityInStock = quantity;
     }
 
     @Override
@@ -22,9 +18,17 @@ public class RawMaterialType implements ProductType {
     }
 
     @Override
-    public int getQuantity() {
-        return quantity;
+    public int getQuantityInStock() {
+        return quantityInStock;
     }
 
+    @Override
+    public HashMap<ProductType, Integer> getSubGraph(){
+        return new HashMap<>();
+    }
 
+    @Override
+    public int getQuantityProduced(){
+        return -1;
+    }
 }
