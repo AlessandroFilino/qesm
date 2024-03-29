@@ -1,11 +1,10 @@
 package main;
 
 import java.util.HashMap;
-// import java.util.List;
 
 public interface ProductType {
 
-    public HashMap<ProductType, Integer> getSubGraph();
+    public HashMap<ProductType, Integer> getChildrens();
     public String getNameType();
     public int getQuantityInStock();
     public int getQuantityProduced();

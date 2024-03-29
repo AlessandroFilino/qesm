@@ -23,7 +23,7 @@ public class RawMaterialType implements ProductType {
     }
 
     @Override
-    public HashMap<ProductType, Integer> getSubGraph(){
+    public HashMap<ProductType, Integer> getChildrens(){
         return new HashMap<>();
     }
 

@@ -1,38 +1,37 @@
 package main;
 
-// import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-// import java.util.List;
 import java.util.Map;
 import java.io.FileWriter;
 import java.io.IOException;
 
 
-public class Graph {
-    private ProductType rootNode;
-    private HashMap<Graph, Integer> subGraphs;
+public class Node {
+    private ProductType node;
+    private HashMap<Node, Integer> childrens;
 
 
-    public Graph(ProductType rootNode) {
-        this.rootNode = rootNode;
-        this.subGraphs = new HashMap<Graph, Integer>();
+    public Node(ProductType node) {
+        this.node = node;
+        this.childrens = new HashMap<Node, Integer>();
     }
 
     public void generateGraph(){
-        if(rootNode.getSubGraph().isEmpty()){
+        if(node.getChildrens().isEmpty()){
             return;
         }
 
         // System.out.println(rootNode.getNameType());
 
-        for (Map.Entry<ProductType, Integer> nodeTuple :rootNode.getSubGraph().entrySet()) {
-            subGraphs.put(new Graph(nodeTuple.getKey()), nodeTuple.getValue());
+        // Get direct childrens of current node
+        for (Map.Entry<ProductType, Integer> children : node.getChildrens().entrySet()) {
+            childrens.put(new Node(children.getKey()), children.getValue());
         }
 
-        for (Map.Entry<Graph, Integer> subGraphTuple :subGraphs.entrySet()) {
+        // Explore each children node
+        for (Map.Entry<Node, Integer> node : childrens.entrySet()) {
             // System.out.println(subGraphTuple.getKey().rootNode.getNameType() + subGraphTuple.getValue());
-            subGraphTuple.getKey().generateGraph();
+            node.getKey().generateGraph();
         }
     }
 
@@ -45,22 +44,22 @@ public class Graph {
 
     private void addContentToJson(StringBuilder jsonContent, int indentCount){
 
-        int subGraphSize = subGraphs.size();
+        int subGraphSize = childrens.size();
         int subGraphCounter = 0;
 
-        for (Map.Entry<Graph, Integer> subGraphTuple :subGraphs.entrySet()) {
+        for (Map.Entry<Node, Integer> subGraphTuple : childrens.entrySet()) {
 
             addIndentation(jsonContent, indentCount + 1);
             jsonContent.append("{\n");
 
             addIndentation(jsonContent, indentCount + 2);
-            jsonContent.append("\"nameType\": \"" + subGraphTuple.getKey().rootNode.getNameType() + "\",\n");
+            jsonContent.append("\"nameType\": \"" + subGraphTuple.getKey().node.getNameType() + "\",\n");
             addIndentation(jsonContent, indentCount + 2);
-            jsonContent.append("\"quantityInStock\": " + subGraphTuple.getKey().rootNode.getQuantityInStock() + ",\n");
+            jsonContent.append("\"quantityInStock\": " + subGraphTuple.getKey().node.getQuantityInStock() + ",\n");
             addIndentation(jsonContent, indentCount + 2);
             jsonContent.append("\"quantityNeeded\": " + subGraphTuple.getValue() + ",\n");
             addIndentation(jsonContent, indentCount + 2);
-            jsonContent.append("\"quantityProduced\": " + subGraphTuple.getKey().rootNode.getQuantityProduced() + ",\n");
+            jsonContent.append("\"quantityProduced\": " + subGraphTuple.getKey().node.getQuantityProduced() + ",\n");
             addIndentation(jsonContent, indentCount + 2);
             jsonContent.append("\"subGraph\":\n");
             addIndentation(jsonContent, indentCount + 3);
@@ -90,16 +89,18 @@ public class Graph {
             StringBuilder jsonContent = new StringBuilder();
             jsonContent.append("{\n");
             addIndentation(jsonContent, 1);
-            jsonContent.append("\"nameType\": \"" + this.rootNode.getNameType() + "\",\n");
+            jsonContent.append("\"nameType\": \"" + this.node.getNameType() + "\",\n");
             addIndentation(jsonContent, 1);
-            jsonContent.append("\"quantityInStock\": " + this.rootNode.getQuantityInStock() + ",\n");
+            jsonContent.append("\"quantityInStock\": " + this.node.getQuantityInStock() + ",\n");
             addIndentation(jsonContent, 1);
-            jsonContent.append("\"quantityProduced\": " + this.rootNode.getQuantityProduced() + ",\n");
+            jsonContent.append("\"quantityProduced\": " + this.node.getQuantityProduced() + ",\n");
             addIndentation(jsonContent, 1);
             jsonContent.append("\"subGraph\":\n");
             addIndentation(jsonContent, 2);
             jsonContent.append("[\n");
+
             addContentToJson(jsonContent, 2);
+
             addIndentation(jsonContent, 2);
             jsonContent.append("]\n}");
 

@@ -32,10 +32,10 @@ public class Main {
         
         ProcessedType a = new ProcessedType("a", 1, t3);    
 
-        Graph graph = new Graph(a);
+        Node A = new Node(a);
 
-        graph.generateGraph();
-        graph.serializeGraphToJson("./output/test.json");
+        A.generateGraph();
+        A.serializeGraphToJson("./output/example.json");
 
     }
 

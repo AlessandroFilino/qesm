@@ -1,7 +1,6 @@
 package main;
 
 import java.util.HashMap;
-// import java.util.List;
 
 // Composite Class
 
@@ -31,7 +30,7 @@ public class ProcessedType implements ProductType{
     }
 
     @Override
-    public HashMap<ProductType, Integer> getSubGraph(){
+    public HashMap<ProductType, Integer> getChildrens(){
         return this.transformation.getProductTypes();
     }
 
