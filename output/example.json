@@ -5,24 +5,6 @@
 	"subGraph":
 		[
 			{
-				"nameType": "c",
-				"quantityInStock": 1,
-				"quantityNeeded": 3,
-				"quantityProduced": 200,
-				"subGraph":
-					[
-						{
-							"nameType": "f",
-							"quantityInStock": 2,
-							"quantityNeeded": 15,
-							"quantityProduced": -1,
-							"subGraph":
-								[
-								]
-						}
-					]
-			},
-			{
 				"nameType": "b",
 				"quantityInStock": 1,
 				"quantityNeeded": 2,
@@ -42,6 +24,24 @@
 							"nameType": "d",
 							"quantityInStock": 1,
 							"quantityNeeded": 10,
+							"quantityProduced": -1,
+							"subGraph":
+								[
+								]
+						}
+					]
+			},
+			{
+				"nameType": "c",
+				"quantityInStock": 1,
+				"quantityNeeded": 3,
+				"quantityProduced": 200,
+				"subGraph":
+					[
+						{
+							"nameType": "f",
+							"quantityInStock": 2,
+							"quantityNeeded": 15,
 							"quantityProduced": -1,
 							"subGraph":
 								[

@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import json
 import os
 
+# sudo apt-get install graphviz graphviz-dev
+# pip install pygraphviz
+
 ABS_PATH = os.path.abspath(__file__)
 OUTPUT_PATH = f"{os.path.abspath(os.path.join(os.path.dirname(ABS_PATH), os.pardir))}/output"
 MEDIA_PATH = f"{os.path.abspath(os.path.join(os.path.dirname(ABS_PATH), os.pardir))}/media"
@@ -18,25 +21,26 @@ def trace_graph(graph_data):
     addNodes(G, graph_data)
 
 
-    # Disegnare il grafo 
+    # Draw graph
     pos = nx.nx_agraph.graphviz_layout(G, prog="dot", args="-Grankdir=BT")
 
     edge_labels = nx.get_edge_attributes(G, 'label')
     node_labels = nx.get_node_attributes(G, 'label')
 
-    nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=5000, font_size=12, font_weight='bold')
+    nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=2000, font_size=12, font_weight='bold')
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=16, label_pos=0.5, font_color='red', font_weight='bold', verticalalignment='center', horizontalalignment='center')
     
     for node, (x, y) in pos.items():
-        plt.text(x, y - 10, f"quantity in stock: {node_labels[node]}", horizontalalignment='center', fontweight='bold', fontsize=14)
-    # Visualizzare il grafo
-    plt.show()
+        plt.text(x, y - 10, f"in stock: {node_labels[node]}", horizontalalignment='center', fontweight='bold', fontsize=14)
+    
+    # Save the graph
+    plt.savefig(f'{OUTPUT_PATH}/example.png')
 
 
 def main():
-    file_path = f'{OUTPUT_PATH}/test.json'
+    file_path = f'{OUTPUT_PATH}/example.json'
     
-    # Apertura del file JSON utilizzando la funzione
+    # Open JSON file
     with open(file_path, 'r') as file:
         graph_data = json.load(file)
         
