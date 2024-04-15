@@ -9,22 +9,82 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
-public class GraphAdapter{
+public class GraphAdapter implements ProductGraph{
+    
 
-    private int maxDepth;
-    private int branchingFactor;
-    private int maxWidth;
-    private Random random;
-    private HashMap<Integer, Integer> levelWidthCount = new HashMap<>();
-    private Integer processedTypeCount = 0;
-    private Integer rawMaterialTypeCount = 0;
+    public class RandomWorkflow {
 
+        private int maxDepth;
+        private int branchingFactor;
+        private int maxWidth;
+        private Random random;
+        private HashMap<Integer, Integer> levelWidthCount;
+        private Integer processedTypeCount = 0;
+        private Integer rawMaterialTypeCount = 0;
 
-    public GraphAdapter(int maxDepth, int branchingFactor, int maxWidth) {
-        this.maxDepth = maxDepth;
-        this.branchingFactor = branchingFactor;
-        this.maxWidth = maxWidth;
-        this.random = new Random();
+        public RandomWorkflow(int maxDepth, int branchingFactor, int maxWidth) {
+            this.maxDepth = maxDepth;
+            this.branchingFactor = branchingFactor;
+            this.maxWidth = maxWidth;
+            this.random = new Random();
+            this.levelWidthCount = new HashMap<>();
+            this.processedTypeCount = 0;
+            this.rawMaterialTypeCount = 0;  
+        }
+    
+        public ProductType generateRandomWorkflow(int depth) {
+
+            ProductType root;
+    
+            if(depth == maxDepth - 1){
+                root = new RawMaterialType("r" + rawMaterialTypeCount);
+                rawMaterialTypeCount++;
+                return root;
+            }
+            
+            if(! levelWidthCount.containsKey(depth + 1)){
+                levelWidthCount.put(depth + 1, 0);
+            }
+            
+            int currentBelowWidth = levelWidthCount.get(depth + 1);
+            int belowWidthLeft = maxWidth - currentBelowWidth;
+            int numChildren = 0;
+    
+            if(belowWidthLeft - branchingFactor >= 0){
+                numChildren = random.nextInt(branchingFactor + 1);
+            }
+            else{
+                numChildren = (belowWidthLeft > 0) ? random.nextInt(belowWidthLeft + 1) : 0;
+            }
+            
+            levelWidthCount.put(depth + 1, currentBelowWidth + numChildren);
+    
+            // System.out.println("Depth : " + depth);
+            // System.out.println(rawMaterialTypeCount);
+            // System.out.println(processedTypeCount);
+    
+            if(numChildren == 0){
+                root = new RawMaterialType("r" + rawMaterialTypeCount);
+                rawMaterialTypeCount++;
+            }
+            else{
+                root = new ProcessedType("p" + processedTypeCount, new ArrayList<>(), 1);
+                processedTypeCount++;
+    
+                for (int i = 0; i < numChildren; i++) {
+                    ProductType child = generateRandomWorkflow(depth + 1);
+                    
+                    RequirementEntryType req = new RequirementEntryType(child, 2);
+                    root.addRequirementEntry(req);
+                }
+            } 
+    
+            return root;
+        }
+    }
+
+    public GraphAdapter() {
+
     }
 
     public void testGraph(ProductType rootNode){
@@ -60,76 +120,52 @@ public class GraphAdapter{
         // }
     }
 
-    public ProductType generateRandomGraph(int depth) {
-
-        ProductType root;
-
-        if(depth == maxDepth - 1){
-            root = new RawMaterialType("r" + rawMaterialTypeCount);
-            rawMaterialTypeCount++;
-            return root;
-        }
-        
-        if(! levelWidthCount.containsKey(depth)){
-            levelWidthCount.put(depth, 0);
-        }
-        
-        int currentWidth = levelWidthCount.get(depth); 
-        int currentWidthLeft = maxWidth - currentWidth;
-        int numChildren = 0;
-
-        if(currentWidthLeft - branchingFactor >= 0){
-            numChildren = random.nextInt(branchingFactor + 1);
-        }
-        else{
-            numChildren = (currentWidthLeft > 0) ? random.nextInt(currentWidthLeft) : 0;
-        }
-        
-        levelWidthCount.put(depth, currentWidth + numChildren);
-
-        // System.out.println("Depth : " + depth);
-        // System.out.println(rawMaterialTypeCount);
-        // System.out.println(processedTypeCount);
-
-        if(numChildren == 0){
-            root = new RawMaterialType("r" + rawMaterialTypeCount);
-            rawMaterialTypeCount++;
-        }
-        else{
-            root = new ProcessedType("p" + processedTypeCount, new ArrayList<>(), 1);
-            processedTypeCount++;
-
-            for (int i = 0; i < numChildren; i++) {
-                ProductType child = generateRandomGraph(depth + 1);
-                
-                RequirementEntryType req = new RequirementEntryType(child, 2);
-                root.addRequirementEntry(req);
-            }
-        } 
-
-        return root;
-    }
-
     private void PrintTab(int numTab){
         for (int index = 0; index < numTab; index++) {
             System.out.print("  ");
         }
     }
 
-    public String PrintGraph(ProductType rootNode, int currentDepth){
+    @Override
+    public ProductType generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth) {
+        RandomWorkflow randomGraph = new RandomWorkflow(maxDepth, branchingFactor, maxWidth);
+
+        return randomGraph.generateRandomWorkflow(0);
+    }
+
+    @FunctionalInterface
+    private interface Function<A,B> {
+        A apply(B args); 
+    }
+
+    @Override
+    public String PrintGraph(ProductType rootNode, int currentDepth) {
+        Function <Void, Void> print = (Void) -> {
+            System.out.println("x"); 
+            return Void;
+        };
+
+        //ExploreWorkflow(rootNode, currentDepth ); 
+        return "a";
+
+    }
+
+    private String ExploreWorkflow <A, B>(ProductType rootNode, int currentDepth, Function<A, B> function){
 
         ArrayList<RequirementEntryType> children = rootNode.getRequirements();
         
         if(children.isEmpty()){
             PrintTab(currentDepth);
             System.out.println(rootNode.getNameType());
+            //TODO
+            function.
             return rootNode.getNameType();
         }
         else{
             PrintTab(currentDepth);
             System.out.println(rootNode.getNameType());
             for (RequirementEntryType child : children) {
-                PrintGraph(child.getEntryType(), currentDepth + 1) ;
+                ExploreWorkflow(child.getEntryType(), currentDepth + 1) ;
             }
             return rootNode.getNameType();
         }

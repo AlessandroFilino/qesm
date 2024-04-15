@@ -3,9 +3,14 @@ package com.qesm;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductGraph extends GraphAdapter {
-    
-    public ProductGraph() {
+public interface ProductGraph {
+    public ProductType generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth);
+    public String PrintGraph(ProductType rootNode, int currentDepth);
+   
+}
+
+/*
+ public ProductGraph() {
         super(4, 4, 4);
     }
 
@@ -19,4 +24,4 @@ public class ProductGraph extends GraphAdapter {
             System.out.println("");
         }
     }
-}
+ */
