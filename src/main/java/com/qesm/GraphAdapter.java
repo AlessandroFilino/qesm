@@ -2,7 +2,6 @@ package com.qesm;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.Random;
 
@@ -12,6 +11,7 @@ import org.jgrapht.graph.SimpleGraph;
 
 public class GraphAdapter implements ProductGraph{
     GraphStats graphStats = new GraphStats();
+    ProductType rootNode;
 
     public class RandomWorkflow {
 
@@ -33,11 +33,11 @@ public class GraphAdapter implements ProductGraph{
             this.rawMaterialTypeCount = 0;  
         }
     
-        public ProductType generateRandomWorkflow(int depth) {
+        private ProductType generate(int depth) {
 
             ProductType root;
     
-            if(depth == maxDepth - 1){
+            if(depth == maxDepth){
                 root = new RawMaterialType("r" + rawMaterialTypeCount);
                 rawMaterialTypeCount++;
                 return root;
@@ -60,10 +60,6 @@ public class GraphAdapter implements ProductGraph{
             
             levelWidthCount.put(depth + 1, currentBelowWidth + numChildren);
     
-            // System.out.println("Depth : " + depth);
-            // System.out.println(rawMaterialTypeCount);
-            // System.out.println(processedTypeCount);
-    
             if(numChildren == 0){
                 root = new RawMaterialType("r" + rawMaterialTypeCount);
                 rawMaterialTypeCount++;
@@ -73,7 +69,7 @@ public class GraphAdapter implements ProductGraph{
                 processedTypeCount++;
     
                 for (int i = 0; i < numChildren; i++) {
-                    ProductType child = generateRandomWorkflow(depth + 1);
+                    ProductType child = generate(depth + 1);
                     
                     RequirementEntryType req = new RequirementEntryType(child, 2);
                     root.addRequirementEntry(req);
@@ -82,10 +78,6 @@ public class GraphAdapter implements ProductGraph{
     
             return root;
         }
-    }
-
-    public GraphAdapter() {
-
     }
 
     public void testGraph(ProductType rootNode){
@@ -121,18 +113,31 @@ public class GraphAdapter implements ProductGraph{
         // }
     }
 
-    private void PrintTab(int numTab){
+    private void printTab(int numTab){
         for (int index = 0; index < numTab; index++) {
             System.out.print("  ");
         }
     }
 
+    public int getTotNodes() {
+        return graphStats.getTotNodes();
+    }
+
+    public int getGraphDepth() {
+        return graphStats.getGraphDepth();
+    }
+    public HashMap<Integer, Integer> getLevelWidthCount() {
+        return graphStats.getLevelWidthCount();
+    }
+    public HashMap<UUID, Integer> getNodeToNumChildren() {
+        return graphStats.getNodeToNumChildren();
+    }
+    
     @Override
-    public ProductType generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth) {
+    public void generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth) {
         RandomWorkflow workflow = new RandomWorkflow(maxDepth, branchingFactor, maxWidth);
-        ProductType root = workflow.generateRandomWorkflow(0);
-        computeWorkflowStats(root);
-        return root;
+        rootNode = workflow.generate(0);
+        computeWorkflowStats();
     }
 
     @FunctionalInterface
@@ -141,16 +146,16 @@ public class GraphAdapter implements ProductGraph{
         void apply(Integer cur_depth, ProductType node);
     }
 
-    private void exploreWorkflow(ProductType rootNode, int currentDepth, Function callback){
+    private void exploreWorkflow(ProductType currentNode, int currentDepth, Function callback){
 
-        ArrayList<RequirementEntryType> children = rootNode.getRequirements();
+        ArrayList<RequirementEntryType> children = currentNode.getRequirements();
         
         if(children.isEmpty()){
-            callback.apply(currentDepth, rootNode);
+            callback.apply(currentDepth, currentNode);
             return;
         }
         else{
-            callback.apply(currentDepth, rootNode);
+            callback.apply(currentDepth, currentNode);
             for (RequirementEntryType child : children) {
                 exploreWorkflow(child.getEntryType(), currentDepth + 1, callback) ;
             }
@@ -159,10 +164,10 @@ public class GraphAdapter implements ProductGraph{
     }
 
     @Override
-    public void printWorkflow(ProductType rootNode) {
+    public void printWorkflow() {
         
         Function print = (Integer cur_depth, ProductType node) -> {
-            PrintTab(cur_depth);
+            printTab(cur_depth);
             System.out.println(node.getNameType());
             return;
         };
@@ -173,7 +178,7 @@ public class GraphAdapter implements ProductGraph{
 
     }
     
-    private void computeWorkflowStats(ProductType rootNode) {
+    private void computeWorkflowStats() {
 
         final class Count implements Function{
             private GraphStats stats = new GraphStats();

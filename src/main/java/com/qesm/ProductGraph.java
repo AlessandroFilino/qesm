@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface ProductGraph {
-    public ProductType generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth);
-    public void printWorkflow(ProductType rootNode);   
+    public void generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth);
+    public void printWorkflow();   
 }
 
 /*
