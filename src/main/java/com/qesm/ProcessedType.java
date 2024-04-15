@@ -19,6 +19,11 @@ public class ProcessedType implements ProductType{
     }
 
     @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+    
+    @Override
     public boolean addRequirementEntry(RequirementEntryType req) {
         return requirements.add(req);
     }

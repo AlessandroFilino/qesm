@@ -14,8 +14,9 @@ public class GraphAdapterTest {
         ProductType workflow;
         GraphAdapter randomGraph = new GraphAdapter();
         workflow = randomGraph.generateRandomWorkflow(maxDepth, maxWidth, branchingFactor);
-        
-        randomGraph.PrintGraph(workflow, 0);
+
+        randomGraph.printWorkflow(workflow);
+        randomGraph.computeWorkflowStats(workflow);
 
     }
     

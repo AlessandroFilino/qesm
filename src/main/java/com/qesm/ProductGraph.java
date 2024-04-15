@@ -5,8 +5,7 @@ import java.util.List;
 
 public interface ProductGraph {
     public ProductType generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth);
-    public String PrintGraph(ProductType rootNode, int currentDepth);
-   
+    public void printWorkflow(ProductType rootNode);   
 }
 
 /*

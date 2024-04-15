@@ -13,6 +13,11 @@ public class RawMaterialType implements ProductType {
     }
 
     @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    @Override
     public String getNameType() {
         return nameType;
     }
