@@ -1,50 +1,35 @@
-import networkx as nx
 import matplotlib.pyplot as plt
 import json
 import os
+import graphviz
 
-# sudo apt-get install graphviz graphviz-dev
-# pip install pygraphviz
+
 
 ABS_PATH = os.path.abspath(__file__)
 OUTPUT_PATH = f"{os.path.abspath(os.path.join(os.path.dirname(ABS_PATH), os.pardir))}/output"
 MEDIA_PATH = f"{os.path.abspath(os.path.join(os.path.dirname(ABS_PATH), os.pardir))}/media"
 
-def addNodes(graph : nx.DiGraph, subgraph_data : dict):
-    graph.add_node(subgraph_data["nameType"], label = subgraph_data["quantityInStock"])
-    for sub_node in subgraph_data["subGraph"]:
-        addNodes(graph, sub_node)
-        graph.add_edge(sub_node["nameType"], subgraph_data["nameType"], label = sub_node["quantityNeeded"])
 
-def trace_graph(graph_data):
-    G = nx.DiGraph()
-    addNodes(G, graph_data)
-
-
-    # Draw graph
-    pos = nx.nx_agraph.graphviz_layout(G, prog="dot", args="-Grankdir=BT")
-
-    edge_labels = nx.get_edge_attributes(G, 'label')
-    node_labels = nx.get_node_attributes(G, 'label')
-
-    nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=2000, font_size=12, font_weight='bold')
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=16, label_pos=0.5, font_color='red', font_weight='bold', verticalalignment='center', horizontalalignment='center')
+def trace_graph(dot_graph):
     
-    for node, (x, y) in pos.items():
-        plt.text(x, y - 10, f"in stock: {node_labels[node]}", horizontalalignment='center', fontweight='bold', fontsize=14)
-    
-    # Save the graph
-    plt.savefig(f'{OUTPUT_PATH}/example.png')
+    dot_graph = dot_graph.replace('}', 'rankdir=BT; \n}')
+
+    # Crea l'oggetto Graph da Graphviz
+    graph = graphviz.Source(dot_graph, format="pdf", engine="dot")
+
+
+    # Visualizza il grafo
+    graph.view()
 
 
 def main():
-    file_path = f'{OUTPUT_PATH}/example.json'
     
-    # Open JSON file
-    with open(file_path, 'r') as file:
-        graph_data = json.load(file)
+    # Leggi il file .dot
+    with open(f'{OUTPUT_PATH}/jGraphT.dot', 'r') as f:
+        dot_graph = f.read()
+
         
-    trace_graph(graph_data)
+    trace_graph(dot_graph)
 
 if __name__ == "__main__":
     main()

@@ -13,9 +13,9 @@ public class MyTestWatcher implements TestWatcher {
     public void testFailed(ExtensionContext context, Throwable cause) {
         if(!testFailed){
             Optional <Object> testIstance = context.getTestInstance();
-            GraphAdapterTest curTestIstance = (GraphAdapterTest) testIstance.get();
+            ProductGraphTest curTestIstance = (ProductGraphTest) testIstance.get();
 
-            GraphAdapter my_graph = curTestIstance.getGraphAdapter();
+            ProductGraph my_graph = curTestIstance.getProductGraph();
             my_graph.printWorkflow();
             System.out.println("Tot nodes: " + my_graph.getTotNodes());
             System.out.println("Depth: " + my_graph.getGraphDepth()); 
@@ -25,6 +25,11 @@ public class MyTestWatcher implements TestWatcher {
             // for(Map.Entry<UUID, Integer> entry : graphAdapter.getNodeToNumChildren().entrySet()){
             //     assertTrue(entry.getValue() <= branchingFactor);
             // }
+
+            
+            System.out.println("maxWidth: " + curTestIstance.getMaxWidth());
+            System.out.println("maxDepth: " + curTestIstance.getMaxDepth());
+            System.out.println("branchingFactor: " + curTestIstance.getBranchingFactor());
 
             testFailed = true;
         }

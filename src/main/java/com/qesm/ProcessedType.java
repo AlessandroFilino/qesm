@@ -18,6 +18,10 @@ public class ProcessedType implements ProductType{
         this.quantityProduced = quantityProduced;
     }
 
+    public int getQuantityProduced() {
+        return quantityProduced;
+    }
+
     @Override
     public UUID getUuid() {
         return uuid;
@@ -37,4 +41,5 @@ public class ProcessedType implements ProductType{
     public ArrayList<RequirementEntryType> getRequirements(){
         return requirements;
     }
+
 }
