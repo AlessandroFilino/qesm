@@ -20,6 +20,8 @@ def trace_graph(dot_graph):
 
     # Visualizza il grafo
     graph.view()
+    # Render the graph to PDF
+    graph.render(f"{MEDIA_PATH}/graph.pdf", format="pdf", cleanup=True)
 
 
 def main():

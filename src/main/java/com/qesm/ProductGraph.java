@@ -1,11 +1,13 @@
 package com.qesm;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -61,7 +63,30 @@ public class ProductGraph{
 
         exporter.setVertexIdProvider(v -> v.getNameType());
         exporter.setEdgeIdProvider(e -> jGraphT.getEdgeSource(e).getNameType() + "-" + jGraphT.getEdgeTarget(e).getNameType());
+        
+        Function<ProductType, Map<String, Attribute>> vertexAttributeProvider = v -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
+            if(v.getRequirements().isEmpty()){
+                map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
+            }
+            else{
+                map.put("color", new DefaultAttribute<String>("orange", AttributeType.STRING));
+            }
+            return map;
+        };
 
+        exporter.setVertexAttributeProvider(vertexAttributeProvider);
+
+
+        Function<DefaultEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            // map.put("dir", new DefaultAttribute<String>("none", AttributeType.STRING));
+            
+            return map;
+        };
+
+        exporter.setEdgeAttributeProvider(edgeAttributeProvider);
 
         try {
             FileWriter writer = new FileWriter("./output/jGraphT.dot");
