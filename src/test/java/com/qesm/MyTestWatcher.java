@@ -16,20 +16,6 @@ public class MyTestWatcher implements TestWatcher {
             ProductGraphTest curTestIstance = (ProductGraphTest) testIstance.get();
 
             ProductGraph my_graph = curTestIstance.getProductGraph();
-            my_graph.printWorkflow();
-            System.out.println("Tot nodes: " + my_graph.getTotNodes());
-            System.out.println("Depth: " + my_graph.getGraphDepth()); 
-            for(Map.Entry<Integer, Integer> entry : my_graph.getLevelWidthCount().entrySet()){
-                System.out.println("Level " + entry.getKey() + "    width: " + entry.getValue());
-            }
-            // for(Map.Entry<UUID, Integer> entry : graphAdapter.getNodeToNumChildren().entrySet()){
-            //     assertTrue(entry.getValue() <= branchingFactor);
-            // }
-
-            
-            System.out.println("maxWidth: " + curTestIstance.getMaxWidth());
-            System.out.println("maxDepth: " + curTestIstance.getMaxDepth());
-            System.out.println("branchingFactor: " + curTestIstance.getBranchingFactor());
 
             testFailed = true;
         }
