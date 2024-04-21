@@ -33,4 +33,8 @@ public class RawMaterialType implements ProductType {
         return new ArrayList<>();
     }
 
+    @Override
+    public int getQuantityProduced() {
+        return 0;
+    }
 }

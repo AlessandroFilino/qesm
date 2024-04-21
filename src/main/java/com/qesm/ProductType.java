@@ -9,4 +9,5 @@ public interface ProductType {
     public boolean addRequirementEntry(RequirementEntryType req);
     public String getNameType();
     public UUID getUuid();
+    public int getQuantityProduced();
 }

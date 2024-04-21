@@ -1,202 +1,211 @@
 package com.qesm;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.Iterator;
 
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultDirectedGraph ;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.dot.DOTExporter;
+import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
+
 
 public class ProductGraph{
-    GraphStats graphStats = new GraphStats();
-    ProductType rootNode;
-    Graph<ProductType, DefaultEdge> jGraphT = new DefaultDirectedGraph<>(DefaultEdge.class);
+    DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    
 
-    private void printTab(int numTab){
-        for (int index = 0; index < numTab; index++) {
-            System.out.print("  ");
+    public ProductGraph() {
+        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+    }
+
+    public void generateRandomDAG(int numVertices, int minNumEdges){
+
+        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(numVertices, minNumEdges);
+        randDAGGenerator.generateGraph(dag);
+    }
+
+    public void printDAG(){
+
+        if( dag == null){
+            System.out.println("Il DAG deve ancora essere generato");
+        }
+        else{
+            Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
+            while (iter.hasNext()) {
+                ProductType vertex = iter.next();
+                System.out.println("Vertex " + vertex.getNameType() + vertex.getClass() + " is connected to: ");
+                for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
+                    System.out.println("\t[" + dag.getEdgeSource(connectedEdge).getNameType() + " -> " + dag.getEdgeTarget(connectedEdge).getNameType() + "]");
+                }
+            }
         }
     }
-
-    public int getTotNodes() {
-        return graphStats.getTotNodes();
-    }
-
-    public int getGraphDepth() {
-        return graphStats.getGraphDepth();
-    }
-
-    public HashMap<Integer, Integer> getLevelWidthCount() {
-        return graphStats.getLevelWidthCount();
-    }
-
-    public HashMap<UUID, Integer> getNodeToNumChildren() {
-        return graphStats.getNodeToNumChildren();
-    }
     
-    public void generateRandomWorkflow(int maxDepth, int branchingFactor, int maxWidth) {
-        RandomWorkflow workflow = new RandomWorkflow(maxDepth, branchingFactor, maxWidth);
-        rootNode = workflow.generate(0);
-        computeWorkflowStats();
-        workflowToJGraphT();
-    }
-
-    public void drawGraph() {
-
+    public void exportDAGDotLanguage(String filePath){
         // Esportazione del grafo in formato DOT
-        DOTExporter<ProductType, DefaultEdge> exporter = new DOTExporter<>(v -> v.getNameType());
+        DOTExporter<ProductType, CustomEdge> exporter = new DOTExporter<>(v -> v.getNameType());
 
         exporter.setVertexIdProvider(v -> v.getNameType());
-        exporter.setEdgeIdProvider(e -> jGraphT.getEdgeSource(e).getNameType() + "-" + jGraphT.getEdgeTarget(e).getNameType());
+        exporter.setEdgeIdProvider(e -> dag.getEdgeSource(e).getNameType() + "-" + dag.getEdgeTarget(e).getNameType());
         
         Function<ProductType, Map<String, Attribute>> vertexAttributeProvider = v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
             if(v.getRequirements().isEmpty()){
                 map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
+                map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nRAW_TYPE", AttributeType.STRING));
+                map.put("vertex_type", new DefaultAttribute<String>("RawMaterialType", AttributeType.STRING));
             }
             else{
                 map.put("color", new DefaultAttribute<String>("orange", AttributeType.STRING));
+                map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nPROCESSED_TYPE" + "\nquantityProduced: " + v.getQuantityProduced(), AttributeType.STRING));
+                map.put("vertex_type", new DefaultAttribute<String>("ProcessedType", AttributeType.STRING));
+                map.put("quantity_produced", new DefaultAttribute<Integer>(v.getQuantityProduced(), AttributeType.INT));
             }
             return map;
         };
 
         exporter.setVertexAttributeProvider(vertexAttributeProvider);
 
-
-        Function<DefaultEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
+        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            // map.put("dir", new DefaultAttribute<String>("none", AttributeType.STRING));
+            ProductType sourceVertex = dag.getEdgeSource(e);
+            ProductType targetVertex = dag.getEdgeTarget(e); 
             
+            for (RequirementEntryType requirementEntry : targetVertex.getRequirements()) {
+                if(requirementEntry.getEntryType().getUuid() == sourceVertex.getUuid()){
+                    map.put("label", new DefaultAttribute<String>("quantityNeeded: " + requirementEntry.getQuantityRequired(), AttributeType.STRING));
+                    map.put("quantity_required", new DefaultAttribute<Integer>(requirementEntry.getQuantityRequired(), AttributeType.INT));
+                    break;
+                }
+            } 
             return map;
         };
 
         exporter.setEdgeAttributeProvider(edgeAttributeProvider);
 
+        Supplier<Map<String, Attribute>> graphAttributeProvider = () -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
+            return map;
+        };
+
+        exporter.setGraphAttributeProvider(graphAttributeProvider);
+
+
         try {
-            FileWriter writer = new FileWriter("./output/jGraphT.dot");
-            exporter.exportGraph(jGraphT, writer);
+            FileWriter writer = new FileWriter(filePath);
+            exporter.exportGraph(dag, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void importDagDotLanguage(String filePath){
+
+        dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+
+        DOTImporter<ProductType, CustomEdge> importer = new DOTImporter<ProductType, CustomEdge>();
+
+        BiFunction<String, Map<String, Attribute>, ProductType> vertexFactoryFunction = (vertexName, attributesMap) -> {
+            
+            ProductType vertex;
+            String vertexType;
+
+            try {
+                vertexType = attributesMap.get("vertex_type").toString();
+            } catch (NullPointerException e) {
+                System.err.println("Errore nell'importazione, impossibile trovare il campo vertex_type per il nodo: " + vertexName);
+                return new RawMaterialType(""); 
+            }
+
+            if(vertexType.equals("RawMaterialType")){
+                vertex = new RawMaterialType(vertexName);
+            }
+            else if(vertexType.equals("ProcessedType")){
+                try {
+                    Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
+                    vertex = new ProcessedType(vertexName, null, quantityProduced);
+                    
+                } catch (NullPointerException e) {
+                    System.err.println("Errore nell'importazione, impossibile trovare il campo quantity_produced per il nodo: " + vertexName);
+                    return new RawMaterialType(""); 
+                }
+            }
+            else{
+                System.err.println("Errore nell'importazione, tipo non riconosciuto del campo vertex_type per il nodo: " + vertexName);
+                return new RawMaterialType("");
+            }
+            
+            return vertex;
+        };
+
+        importer.setVertexWithAttributesFactory(vertexFactoryFunction);
+
+        Function<Map<String,Attribute>, CustomEdge> edgeWithAttributesFactory = (attributesMap) -> {
+            CustomEdge edge = new CustomEdge();
+
+            try {
+                Integer quantityRequired = Integer.valueOf((attributesMap.get("quantity_required").getValue()));
+                edge.setQuantityRequired(quantityRequired);
+                
+            } catch (NullPointerException e) {
+                System.err.println("Errore nell'importazione, impossibile trovare il campo quantity_required");
+                return edge; 
+            }
+
+            return edge;
+        };
+
+        importer.setEdgeWithAttributesFactory(edgeWithAttributesFactory);
+
+        try {
+            FileReader reader = new FileReader(filePath);
+            dag = new DirectedAcyclicGraph<ProductType,CustomEdge>(CustomEdge.class);
+            importer.importGraph(dag, reader);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }
 
-    @FunctionalInterface
-    private interface CallBack {
-        // Callback to be called in exploreWorkflow
-        void apply(Integer cur_depth, ProductType node);
-    }
-
-    private void exploreWorkflow(ProductType currentNode, int currentDepth, CallBack callback){
-
-        ArrayList<RequirementEntryType> children = currentNode.getRequirements();
-        
-        if(children.isEmpty()){
-            callback.apply(currentDepth, currentNode);
-            return;
-        }
-        else{
-            callback.apply(currentDepth, currentNode);
-            for (RequirementEntryType child : children) {
-                exploreWorkflow(child.getEntryType(), currentDepth + 1, callback) ;
+        // Generate ProcessedType requirements based on edge connections
+        Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
+        while (iter.hasNext()) {
+            ProductType vertex = iter.next();
+            for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
+                ProductType targetVertex = dag.getEdgeTarget(connectedEdge);
+                ProductType sourceVertex = dag.getEdgeSource(connectedEdge);
+                if(targetVertex.getUuid() == vertex.getUuid()){
+                    vertex.addRequirementEntry(new RequirementEntryType(sourceVertex, connectedEdge.getQuantityRequired()));
+                }
             }
-            return;
         }
     }
 
-    public void printWorkflow() {
-        
-        CallBack print = (Integer cur_depth, ProductType node) -> {
-            printTab(cur_depth);
-            System.out.println(node.getNameType());
-            return;
-        };
-        
-        exploreWorkflow(rootNode, 0, print); 
+    public void renderDotFile(String dotFilePath, String outputFilePath, double scale){
 
-        return;
-
+        try {
+            // Render DOT file to PNG
+            Graphviz.fromFile(new File(dotFilePath))
+                    .scale(scale)
+                    .render(Format.PNG) // Render to PNG format
+                    .toFile(new File(outputFilePath)); // Save the rendered graph to a file
+            System.out.println("Graph rendered successfully.");
+        } catch (IOException e) {
+            System.err.println("Error rendering graph: " + e.getMessage());
+        }
     }
-    
-    private void computeWorkflowStats() {
-
-        final class Count implements CallBack{
-            private GraphStats stats = new GraphStats();
-  
-            public GraphStats getStats() {
-                return stats;
-            }
-
-            @Override
-            public void apply(Integer cur_depth, ProductType node){
-                // Update total number of nodes in graph
-                stats.setTotNodes(stats.getTotNodes() + 1);
-
-                // Update depth of graph
-                if (stats.getGraphDepth() < cur_depth){
-                    stats.setGraphDepth(cur_depth);
-                }
-                
-                // Update width of each layer of graph (if key doesn't exist add it to the hashmap)
-                if(! stats.getLevelWidthCount().containsKey(cur_depth)){
-                    stats.getLevelWidthCount().put(cur_depth, 1);
-                }
-                else{
-                    int currentWidth = stats.getLevelWidthCount().get(cur_depth);
-                    stats.getLevelWidthCount().put(cur_depth, currentWidth + 1);
-                }
-
-                // Update number of children that a node has
-                stats.getNodeToNumChildren().put(node.getUuid(), node.getRequirements().size());
-
-            }
-            
-        };
-
-        Count countCallback = new Count();
-        
-        exploreWorkflow(rootNode, 0, countCallback);
-
-        graphStats = countCallback.getStats();
-
-    }
-
-    private void workflowToJGraphT(){
-
-        CallBack populateGraph = (Integer cur_depth, ProductType node) -> {
-            ArrayList<RequirementEntryType> children = node.getRequirements();
-            
-            jGraphT.addVertex(node);
-
-            if(!children.isEmpty()){
-                for (RequirementEntryType child : children) {
-                    jGraphT.addVertex(child.getEntryType());
-                    jGraphT.addEdge(child.getEntryType(), node);
-                }
-            }
-
-            return;
-        };
-        
-        exploreWorkflow(rootNode, 0, populateGraph); 
-
-        return;
-    }
-
 }

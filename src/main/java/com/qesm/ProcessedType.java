@@ -14,10 +14,16 @@ public class ProcessedType implements ProductType{
     protected ProcessedType(String nameType, ArrayList<RequirementEntryType> requirements, int quantityProduced){
         this.nameType = nameType;
         this.uuid = UUID.randomUUID();
-        this.requirements = requirements;
+        if(requirements == null){
+            this.requirements = new ArrayList<RequirementEntryType>();
+        }
+        else{
+            this.requirements = requirements;
+        }
         this.quantityProduced = quantityProduced;
     }
 
+    @Override
     public int getQuantityProduced() {
         return quantityProduced;
     }
