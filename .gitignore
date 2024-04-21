@@ -1,3 +1,5 @@
 .vscode
 *.drawio
 target/**
+output/*.dot
+media/*.png
