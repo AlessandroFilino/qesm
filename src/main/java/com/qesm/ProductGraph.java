@@ -6,6 +6,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.Iterator;
 
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.dot.DOTImporter;
@@ -26,14 +27,30 @@ import guru.nidi.graphviz.engine.Graphviz;
 public class ProductGraph{
     DirectedAcyclicGraph<ProductType, CustomEdge> dag;
     
-
     public ProductGraph() {
         this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
     }
 
-    public void generateRandomDAG(int numVertices, int minNumEdges){
+    public void importDag(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport){
+        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
-        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(numVertices, minNumEdges);
+        // import all verteces
+        for (ProductType vertex : dagToImport.vertexSet()) {
+            dag.addVertex(vertex);
+        }
+
+        // Aggiungi tutti gli archi dal DAG originale alla copia
+        for (CustomEdge edge : dagToImport.edgeSet()) {
+            ProductType source = dagToImport.getEdgeSource(edge);
+            ProductType target = dagToImport.getEdgeTarget(edge);
+            dag.addEdge(source, target, edge);
+        }
+
+    }
+
+    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor){
+
+        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor);
         randDAGGenerator.generateGraph(dag);
     }
 
@@ -46,7 +63,7 @@ public class ProductGraph{
             Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
             while (iter.hasNext()) {
                 ProductType vertex = iter.next();
-                System.out.println("Vertex " + vertex.getNameType() + vertex.getClass() + " is connected to: ");
+                System.out.println("Vertex " + vertex.getNameType() + " type: " + vertex.getClass() + " is connected to: ");
                 for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
                     System.out.println("\t[" + dag.getEdgeSource(connectedEdge).getNameType() + " -> " + dag.getEdgeTarget(connectedEdge).getNameType() + "]");
                 }
@@ -64,7 +81,7 @@ public class ProductGraph{
         Function<ProductType, Map<String, Attribute>> vertexAttributeProvider = v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
-            if(v.getRequirements().isEmpty()){
+            if(v.getClass().equals(RawMaterialType.class)){
                 map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
                 map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nRAW_TYPE", AttributeType.STRING));
                 map.put("vertex_type", new DefaultAttribute<String>("RawMaterialType", AttributeType.STRING));
@@ -208,4 +225,12 @@ public class ProductGraph{
             System.err.println("Error rendering graph: " + e.getMessage());
         }
     }
+
+    public boolean isDagConnected(){
+
+        ConnectivityInspector<ProductType, CustomEdge> connInspector = new ConnectivityInspector<ProductType, CustomEdge>(dag);
+        return connInspector.isConnected();
+
+    }
+
 }

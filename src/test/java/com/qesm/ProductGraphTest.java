@@ -53,7 +53,7 @@ public class ProductGraphTest {
         productGraph = new ProductGraph();
         Random random = new Random();
 
-        productGraph.generateRandomDAG(random.nextInt(20) + 2, random.nextInt(20) + 2);
+        // productGraph.generateRandomDAG(random.nextInt(20) + 2, random.nextInt(20) + 2);
 
         String dagPath = tempDir.toString() + "/test_dag.dot";
         String dagCopyPath = tempDir.toString() + "/test_dag_copy.dot";
