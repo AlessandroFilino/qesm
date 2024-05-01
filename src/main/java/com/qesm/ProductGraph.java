@@ -25,25 +25,42 @@ import guru.nidi.graphviz.engine.Graphviz;
 
 
 public class ProductGraph{
-    DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
+    
+    private DirectedAcyclicGraph<ProductType, CustomEdge> unsharedDag;
+
+    private ProductType rootNode;
     
     public ProductGraph() {
-        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+        this.sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+        this.unsharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+    }
+
+    public DirectedAcyclicGraph<ProductType, CustomEdge> getSharedDag() {
+        return sharedDag;
+    }
+
+    public DirectedAcyclicGraph<ProductType, CustomEdge> getUnsharedDag() {
+        return unsharedDag;
+    }
+
+    public ProductType getRootNode() {
+        return rootNode;
     }
 
     public void importDag(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport){
-        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+        this.sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
         // import all verteces
         for (ProductType vertex : dagToImport.vertexSet()) {
-            dag.addVertex(vertex);
+            sharedDag.addVertex(vertex);
         }
 
         // Aggiungi tutti gli archi dal DAG originale alla copia
         for (CustomEdge edge : dagToImport.edgeSet()) {
             ProductType source = dagToImport.getEdgeSource(edge);
             ProductType target = dagToImport.getEdgeTarget(edge);
-            dag.addEdge(source, target, edge);
+            sharedDag.addEdge(source, target, edge);
         }
 
     }
@@ -51,12 +68,13 @@ public class ProductGraph{
     public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor){
 
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor);
-        randDAGGenerator.generateGraph(dag);
+        randDAGGenerator.generateGraph(sharedDag);
+        rootNode = randDAGGenerator.getRootNode();
     }
 
-    public void printDAG(){
+    public void printDAG(DirectedAcyclicGraph<ProductType, CustomEdge> dag){
 
-        if( dag == null){
+        if(dag == null){
             System.out.println("Il DAG deve ancora essere generato");
         }
         else{
@@ -71,7 +89,7 @@ public class ProductGraph{
         }
     }
     
-    public void exportDAGDotLanguage(String filePath){
+    public void exportDAGDotLanguage(String filePath, DirectedAcyclicGraph<ProductType, CustomEdge> dag){
         // Esportazione del grafo in formato DOT
         DOTExporter<ProductType, CustomEdge> exporter = new DOTExporter<>(v -> v.getNameType());
 
@@ -133,7 +151,7 @@ public class ProductGraph{
 
     public void importDagDotLanguage(String filePath){
 
-        dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+        sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
         DOTImporter<ProductType, CustomEdge> importer = new DOTImporter<ProductType, CustomEdge>();
 
@@ -191,20 +209,20 @@ public class ProductGraph{
 
         try {
             FileReader reader = new FileReader(filePath);
-            dag = new DirectedAcyclicGraph<ProductType,CustomEdge>(CustomEdge.class);
-            importer.importGraph(dag, reader);
+            sharedDag = new DirectedAcyclicGraph<ProductType,CustomEdge>(CustomEdge.class);
+            importer.importGraph(sharedDag, reader);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
         // Generate ProcessedType requirements based on edge connections
-        Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
+        Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(sharedDag);
         while (iter.hasNext()) {
             ProductType vertex = iter.next();
-            for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
-                ProductType targetVertex = dag.getEdgeTarget(connectedEdge);
-                ProductType sourceVertex = dag.getEdgeSource(connectedEdge);
+            for (CustomEdge connectedEdge : sharedDag.edgesOf(vertex)) {
+                ProductType targetVertex = sharedDag.getEdgeTarget(connectedEdge);
+                ProductType sourceVertex = sharedDag.getEdgeSource(connectedEdge);
                 if(targetVertex.getUuid() == vertex.getUuid()){
                     vertex.addRequirementEntry(new RequirementEntryType(sourceVertex, connectedEdge.getQuantityRequired()));
                 }
@@ -228,9 +246,23 @@ public class ProductGraph{
 
     public boolean isDagConnected(){
 
-        ConnectivityInspector<ProductType, CustomEdge> connInspector = new ConnectivityInspector<ProductType, CustomEdge>(dag);
+        ConnectivityInspector<ProductType, CustomEdge> connInspector = new ConnectivityInspector<ProductType, CustomEdge>(sharedDag);
         return connInspector.isConnected();
 
     }
 
+    public void sharedToUnsharedGraph(ProductType node) {
+        if(sharedDag.inDegreeOf(node) == 0){
+            unsharedDag.addVertex(node);
+        } else { 
+            unsharedDag.addVertex(node);
+            for(CustomEdge edge: sharedDag.incomingEdgesOf(node)) {
+                ProductType child = sharedDag.getEdgeSource(edge);
+                sharedToUnsharedGraph(child);
+                unsharedDag.addEdge(child, node);
+            }
+        }
+    }
+
 }
+
