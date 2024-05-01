@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -324,7 +325,9 @@ public class ProductGraph{
 
     }
 
+    /* 
     int id = 0;
+
     public ProductType sharedToUnsharedGraph(ProductType node) {
         ProductType newNode;
         if (node.getClass() == ProcessedType.class) {
@@ -348,14 +351,76 @@ public class ProductGraph{
             }
         }
         return newNode;
-    }
+    } */
 
+    public ArrayList<ProductType> getLeafNodes(DagType dagType){
+        if(!checkDAGs()){
+            return null;
+        }
 
-    public ProductType sharedToUnsharedGraph_V2(ProductType node) {
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+
+        if(dagType == DagType.SHARED) {
+            dag = sharedDag;
+        }
+        else if (dagType == DagType.UNSHARED) {
+            dag = unsharedDag;
+        }
+        else {
+            System.out.println("ERRORE: DAG Type non previsto");
+            return null;
+        }
+
+        ArrayList<ProductType> nodes = new ArrayList<ProductType>();
+        for (ProductType node : dag.vertexSet()) {
+            if (dag.inDegreeOf(node) == 0) {
+                nodes.add(node);
+                
+            }
+        }
         
+        return nodes;
     }
 
+    public void sharedToUnsharedGraph(ProductType node) {
+        ArrayList<ProductType> leafList = getLeafNodes(DagType.SHARED);
+        for (ProductType leaf : leafList) {
+            //recursiveTmp(leaf);
+            
+        }
+    }
 
+    public void recursiveTmp(ProductType node){
+        for(int i = 0; i < sharedDag.outDegreeOf(node); i++) {
+            //duplicateSubGraph(node, null,  i);
+        }
+    }
+
+    
+    public void duplicateSubGraph(ProductType actualNode, ProductType fatherNode, int idCounter) {
+        ProductType newNode;
+        if (actualNode.getClass() == ProcessedType.class) {
+            newNode = new ProcessedType(actualNode.getNameType()+"_"+idCounter, null, actualNode.getQuantityProduced());
+        }
+        else {
+            newNode = new RawMaterialType(actualNode.getNameType()+"_"+idCounter);
+        }
+        unsharedDag.addVertex(newNode);
+        if (fatherNode != null) {
+            unsharedDag.addEdge(newNode, fatherNode);
+        }
+        
+        if(sharedDag.inDegreeOf(actualNode) == 0) {
+            return;
+        }
+        else {
+            for (CustomEdge edge: sharedDag.incomingEdgesOf(actualNode)) {
+                duplicateSubGraph(sharedDag.getEdgeSource(edge), newNode, idCounter);
+            }
+            
+
+        }
+    }
 
 }
 

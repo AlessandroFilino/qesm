@@ -14,8 +14,8 @@ public class Main {
         graphTest.exportDAGDotLanguage("./output/sharedDAG.dot", DagType.SHARED);
         graphTest.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
 
-        graphTest.exportDAGDotLanguage("./output/unSharedDAG.dot", DagType.UNSHARED);
-        graphTest.renderDotFile("./output/unSharedDAG.dot", "./media/unShared.png", 3);
+        //graphTest.exportDAGDotLanguage("./output/unSharedDAG.dot", DagType.UNSHARED);
+        //graphTest.renderDotFile("./output/unSharedDAG.dot", "./media/unShared.png", 3);
 
         
         // graphTest.importDagDotLanguage("./output/DAG.dot");
