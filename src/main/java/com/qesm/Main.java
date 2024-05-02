@@ -7,7 +7,6 @@ public class Main {
         ProductGraph graphTest = new ProductGraph();
         
         graphTest.generateRandomDAG(10, 10, 3, 3);
-        
         graphTest.printDAG(DagType.SHARED);
         
         graphTest.exportDAGDotLanguage("./output/sharedDAG.dot", DagType.SHARED);
@@ -22,6 +21,5 @@ public class Main {
         // graphTest.renderDotFile("./output/unsharedDAGTest.dot", "./media/unsharedDAGTest.png", 3);
         // graphTest.renderDotFile("./output/sharedDAGTest.dot", "./media/sharedDAGTest.png", 3);
         
-
     }
 }

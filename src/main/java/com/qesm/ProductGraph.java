@@ -1,12 +1,9 @@
 package com.qesm;
 import java.util.Map;
-// import java.util.Random;
 import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-// import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -160,16 +157,10 @@ public class ProductGraph{
 
         Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            ProductType sourceVertex = dag.getEdgeSource(e);
-            ProductType targetVertex = dag.getEdgeTarget(e); 
             
-            for (RequirementEntryType requirementEntry : targetVertex.getRequirements()) {
-                if(requirementEntry.getEntryType().getUuid() == sourceVertex.getUuid()){
-                    map.put("label", new DefaultAttribute<String>("quantityNeeded: " + requirementEntry.getQuantityRequired(), AttributeType.STRING));
-                    map.put("quantity_required", new DefaultAttribute<Integer>(requirementEntry.getQuantityRequired(), AttributeType.INT));
-                    break;
-                }
-            } 
+            map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
+            map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
+
             return map;
         };
 
@@ -315,7 +306,8 @@ public class ProductGraph{
             throw new ExceptionQesm("ERROR: shared DAG need to be generated first");
         }
         else if(!unsharedDagExists && dagType == DagType.UNSHARED){
-            sharedToUnsharedGraph(getRootNode(DagType.SHARED));
+            DAGSharedToUnsharedConverter dagConverter = new DAGSharedToUnsharedConverter(sharedDag, unsharedDag, getRootNode(DagType.SHARED));
+            dagConverter.makeConversion();
             unsharedDagExists = true;
         } 
     }
@@ -340,50 +332,6 @@ public class ProductGraph{
         }
 
         return dag;
-    }
-    
-    HashMap<ProductType, Integer> idCounter = new HashMap<ProductType, Integer>();
-
-    public ProductType sharedToUnsharedGraph(ProductType node) {
-        int id = 0;
-        if(!idCounter.containsKey(node)){
-            idCounter.put(node, 0);
-        }
-        else{
-            id = idCounter.get(node);
-            id++;
-            idCounter.put(node, id);
-        }
-        ProductType newNode;
-        if (node.getClass() == ProcessedType.class) {
-            if(id == 0){
-                newNode = new ProcessedType(node.getNameType(), null, node.getQuantityProduced());
-            }
-            else{
-                newNode = new ProcessedType(node.getNameType()+"_"+id, null, node.getQuantityProduced());
-            }
-            
-        }
-        else {
-            if(id == 0){
-                newNode = new RawMaterialType(node.getNameType());
-            }
-            else{
-                newNode = new RawMaterialType(node.getNameType()+"_"+id);
-            }
-        }
-        unsharedDag.addVertex(newNode);
-
-        if(sharedDag.inDegreeOf(node) == 0){
-            return newNode;
-        } else { 
-            for(CustomEdge edge: sharedDag.incomingEdgesOf(node)) {
-                ProductType child = sharedDag.getEdgeSource(edge);
-                ProductType newChild = sharedToUnsharedGraph(child);
-                unsharedDag.addEdge(newChild, newNode);
-            }
-        }
-        return newNode;
     }
 
 }

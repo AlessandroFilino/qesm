@@ -9,6 +9,10 @@ public class CustomEdge extends DefaultEdge{
 
     }
 
+    public void copyEdge(CustomEdge edgeToCopy){
+        setQuantityRequired(edgeToCopy.getQuantityRequired());
+    }
+
     public void setQuantityRequired(int quantityRequired){
         this.quantityRequired = quantityRequired;
     }
@@ -16,5 +20,6 @@ public class CustomEdge extends DefaultEdge{
     public int getQuantityRequired() {
         return quantityRequired;
     }
+
 
 }

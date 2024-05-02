@@ -2,13 +2,17 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 public class RandomDAGGenerator{
+
+    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
 
     // Level definition: hop distance from root. A node can belong to more than one level
     private int maxHeight;                  //Max level number
@@ -33,7 +37,7 @@ public class RandomDAGGenerator{
 
         this.random = new Random();
         this.vId = 0;
-        this.maxRandomQuantity = 100;
+        this.maxRandomQuantity = 10;
 
         this.vSupplierRandom = new Supplier<ProductType>()
         {
@@ -47,7 +51,7 @@ public class RandomDAGGenerator{
                     vId++;
                 }
                 else{
-                    vertex = new ProcessedType("v" + vId, null, random.nextInt(maxRandomQuantity) + 1);
+                    vertex = new ProcessedType("v" + vId, null, -1);
                     vId++;
                 }
                 
@@ -60,7 +64,7 @@ public class RandomDAGGenerator{
             @Override
             public ProductType get()
             {
-                ProductType vertex = new ProcessedType("v" + vId, null, random.nextInt(maxRandomQuantity) + 1);
+                ProductType vertex = new ProcessedType("v" + vId, null, -1);
                 vId++;
                 return vertex;
             }
@@ -68,6 +72,8 @@ public class RandomDAGGenerator{
     }
 
     public void generateGraph(DirectedAcyclicGraph<ProductType, CustomEdge> dag){
+
+        this.dag = dag;
 
         class DAGPopulator{
             
@@ -85,6 +91,7 @@ public class RandomDAGGenerator{
                 dag.setVertexSupplier(vSupplierProcessedType);
 
                 rootNode = dag.addVertex();
+                rootNode.setQuantityProduced(1);
                 vertexToLevels.put(rootNode, new ArrayList<Integer>(List.of(0)));
                 levelToVertices.put(0, new ArrayList<ProductType>(List.of(rootNode)));
                 vTargetList.add(rootNode);
@@ -159,8 +166,9 @@ public class RandomDAGGenerator{
                             break;
                         }
 
-                        dag.addEdge(sourceVertex, targetVertex);
-                        targetVertex.addRequirementEntry(new RequirementEntryType(sourceVertex, random.nextInt(maxRandomQuantity) + 1));
+                        CustomEdge newEdge = dag.addEdge(sourceVertex, targetVertex);
+                        newEdge.setQuantityRequired(random.nextInt(maxRandomQuantity) + 1);
+                        targetVertex.addRequirementEntry(new RequirementEntryType(sourceVertex, newEdge.getQuantityRequired()));
 
                         // Update vertexToLevels
                         if(!vertexToLevels.containsKey(sourceVertex)){
@@ -200,15 +208,48 @@ public class RandomDAGGenerator{
 
         DAGPopulator dagPopulator = new DAGPopulator();
         dagPopulator.populate();
-
-
+        setLeafNodes();
+        updateQuantityProduced();
     }
 
-    // private void setLeafNode(DirectedAcyclicGraph<ProductType, CustomEdge> dag){
-    //     for (ProductType node : dag.vertexSet()) {
-    //         if(dag.inDegreeOf(node))
-    //     }
-    // }
+    private void setLeafNodes(){
+        
+        // Copy vertex set to avoid modifying a collection while iterating over it (it can lead to a ConcurrentModificationException)
+        Set<ProductType> vertexSetCopy = new HashSet<ProductType>(dag.vertexSet());
+
+        // Substitute every processedType leaf with rawMaterialType
+        for (ProductType node : vertexSetCopy) {
+            if(dag.inDegreeOf(node) == 0 && node.getClass() == ProcessedType.class){
+                ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
+                for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
+                    oldEdges.add(oldEdge);
+                }
+
+                dag.removeVertex(node);
+                ProductType newLeaf = new RawMaterialType(node.getNameType());
+                dag.addVertex(newLeaf);
+
+                for (CustomEdge oldEdge : oldEdges) {
+                    CustomEdge newEdge = dag.addEdge(newLeaf, dag.getEdgeTarget(oldEdge));
+                    newEdge.copyEdge(oldEdge);
+                }
+            }
+        }
+    }
+
+    private void updateQuantityProduced(){
+        // Set quantityProduced according to upper nodes requirements
+        for (ProductType node : dag.vertexSet()) {
+            if(node.getClass() == ProcessedType.class && dag.outDegreeOf(node) > 0){
+                int totalQuantityNeeded = 0;
+                for (CustomEdge outEdge : dag.outgoingEdgesOf(node)) {
+                    totalQuantityNeeded += outEdge.getQuantityRequired();
+                }
+                node.setQuantityProduced(totalQuantityNeeded);
+            }
+        }
+    }
+
 
     public ProductType getRootNode() {
         return rootNode;
