@@ -204,6 +204,12 @@ public class RandomDAGGenerator{
 
     }
 
+    // private void setLeafNode(DirectedAcyclicGraph<ProductType, CustomEdge> dag){
+    //     for (ProductType node : dag.vertexSet()) {
+    //         if(dag.inDegreeOf(node))
+    //     }
+    // }
+
     public ProductType getRootNode() {
         return rootNode;
     }

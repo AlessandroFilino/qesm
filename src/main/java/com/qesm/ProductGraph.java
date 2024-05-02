@@ -1,11 +1,12 @@
 package com.qesm;
 import java.util.Map;
-import java.util.Random;
+// import java.util.Random;
 import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.ArrayList;
+// import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -29,8 +30,8 @@ import guru.nidi.graphviz.engine.Graphviz;
 public class ProductGraph{
     private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
     private DirectedAcyclicGraph<ProductType, CustomEdge> unsharedDag;
-    private ProductType rootNode;
 
+    private boolean sharedDagExists = false;
     private boolean unsharedDagExists = false;
 
     public enum DagType {
@@ -43,20 +44,42 @@ public class ProductGraph{
         this.unsharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
     }
 
-    public DirectedAcyclicGraph<ProductType, CustomEdge> getSharedDag() {
-        return sharedDag;
-    }
-
-    public DirectedAcyclicGraph<ProductType, CustomEdge> getUnsharedDag() {
-        if(checkDAGs()){
-            return unsharedDag;
+    public DirectedAcyclicGraph<ProductType, CustomEdge> getSharedDag() throws ExceptionQesm{
+        try {
+            checkDAGs(DagType.SHARED);
+            return sharedDag;
+        } catch (Exception e) {
+            throw e;
         }
-        return null;
-        
     }
 
-    public ProductType getRootNode() {
-        return rootNode;
+    public DirectedAcyclicGraph<ProductType, CustomEdge> getUnsharedDag() throws ExceptionQesm{
+        try {
+            checkDAGs(DagType.UNSHARED);
+            return sharedDag;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public ProductType getRootNode(DagType dagType) throws ExceptionQesm{
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+        if(dagType == DagType.SHARED){
+            dag = sharedDag;
+        }
+        else if (dagType == DagType.UNSHARED){
+            dag = unsharedDag;
+        }
+        else{
+            throw new ExceptionQesm("ERROR: DAG Type not expected");
+        }
+
+        for (ProductType node : dag.vertexSet()) {
+            if(dag.outDegreeOf(node) == 0){
+                return node;
+            }
+        }
+        throw new ExceptionQesm("ERROR: there isn't a root node");
     }
 
     //TODO: Abbiamo due grafi da gestire --> Ha senso verificare il tipo importato ?
@@ -74,35 +97,24 @@ public class ProductGraph{
             ProductType target = dagToImport.getEdgeTarget(edge);
             sharedDag.addEdge(source, target, edge);
         }
-
+        
+        checkSharedDagExist();
     }
 
     public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor){
-
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor);
         randDAGGenerator.generateGraph(sharedDag);
-        rootNode = randDAGGenerator.getRootNode();
+        checkSharedDagExist();
     }
 
-    public void printDAG(DagType dagType){
-
-        if(!checkDAGs()){
-            return;
-        }
-
+    public void printDAG(DagType dagType) throws ExceptionQesm{
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-
-        if(dagType == DagType.SHARED) {
-            dag = sharedDag;
+        try {
+            dag = selectDAG(dagType);
+        } catch (Exception e) {
+            throw e;
         }
-        else if (dagType == DagType.UNSHARED) {
-            dag = unsharedDag;
-        }
-        else {
-            System.out.println("ERRORE: DAG Type non previsto");
-            return;
-        }
-
+        
         Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
         while (iter.hasNext()) {
             ProductType vertex = iter.next();
@@ -110,26 +122,15 @@ public class ProductGraph{
             for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
                 System.out.println("\t[" + dag.getEdgeSource(connectedEdge).getNameType() + " -> " + dag.getEdgeTarget(connectedEdge).getNameType() + "]");
             }
-        }
-         
+        } 
     }
     
-    public void exportDAGDotLanguage(String filePath, DagType dagType){
-        if(!checkDAGs()){
-            return;
-        }
-
+    public void exportDAGDotLanguage(String filePath, DagType dagType) throws ExceptionQesm{
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-
-        if(dagType == DagType.SHARED) {
-            dag = sharedDag;
-        }
-        else if (dagType == DagType.UNSHARED) {
-            dag = unsharedDag;
-        }
-        else {
-            System.out.println("ERRORE: DAG Type non previsto");
-            return;
+        try {
+            dag = selectDAG(dagType);
+        } catch (Exception e) {
+            throw e;
         }
 
         // Esportazione del grafo in formato DOT
@@ -192,7 +193,6 @@ public class ProductGraph{
     }
 
     public void importDagDotLanguage(String filePath){
-
         sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
         DOTImporter<ProductType, CustomEdge> importer = new DOTImporter<ProductType, CustomEdge>();
@@ -270,10 +270,11 @@ public class ProductGraph{
                 }
             }
         }
+
+        checkSharedDagExist();
     }
 
     public void renderDotFile(String dotFilePath, String outputFilePath, double scale){
-
         try {
             // Render DOT file to PNG
             Graphviz.fromFile(new File(dotFilePath))
@@ -286,22 +287,12 @@ public class ProductGraph{
         }
     }
 
-    public boolean isDagConnected(DagType dagType){
-        if(!checkDAGs()){
-            return false;
-        }
-
+    public boolean isDagConnected(DagType dagType) throws ExceptionQesm{
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-
-        if(dagType == DagType.SHARED) {
-            dag = sharedDag;
-        }
-        else if (dagType == DagType.UNSHARED) {
-            dag = unsharedDag;
-        }
-        else {
-            System.out.println("ERRORE: DAG Type non previsto");
-            return false;
+        try {
+            dag = selectDAG(dagType);
+        } catch (Exception e) {
+            throw e;
         }
 
         ConnectivityInspector<ProductType, CustomEdge> connInspector = new ConnectivityInspector<ProductType, CustomEdge>(dag);
@@ -309,53 +300,31 @@ public class ProductGraph{
 
     }
 
-    private boolean checkDAGs() {
-        if(sharedDag == null){
-            System.out.println("ERRORE: Il DAG shared deve ancora essere generato");
-            return false;
+    private void checkSharedDagExist(){
+        // Check if sharedDag exist and it's not empty
+        if(sharedDag == null || sharedDag.vertexSet().isEmpty()){
+            sharedDagExists = false;
         }
-        else if(!unsharedDagExists){
-            sharedToUnsharedGraph(rootNode);
-            unsharedDagExists = true;
-            return true;
-        } 
-        else {
-            return true;
+        else{
+            sharedDagExists = true;
         }
-
     }
 
-    /* 
-    int id = 0;
-
-    public ProductType sharedToUnsharedGraph(ProductType node) {
-        ProductType newNode;
-        if (node.getClass() == ProcessedType.class) {
-            newNode = new ProcessedType(node.getNameType()+"_"+id, null, node.getQuantityProduced());
-            id++;
+    private void checkDAGs(DagType dagType) throws ExceptionQesm{
+        if(!sharedDagExists){
+            throw new ExceptionQesm("ERROR: shared DAG need to be generated first");
         }
-        else {
-            newNode = new RawMaterialType(node.getNameType()+"_"+id);
-            id ++;
-        }
-        unsharedDag.addVertex(newNode);
+        else if(!unsharedDagExists && dagType == DagType.UNSHARED){
+            sharedToUnsharedGraph(getRootNode(DagType.SHARED));
+            unsharedDagExists = true;
+        } 
+    }
 
-        if(sharedDag.inDegreeOf(node) == 0){
-            return newNode;
-        } else { 
-            id = 0;
-            for(CustomEdge edge: sharedDag.incomingEdgesOf(node)) {
-                ProductType child = sharedDag.getEdgeSource(edge);
-                ProductType newChild = sharedToUnsharedGraph(child);
-                unsharedDag.addEdge(newChild, newNode);
-            }
-        }
-        return newNode;
-    } */
-
-    public ArrayList<ProductType> getLeafNodes(DagType dagType){
-        if(!checkDAGs()){
-            return null;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> selectDAG(DagType dagType) throws ExceptionQesm {
+        try {
+            checkDAGs(dagType);
+        } catch (Exception e) {
+            throw e;
         }
 
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
@@ -367,59 +336,54 @@ public class ProductGraph{
             dag = unsharedDag;
         }
         else {
-            System.out.println("ERRORE: DAG Type non previsto");
-            return null;
+            throw new ExceptionQesm("ERROR: DAG Type not expected");
         }
 
-        ArrayList<ProductType> nodes = new ArrayList<ProductType>();
-        for (ProductType node : dag.vertexSet()) {
-            if (dag.inDegreeOf(node) == 0) {
-                nodes.add(node);
-                
-            }
-        }
-        
-        return nodes;
+        return dag;
     }
+    
+    HashMap<ProductType, Integer> idCounter = new HashMap<ProductType, Integer>();
 
-    public void sharedToUnsharedGraph(ProductType node) {
-        ArrayList<ProductType> leafList = getLeafNodes(DagType.SHARED);
-        for (ProductType leaf : leafList) {
-            //recursiveTmp(leaf);
+    public ProductType sharedToUnsharedGraph(ProductType node) {
+        int id = 0;
+        if(!idCounter.containsKey(node)){
+            idCounter.put(node, 0);
+        }
+        else{
+            id = idCounter.get(node);
+            id++;
+            idCounter.put(node, id);
+        }
+        ProductType newNode;
+        if (node.getClass() == ProcessedType.class) {
+            if(id == 0){
+                newNode = new ProcessedType(node.getNameType(), null, node.getQuantityProduced());
+            }
+            else{
+                newNode = new ProcessedType(node.getNameType()+"_"+id, null, node.getQuantityProduced());
+            }
             
         }
-    }
-
-    public void recursiveTmp(ProductType node){
-        for(int i = 0; i < sharedDag.outDegreeOf(node); i++) {
-            //duplicateSubGraph(node, null,  i);
-        }
-    }
-
-    
-    public void duplicateSubGraph(ProductType actualNode, ProductType fatherNode, int idCounter) {
-        ProductType newNode;
-        if (actualNode.getClass() == ProcessedType.class) {
-            newNode = new ProcessedType(actualNode.getNameType()+"_"+idCounter, null, actualNode.getQuantityProduced());
-        }
         else {
-            newNode = new RawMaterialType(actualNode.getNameType()+"_"+idCounter);
+            if(id == 0){
+                newNode = new RawMaterialType(node.getNameType());
+            }
+            else{
+                newNode = new RawMaterialType(node.getNameType()+"_"+id);
+            }
         }
         unsharedDag.addVertex(newNode);
-        if (fatherNode != null) {
-            unsharedDag.addEdge(newNode, fatherNode);
-        }
-        
-        if(sharedDag.inDegreeOf(actualNode) == 0) {
-            return;
-        }
-        else {
-            for (CustomEdge edge: sharedDag.incomingEdgesOf(actualNode)) {
-                duplicateSubGraph(sharedDag.getEdgeSource(edge), newNode, idCounter);
-            }
-            
 
+        if(sharedDag.inDegreeOf(node) == 0){
+            return newNode;
+        } else { 
+            for(CustomEdge edge: sharedDag.incomingEdgesOf(node)) {
+                ProductType child = sharedDag.getEdgeSource(edge);
+                ProductType newChild = sharedToUnsharedGraph(child);
+                unsharedDag.addEdge(newChild, newNode);
+            }
         }
+        return newNode;
     }
 
 }
