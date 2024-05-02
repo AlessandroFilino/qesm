@@ -29,6 +29,12 @@ public class ProcessedType implements ProductType{
     }
 
     @Override
+    public int setQuantityProduced(int quantityProduced) {
+        this.quantityProduced = quantityProduced;
+        return 0;
+    }
+
+    @Override
     public UUID getUuid() {
         return uuid;
     }

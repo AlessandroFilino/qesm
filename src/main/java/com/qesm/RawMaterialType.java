@@ -37,4 +37,10 @@ public class RawMaterialType implements ProductType {
     public int getQuantityProduced() {
         return 0;
     }
+
+    @Override
+    public int setQuantityProduced(int quantityProduced) {
+        return 0;
+    }
+    
 }
