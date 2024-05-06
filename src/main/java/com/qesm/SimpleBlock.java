@@ -25,4 +25,22 @@ public class SimpleBlock implements STPNBlock{
         System.out.println(simpleElement.getNameType() + " tokens: ");
         enablingTokens.forEach(token -> System.out.print(token.getNameType() + " "));
     }
+
+    @Override
+    public ProcessedType getSimpleElement() {
+        return simpleElement;
+    }
+
+    // @Override
+    // public boolean equals(Object arg0) {
+    //     if(arg0.getClass() != SimpleBlock.class){
+    //         return false;
+    //     }
+    //     else{
+    //         SimpleBlock blockToCheck = (SimpleBlock)arg0;
+    //         System.out.println("è uguale: " + this.simpleElement.getNameType() + "  " + blockToCheck.getSimpleElement().getNameType());
+    //         return this.simpleElement == blockToCheck.getSimpleElement();
+    //     }
+    // }
+
 }

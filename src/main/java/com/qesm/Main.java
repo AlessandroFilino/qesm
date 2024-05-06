@@ -4,10 +4,10 @@ import com.qesm.ProductGraph.DagType;
 
 public class Main {
     public static void main(String[] args) {
-        // ProductGraph graphTest = new ProductGraph();
+        ProductGraph graphTest = new ProductGraph();
         
-        // graphTest.generateRandomDAG(10, 10, 3, 3);
-        // graphTest.printDAG(DagType.SHARED);
+        graphTest.generateRandomDAG(10, 10, 3, 3);
+        graphTest.printDAG(DagType.SHARED);
         
         // graphTest.exportDAGDotLanguage("./output/sharedDAG.dot", DagType.SHARED);
         // graphTest.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
@@ -23,8 +23,8 @@ public class Main {
         
 
 
-        StructuredTree structuredTree = new StructuredTree(null);
-        structuredTree.testPrint();
+        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        // structuredTree.testPrint();
         // structuredTree.buildStructuredTree();
     }
 }

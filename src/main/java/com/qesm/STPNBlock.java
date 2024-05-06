@@ -1,7 +1,5 @@
 package com.qesm;
 
-import java.util.ArrayList;
-
 public interface STPNBlock {
 
     public void printBlockInfo(int indentNum);
@@ -15,5 +13,13 @@ public interface STPNBlock {
             System.out.print("  ");
         }
     }
+    
+    public default ProcessedType getSimpleElement(){
+        return null;
+    }
+
+    
+    @Override
+    boolean equals(Object arg0);
     
 }
