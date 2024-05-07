@@ -17,9 +17,5 @@ public interface STPNBlock {
     public default ProcessedType getSimpleElement(){
         return null;
     }
-
-    
-    @Override
-    boolean equals(Object arg0);
     
 }

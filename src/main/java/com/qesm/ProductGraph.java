@@ -53,7 +53,7 @@ public class ProductGraph{
     public DirectedAcyclicGraph<ProductType, CustomEdge> getUnsharedDag() throws ExceptionQesm{
         try {
             checkDAGs(DagType.UNSHARED);
-            return sharedDag;
+            return unsharedDag;
         } catch (Exception e) {
             throw e;
         }
