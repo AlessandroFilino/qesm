@@ -8,23 +8,17 @@ import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
 
-
-public class ProductGraph{
+public class ProductGraph implements Exporter<ProductType, CustomEdge>{
     private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
     private DirectedAcyclicGraph<ProductType, CustomEdge> unsharedDag;
 
@@ -122,21 +116,35 @@ public class ProductGraph{
         } 
     }
     
-    public void exportDAGDotLanguage(String filePath, DagType dagType) throws ExceptionQesm{
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-        try {
-            dag = selectDAG(dagType);
-        } catch (Exception e) {
-            throw e;
-        }
+    @Override
+    public Function<CustomEdge, Map<String, Attribute>> defineExporterEdgeAttributeProvider() {
+        return e -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            
+            map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
+            map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
 
-        // Esportazione del grafo in formato DOT
-        DOTExporter<ProductType, CustomEdge> exporter = new DOTExporter<>(v -> v.getNameType());
+            return map;
+        };
+    }
 
-        exporter.setVertexIdProvider(v -> v.getNameType());
-        exporter.setEdgeIdProvider(e -> dag.getEdgeSource(e).getNameType() + "-" + dag.getEdgeTarget(e).getNameType());
-        
-        Function<ProductType, Map<String, Attribute>> vertexAttributeProvider = v -> {
+    @Override
+    public Function<CustomEdge, String> defineExporterEdgeIdProvider(DirectedAcyclicGraph<ProductType, CustomEdge> dag) {
+        return e -> (dag.getEdgeSource(e).getNameType() + "-" + dag.getEdgeTarget(e).getNameType());
+    }
+
+    @Override
+    public Supplier<Map<String, Attribute>> defineExporterGraphAttributeProvider() {
+        return () -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
+            return map;
+        };
+    }
+
+    @Override
+    public Function<ProductType, Map<String, Attribute>> defineExporterVertexAttributeProvider() {
+        return v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
             if(v.getClass().equals(RawMaterialType.class)){
@@ -152,35 +160,12 @@ public class ProductGraph{
             }
             return map;
         };
+    }
 
-        exporter.setVertexAttributeProvider(vertexAttributeProvider);
-
-        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            
-            map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
-            map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
-
-            return map;
-        };
-
-        exporter.setEdgeAttributeProvider(edgeAttributeProvider);
-
-        Supplier<Map<String, Attribute>> graphAttributeProvider = () -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
-            return map;
-        };
-
-        exporter.setGraphAttributeProvider(graphAttributeProvider);
-
-
-        try {
-            FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(dag, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public Function<ProductType, String> defineExporterVertexIdProvider() {
+        Function<ProductType, String> vertexIdProvider = v -> v.getNameType();
+        return vertexIdProvider;
     }
 
     public void importDagDotLanguage(String filePath){
@@ -263,19 +248,6 @@ public class ProductGraph{
         // }
 
         checkSharedDagExist();
-    }
-
-    public void renderDotFile(String dotFilePath, String outputFilePath, double scale){
-        try {
-            // Render DOT file to PNG
-            Graphviz.fromFile(new File(dotFilePath))
-                    .scale(scale)
-                    .render(Format.PNG) // Render to PNG format
-                    .toFile(new File(outputFilePath)); // Save the rendered graph to a file
-            System.out.println("Graph rendered successfully.");
-        } catch (IOException e) {
-            System.err.println("Error rendering graph: " + e.getMessage());
-        }
     }
 
     public boolean isDagConnected(DagType dagType) throws ExceptionQesm{

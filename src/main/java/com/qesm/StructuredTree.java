@@ -1,8 +1,5 @@
 package com.qesm;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,12 +12,8 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
-import org.jgrapht.nio.dot.DOTExporter;
 
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-
-public class StructuredTree {
+public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
 
     private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
     private final ProductType originalRootNode;
@@ -81,6 +74,20 @@ public class StructuredTree {
         }
     }
 
+
+    
+    public DirectedAcyclicGraph<STPNBlock, CustomEdge> getStructuredWorkflow() {
+        return structuredWorkflow;
+    }
+
+
+
+    public STPNBlock getStructuredTreeRootNode() {
+        return structuredTreeRootNode;
+    }
+
+
+
     private STPNBlock findSimpleBlockFromProcessedType(ProcessedType elementToFind){
         for (STPNBlock block : structuredWorkflow) {
             if(elementToFind == block.getSimpleElement()){
@@ -126,17 +133,35 @@ public class StructuredTree {
         
     // }
 
+    @Override
+    public Function<CustomEdge, Map<String, Attribute>> defineExporterEdgeAttributeProvider() {
+        return e -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            
+            // map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
+            // map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
 
-    public void exportDAGDotLanguage(String filePath) throws ExceptionQesm{
-        
+            return map;
+        };
+    }
 
-        // Esportazione del grafo in formato DOT
-        DOTExporter<STPNBlock, CustomEdge> exporter = new DOTExporter<>(v -> v.getSimpleElement().getNameType());
+    @Override
+    public Function<CustomEdge, String> defineExporterEdgeIdProvider(DirectedAcyclicGraph<STPNBlock, CustomEdge> dag) {
+        return e -> dag.getEdgeSource(e).getSimpleElement().getNameType() + "-" + dag.getEdgeTarget(e).getSimpleElement().getNameType();
+    }
 
-        exporter.setVertexIdProvider(v -> v.getSimpleElement().getNameType());
-        exporter.setEdgeIdProvider(e -> structuredWorkflow.getEdgeSource(e).getSimpleElement().getNameType() + "-" + structuredWorkflow.getEdgeTarget(e).getSimpleElement().getNameType());
-        
-        Function<STPNBlock, Map<String, Attribute>> vertexAttributeProvider = v -> {
+    @Override
+    public Supplier<Map<String, Attribute>> defineExporterGraphAttributeProvider() {
+        return () -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
+            return map;
+        };
+    }
+
+    @Override
+    public Function<STPNBlock, Map<String, Attribute>> defineExporterVertexAttributeProvider() {
+        return v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("box", AttributeType.STRING));
             // if(v.getClass().equals(RawMaterialType.class)){
@@ -152,48 +177,11 @@ public class StructuredTree {
             // }
             return map;
         };
-
-        exporter.setVertexAttributeProvider(vertexAttributeProvider);
-
-        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            
-            // map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
-            // map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
-
-            return map;
-        };
-
-        exporter.setEdgeAttributeProvider(edgeAttributeProvider);
-
-        Supplier<Map<String, Attribute>> graphAttributeProvider = () -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
-            return map;
-        };
-
-        exporter.setGraphAttributeProvider(graphAttributeProvider);
-
-
-        try {
-            FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(structuredWorkflow, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
-    public void renderDotFile(String dotFilePath, String outputFilePath, double scale){
-        try {
-            // Render DOT file to PNG
-            Graphviz.fromFile(new File(dotFilePath))
-                    .scale(scale)
-                    .render(Format.PNG) // Render to PNG format
-                    .toFile(new File(outputFilePath)); // Save the rendered graph to a file
-            System.out.println("Graph rendered successfully.");
-        } catch (IOException e) {
-            System.err.println("Error rendering graph: " + e.getMessage());
-        }
+    @Override
+    public Function<STPNBlock, String> defineExporterVertexIdProvider() {
+        return v -> v.getSimpleElement().getNameType();
     }
 
     public void testPrint(){

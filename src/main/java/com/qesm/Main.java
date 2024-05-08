@@ -14,11 +14,11 @@ public class Main {
         graphTest.generateRandomDAG(10, 10, 3, 3);
         graphTest.printDAG(DagType.SHARED);
         
-        graphTest.exportDAGDotLanguage("./output/sharedDAG.dot", DagType.SHARED);
+        graphTest.exportDotFile("./output/sharedDAG.dot", graphTest.getSharedDag());
         graphTest.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
 
-        graphTest.exportDAGDotLanguage("./output/unSharedDAG.dot", DagType.UNSHARED);
-        graphTest.renderDotFile("./output/unSharedDAG.dot", "./media/unShared.png", 3);
+        graphTest.exportDotFile("./output/unsharedDAG.dot", graphTest.getUnsharedDag());
+        graphTest.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
         
         // graphTest.importDagDotLanguage("./output/sharedDAGTest.dot");
@@ -27,11 +27,11 @@ public class Main {
         // graphTest.renderDotFile("./output/sharedDAGTest.dot", "./media/sharedDAGTest.png", 3);
         
 
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
         // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
-        // structuredTree.exportDAGDotLanguage("./output/structuredTree.dot");
-        // structuredTree.renderDotFile("./output/structuredTree.dot", "./media/structuredTree.png", 3);
-        // structuredTree.buildStructuredTree();
+        structuredTree.exportDotFile("./output/structuredTree.dot", structuredTree.getStructuredWorkflow());
+        structuredTree.renderDotFile("./output/structuredTree.dot", "./media/structuredTree.png", 3);
+        structuredTree.buildStructuredTree();
     }
 
     public static void ensureFolderExists(String folderPath) {
