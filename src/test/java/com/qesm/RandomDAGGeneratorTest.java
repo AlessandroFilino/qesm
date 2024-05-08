@@ -3,17 +3,13 @@ package com.qesm;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.traverse.BreadthFirstIterator;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 
 public class RandomDAGGeneratorTest {
 
@@ -62,10 +58,10 @@ public class RandomDAGGeneratorTest {
         // testGraph.renderDotFile("./output/test.dot", "./media/testGenerateGraph.png", 3);
         
         for (Integer level : levelToVertices.keySet()) {
-            System.out.println("Livello: " + level);
-            for (ProductType vertex: levelToVertices.get(level)) {
-                System.out.println(vertex.getNameType());
-            }
+            // System.out.println("Level: " + level);
+            // for (ProductType vertex: levelToVertices.get(level)) {
+            //     System.out.println(vertex.getNameType());
+            // }
             assertTrue(levelToVertices.get(level).size() <= maxWidth);
         }
 

@@ -1,6 +1,5 @@
 package com.qesm;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class RawMaterialType implements ProductType {
@@ -20,17 +19,6 @@ public class RawMaterialType implements ProductType {
     @Override
     public String getNameType() {
         return nameType;
-    }
-
-
-    @Override
-    public boolean addRequirementEntry(RequirementEntryType req) {
-        return false;
-    }
-
-    @Override
-    public ArrayList<RequirementEntryType> getRequirements(){
-        return new ArrayList<>();
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.qesm;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Random;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,13 +10,13 @@ import java.nio.file.Paths;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
+// import org.junit.jupiter.api.RepeatedTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+// import static org.junit.jupiter.api.Assertions.assertEquals;
+// import static org.junit.jupiter.api.Assertions.assertTrue;
+// import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.jupiter.api.extension.ExtendWith;
+// import org.junit.jupiter.api.extension.ExtendWith;
 
 // @ExtendWith(MyTestWatcher.class)
 public class ProductGraphTest {

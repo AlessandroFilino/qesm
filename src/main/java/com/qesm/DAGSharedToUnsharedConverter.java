@@ -35,10 +35,10 @@ public class DAGSharedToUnsharedConverter {
         ProductType newNode;
         if (node.getClass() == ProcessedType.class) {
             if(id == 0){
-                newNode = new ProcessedType(node.getNameType(), null, node.getQuantityProduced());
+                newNode = new ProcessedType(node.getNameType(), node.getQuantityProduced());
             }
             else{
-                newNode = new ProcessedType(node.getNameType()+"_"+id, null, node.getQuantityProduced());
+                newNode = new ProcessedType(node.getNameType()+"_"+id, node.getQuantityProduced());
             }
             
         }

@@ -79,7 +79,7 @@ public class ProductGraph{
         throw new ExceptionQesm("ERROR: there isn't a root node");
     }
 
-    //TODO: Abbiamo due grafi da gestire --> Ha senso verificare il tipo importato ?
+    //TODO: We have to manage two different type of graphs --> Does it make sense to verify which type of graph we import?
     public void importDag(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport){
         this.sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
@@ -196,7 +196,7 @@ public class ProductGraph{
             try {
                 vertexType = attributesMap.get("vertex_type").toString();
             } catch (NullPointerException e) {
-                System.err.println("Errore nell'importazione, impossibile trovare il campo vertex_type per il nodo: " + vertexName);
+                System.err.println("Import error: unable to find vertex_type field for node: " + vertexName);
                 return new RawMaterialType(""); 
             }
 
@@ -206,15 +206,15 @@ public class ProductGraph{
             else if(vertexType.equals("ProcessedType")){
                 try {
                     Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
-                    vertex = new ProcessedType(vertexName, null, quantityProduced);
+                    vertex = new ProcessedType(vertexName, quantityProduced);
                     
                 } catch (NullPointerException e) {
-                    System.err.println("Errore nell'importazione, impossibile trovare il campo quantity_produced per il nodo: " + vertexName);
+                    System.err.println("Import error: unable to find quantity_produced field for node: " + vertexName);
                     return new RawMaterialType(""); 
                 }
             }
             else{
-                System.err.println("Errore nell'importazione, tipo non riconosciuto del campo vertex_type per il nodo: " + vertexName);
+                System.err.println("Import error: unknown type for vertex_type field: " + vertexName);
                 return new RawMaterialType("");
             }
             
@@ -231,7 +231,7 @@ public class ProductGraph{
                 edge.setQuantityRequired(quantityRequired);
                 
             } catch (NullPointerException e) {
-                System.err.println("Errore nell'importazione, impossibile trovare il campo quantity_required");
+                System.err.println("Import error: unable to find quantity_required field");
                 return edge; 
             }
 
@@ -248,19 +248,19 @@ public class ProductGraph{
             e.printStackTrace();
         }
 
-
-        // Generate ProcessedType requirements based on edge connections
-        Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(sharedDag);
-        while (iter.hasNext()) {
-            ProductType vertex = iter.next();
-            for (CustomEdge connectedEdge : sharedDag.edgesOf(vertex)) {
-                ProductType targetVertex = sharedDag.getEdgeTarget(connectedEdge);
-                ProductType sourceVertex = sharedDag.getEdgeSource(connectedEdge);
-                if(targetVertex.getUuid() == vertex.getUuid()){
-                    vertex.addRequirementEntry(new RequirementEntryType(sourceVertex, connectedEdge.getQuantityRequired()));
-                }
-            }
-        }
+        // TODO: not deleting this part at the moment just because we could need it while removing the RequirementEntryType  
+        // // Generate ProcessedType requirements based on edge connections
+        // Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(sharedDag);
+        // while (iter.hasNext()) {
+        //     ProductType vertex = iter.next();
+        //     for (CustomEdge connectedEdge : sharedDag.edgesOf(vertex)) {
+        //         ProductType targetVertex = sharedDag.getEdgeTarget(connectedEdge);
+        //         ProductType sourceVertex = sharedDag.getEdgeSource(connectedEdge);
+        //         if(targetVertex.getUuid() == vertex.getUuid()){
+        //             vertex.addRequirementEntry(new RequirementEntryType(sourceVertex, connectedEdge.getQuantityRequired()));
+        //         }
+        //     }
+        // }
 
         checkSharedDagExist();
     }

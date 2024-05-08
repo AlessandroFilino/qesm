@@ -51,7 +51,7 @@ public class RandomDAGGenerator{
                     vId++;
                 }
                 else{
-                    vertex = new ProcessedType("v" + vId, null, -1);
+                    vertex = new ProcessedType("v" + vId, -1);
                     vId++;
                 }
                 
@@ -64,7 +64,7 @@ public class RandomDAGGenerator{
             @Override
             public ProductType get()
             {
-                ProductType vertex = new ProcessedType("v" + vId, null, -1);
+                ProductType vertex = new ProcessedType("v" + vId, -1);
                 vId++;
                 return vertex;
             }
@@ -168,7 +168,6 @@ public class RandomDAGGenerator{
 
                         CustomEdge newEdge = dag.addEdge(sourceVertex, targetVertex);
                         newEdge.setQuantityRequired(random.nextInt(maxRandomQuantity) + 1);
-                        targetVertex.addRequirementEntry(new RequirementEntryType(sourceVertex, newEdge.getQuantityRequired()));
 
                         // Update vertexToLevels
                         if(!vertexToLevels.containsKey(sourceVertex)){
