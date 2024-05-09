@@ -1,15 +1,18 @@
 package com.qesm;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class SimpleBlock implements STPNBlock{
 
     private ProcessedType simpleElement;
     private ArrayList<RawMaterialType> enablingTokens;
+    private UUID uuid;
 
     public SimpleBlock(ProcessedType basicElement) {
         this.simpleElement = basicElement;
         this.enablingTokens = new ArrayList<RawMaterialType>();
+        this.uuid = UUID.randomUUID();
     }
 
     @Override
@@ -30,6 +33,18 @@ public class SimpleBlock implements STPNBlock{
     public ProcessedType getSimpleElement() {
         return simpleElement;
     }
+
+    @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public String getLabel() {
+        return simpleElement.getNameType();
+    }
+
+    
 
     // @Override
     // public boolean equals(Object arg0) {

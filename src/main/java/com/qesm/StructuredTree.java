@@ -2,24 +2,19 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Set;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.AttributeType;
-import org.jgrapht.nio.DefaultAttribute;
 
-public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
+import com.qesm.ProductGraph.DagType;
+
+public class StructuredTree {
 
     private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
     private final ProductType originalRootNode;
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     private STPNBlock structuredTreeRootNode;
-
 
     public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag, ProductType rootNode) {
         this.originalWorkflow = dag;
@@ -29,20 +24,19 @@ public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
 
         // this.structuredTreeRootNode = initializeStructuredTree(rootNode);
 
-
         // Add all processedType as simpleBlock to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
 
-            if(node.getClass() == ProcessedType.class){
+            if (node.getClass() == ProcessedType.class) {
 
-                STPNBlock newBlock = new SimpleBlock((ProcessedType)node);
+                STPNBlock newBlock = new SimpleBlock((ProcessedType) node);
                 ArrayList<RawMaterialType> enablingTokens = new ArrayList<>();
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
 
-                    if(sourceNode.getClass() == RawMaterialType.class){
-                        enablingTokens.add((RawMaterialType)sourceNode);
+                    if (sourceNode.getClass() == RawMaterialType.class) {
+                        enablingTokens.add((RawMaterialType) sourceNode);
                     }
                 }
                 structuredWorkflow.addVertex(newBlock);
@@ -53,44 +47,40 @@ public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
 
         // Mapping alla edges of originalWorkflow to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
-            if(node.getClass() == ProcessedType.class){
-                STPNBlock currBlock = findSimpleBlockFromProcessedType((ProcessedType)node);
+            if (node.getClass() == ProcessedType.class) {
+                STPNBlock currBlock = findSimpleBlockFromProcessedType((ProcessedType) node);
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
-                    if(sourceNode.getClass() == ProcessedType.class){
-                        structuredWorkflow.addEdge(findSimpleBlockFromProcessedType((ProcessedType)sourceNode), currBlock);
+                    if (sourceNode.getClass() == ProcessedType.class) {
+                        structuredWorkflow.addEdge(findSimpleBlockFromProcessedType((ProcessedType) sourceNode),
+                                currBlock);
                     }
                 }
 
                 for (CustomEdge outEdge : originalWorkflow.outgoingEdgesOf(node)) {
                     ProductType targetNode = originalWorkflow.getEdgeTarget(outEdge);
-                    if(targetNode.getClass() == ProcessedType.class){
-                        structuredWorkflow.addEdge(currBlock, findSimpleBlockFromProcessedType((ProcessedType)targetNode));
+                    if (targetNode.getClass() == ProcessedType.class) {
+                        structuredWorkflow.addEdge(currBlock,
+                                findSimpleBlockFromProcessedType((ProcessedType) targetNode));
                     }
                 }
-                
+
             }
         }
     }
 
-
-    
     public DirectedAcyclicGraph<STPNBlock, CustomEdge> getStructuredWorkflow() {
         return structuredWorkflow;
     }
-
-
 
     public STPNBlock getStructuredTreeRootNode() {
         return structuredTreeRootNode;
     }
 
-
-
-    private STPNBlock findSimpleBlockFromProcessedType(ProcessedType elementToFind){
+    private STPNBlock findSimpleBlockFromProcessedType(ProcessedType elementToFind) {
         for (STPNBlock block : structuredWorkflow) {
-            if(elementToFind == block.getSimpleElement()){
+            if (elementToFind == block.getSimpleElement()) {
                 return block;
             }
         }
@@ -98,93 +88,42 @@ public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
     }
 
     // private STPNBlock initializeStructuredTree(ProductType currentNode){
-        
-    //     STPNBlock newBlock;
-    //     newBlock = new SimpleBlock((ProcessedType)currentNode);
-    //     boolean newBlockAlreadyInserted = false;
-    //     for (STPNBlock block : structuredWorkflow.vertexSet()) {
-    //         if(block.getSimpleElement() == newBlock.getSimpleElement()){
-    //             newBlockAlreadyInserted = true;
-    //             break;
-    //         }
-    //     }
-    //     if(!newBlockAlreadyInserted){
-    //         structuredWorkflow.addVertex(newBlock);
-    //     }
-    //     for(CustomEdge inEdge : originalWorkflow.incomingEdgesOf(currentNode)){
-    //         ProductType childNode = originalWorkflow.getEdgeSource(inEdge);
-            
-    //         if(childNode.getClass() == RawMaterialType.class){
-    //             newBlock.addEnablingToken((RawMaterialType)childNode);
-    //         }
-    //         else{
-    //             STPNBlock childBlock = initializeStructuredTree(childNode);
-    //             if(childBlock != null){
-    //                 structuredWorkflow.addEdge(childBlock, newBlock);
-    //             }
-    //         }
-    //     }
-    //     if(!newBlockAlreadyInserted){
-    //         return newBlock;
-    //     }
-    //     else{
-    //         return null;
-    //     }
-        
+
+    // STPNBlock newBlock;
+    // newBlock = new SimpleBlock((ProcessedType)currentNode);
+    // boolean newBlockAlreadyInserted = false;
+    // for (STPNBlock block : structuredWorkflow.vertexSet()) {
+    // if(block.getSimpleElement() == newBlock.getSimpleElement()){
+    // newBlockAlreadyInserted = true;
+    // break;
+    // }
+    // }
+    // if(!newBlockAlreadyInserted){
+    // structuredWorkflow.addVertex(newBlock);
+    // }
+    // for(CustomEdge inEdge : originalWorkflow.incomingEdgesOf(currentNode)){
+    // ProductType childNode = originalWorkflow.getEdgeSource(inEdge);
+
+    // if(childNode.getClass() == RawMaterialType.class){
+    // newBlock.addEnablingToken((RawMaterialType)childNode);
+    // }
+    // else{
+    // STPNBlock childBlock = initializeStructuredTree(childNode);
+    // if(childBlock != null){
+    // structuredWorkflow.addEdge(childBlock, newBlock);
+    // }
+    // }
+    // }
+    // if(!newBlockAlreadyInserted){
+    // return newBlock;
+    // }
+    // else{
+    // return null;
     // }
 
-    @Override
-    public Function<CustomEdge, Map<String, Attribute>> defineExporterEdgeAttributeProvider() {
-        return e -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            
-            // map.put("label", new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired() , AttributeType.STRING));
-            // map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired() , AttributeType.INT));
+    // }
 
-            return map;
-        };
-    }
-
-    @Override
-    public Function<CustomEdge, String> defineExporterEdgeIdProvider(DirectedAcyclicGraph<STPNBlock, CustomEdge> dag) {
-        return e -> dag.getEdgeSource(e).getSimpleElement().getNameType() + "-" + dag.getEdgeTarget(e).getSimpleElement().getNameType();
-    }
-
-    @Override
-    public Supplier<Map<String, Attribute>> defineExporterGraphAttributeProvider() {
-        return () -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
-            return map;
-        };
-    }
-
-    @Override
-    public Function<STPNBlock, Map<String, Attribute>> defineExporterVertexAttributeProvider() {
-        return v -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            map.put("shape", new DefaultAttribute<String>("box", AttributeType.STRING));
-            // if(v.getClass().equals(RawMaterialType.class)){
-            //     map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
-            //     map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nRAW_TYPE", AttributeType.STRING));
-            //     map.put("vertex_type", new DefaultAttribute<String>("RawMaterialType", AttributeType.STRING));
-            // }
-            // else{
-            //     map.put("color", new DefaultAttribute<String>("orange", AttributeType.STRING));
-            //     map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nPROCESSED_TYPE" + "\nquantityProduced: " + v.getQuantityProduced(), AttributeType.STRING));
-            //     map.put("vertex_type", new DefaultAttribute<String>("ProcessedType", AttributeType.STRING));
-            //     map.put("quantity_produced", new DefaultAttribute<Integer>(v.getQuantityProduced(), AttributeType.INT));
-            // }
-            return map;
-        };
-    }
-
-    @Override
-    public Function<STPNBlock, String> defineExporterVertexIdProvider() {
-        return v -> v.getSimpleElement().getNameType();
-    }
-
-    public void testPrint(){
+    public void testPrint() {
         STPNBlock stpnBlock1 = new SimpleBlock(new ProcessedType("p1", 0));
         STPNBlock stpnBlock2 = new SimpleBlock(new ProcessedType("p2", 0));
         STPNBlock stpnBlock3 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock1, stpnBlock2)));
@@ -192,69 +131,108 @@ public class StructuredTree implements Exporter<STPNBlock, CustomEdge>{
         STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("p4", 0));
         STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("p5", 0));
         STPNBlock stpnBlock6 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock4, stpnBlock5)));
-        
+
         STPNBlock stpnBlock7 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock3, stpnBlock6)));
 
-        
         stpnBlock7.printBlockInfo(0);
     }
 
-    public void buildStructuredTree(){
-        // Check SEQ
-
-        ArrayList<HashSet<STPNBlock>> optimalSeqList = new ArrayList<>(); 
+    public void buildStructuredTree() {
+        // Calculate SEQs
+        ArrayList<ArrayList<STPNBlock>> seqList = new ArrayList<>();
         for (STPNBlock block : structuredWorkflow.vertexSet()) {
-            HashSet<STPNBlock> tempSeq = new HashSet<>();
-            findSeq(block, tempSeq);
 
-            if(optimalSeqList.size() == 0){
-                optimalSeqList.add(tempSeq);
-            }
-            else{
-                boolean sameSeq = false;
-                for (int seqIndex = 0; seqIndex < optimalSeqList.size(); seqIndex++) {
-                    HashSet<STPNBlock> optimalSeq = optimalSeqList.get(seqIndex);
-                    if (tempSeq.containsAll(optimalSeq)) {
-                        optimalSeqList.set(seqIndex, tempSeq);
-                        sameSeq = true;
-                    } else if (optimalSeq.containsAll(tempSeq)) {
-                        sameSeq = true;
-                    }
-                }
-                if(!sameSeq){
-                    optimalSeqList.add(tempSeq);
+            if (block == structuredTreeRootNode) {
+                ArrayList<STPNBlock> seq = new ArrayList<>();
+                calculateSeq(block, seq);
+                seqList.add(seq);
+            } else if (structuredWorkflow.outDegreeOf(block) == 1 && structuredWorkflow.inDegreeOf(block) == 1) {
+
+                STPNBlock parentBlock = structuredWorkflow.getEdgeTarget(structuredWorkflow.outgoingEdgesOf(block).iterator().next());
+                if(structuredWorkflow.outDegreeOf(parentBlock) > 1 || structuredWorkflow.inDegreeOf(parentBlock) > 1){
+                    ArrayList<STPNBlock> seq = new ArrayList<>();
+                    calculateSeq(block, seq);
+                    seqList.add(seq);
                 }
             }
         }
 
-        for (HashSet<STPNBlock> seqSet : optimalSeqList) {
-            if(seqSet.size() > 1){
+        // Replace SEQs with SeqBlocks
+        for (ArrayList<STPNBlock> seq : seqList) {
+            if (seq.size() > 1) {
 
-                for (STPNBlock seqBlock : seqSet) {
-                        System.out.print(seqBlock.getSimpleElement().getNameType() + " ");
+                SeqBlock seqBlock = new SeqBlock(seq);
+                structuredWorkflow.addVertex(seqBlock);
+
+                STPNBlock targetBlock =  structuredWorkflow.getEdgeTarget(structuredWorkflow.outgoingEdgesOf(seq.get(0)).iterator().next());
+                STPNBlock sourceBlock =  structuredWorkflow.getEdgeSource(structuredWorkflow.outgoingEdgesOf(seq.get(seq.size() - 1)).iterator().next());
+                structuredWorkflow.addEdge(seqBlock, targetBlock);
+                structuredWorkflow.addEdge(sourceBlock, seqBlock);
+
+                for (STPNBlock blockToRemove : seq) {
+                    structuredWorkflow.removeVertex(blockToRemove);
+                    // System.out.print(seqBlock.getSimpleElement().getNameType() + " ");
                 }
-                System.out.println("");
+                // System.out.println("");
             }
         }
     }
 
-    private void findSeq(STPNBlock currentBlock, HashSet<STPNBlock> tempSeq){
+    private void calculateSeq(STPNBlock startingBlock, ArrayList<STPNBlock> seq) {
+
+        STPNBlock currentBlock = startingBlock;
+        seq.add(currentBlock);
         
-        switch (structuredWorkflow.inDegreeOf(currentBlock)) {
-            case 0:
-                tempSeq.add(currentBlock);
-                break;
-            
-            case 1:
-                if(structuredWorkflow.outDegreeOf(currentBlock) == 1){
-                    tempSeq.add(currentBlock);
-                    findSeq(structuredWorkflow.getEdgeSource(structuredWorkflow.incomingEdgesOf(currentBlock).iterator().next()), tempSeq);
+        while(true){
+            currentBlock = structuredWorkflow.getEdgeSource(structuredWorkflow.incomingEdgesOf(currentBlock).iterator().next());
+            if(structuredWorkflow.outDegreeOf(currentBlock) == 1){
+                if(structuredWorkflow.inDegreeOf(currentBlock) == 1){
+                    seq.add(currentBlock);
                 }
+                else if(structuredWorkflow.inDegreeOf(currentBlock) == 0){
+                    seq.add(currentBlock);
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            else{
                 break;
-        
-            default:
-                break;
+            }
         }
+    }
+
+    public void exportDagToDotFile(String filePath) {
+
+        ProductTypeCustomEdgeIO exporter = new ProductTypeCustomEdgeIO();
+        exporter.writeDotFile(filePath, originalWorkflow);
+    }
+
+    // TODO check if it will be needed
+    // public void importDagFromDotFile(String filePath) {
+
+    // ProductTypeCustomEdgeIO importer = new ProductTypeCustomEdgeIO();
+    // originalWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
+    // importer.readDotFile(filePath, originalWorkflow);
+
+    // }
+
+    public void exportStructuredTreeToDotFile(String filePath) {
+
+        STPNBlockCustumEdgeIO exporter = new STPNBlockCustumEdgeIO();
+        exporter.writeDotFile(filePath, structuredWorkflow);
+    }
+
+    public void importStructuredTreeFromDotFile(String filePath) {
+
+        STPNBlockCustumEdgeIO importer = new STPNBlockCustumEdgeIO();
+        importer.readDotFile(filePath, structuredWorkflow);
+
+    }
+
+    void renderDotFile(String dotFilePath, String outputFilePath, double scale) {
+        BasicImportExport.renderDotFile(dotFilePath, outputFilePath, scale);
     }
 
 }

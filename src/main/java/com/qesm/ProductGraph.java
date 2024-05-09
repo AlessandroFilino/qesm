@@ -1,22 +1,11 @@
 package com.qesm;
 
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.function.Supplier;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.nio.dot.DOTImporter;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.AttributeType;
-import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import java.io.FileReader;
-import java.io.IOException;
 
 public class ProductGraph {
     private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
@@ -117,7 +106,7 @@ public class ProductGraph {
         }
     }
 
-    void exportDotFile(String filePath, DagType dagType) throws ExceptionQesm{
+    public void exportDagToDotFile(String filePath, DagType dagType) throws ExceptionQesm{
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
         try {
             dag = selectDAG(dagType);
@@ -125,77 +114,17 @@ public class ProductGraph {
             throw e;
         }
 
-        ProductTypeCustomEdgeProvider temp = new ProductTypeCustomEdgeProvider();
-        temp.writeDotFile(filePath, dag);
+        ProductTypeCustomEdgeIO exporter = new ProductTypeCustomEdgeIO();
+        exporter.writeDotFile(filePath, dag);
     }
 
-    void renderDotFile(String dotFilePath, String outputFilePath, double scale){
-        ExporterProvider.renderDotFile(dotFilePath, outputFilePath, scale);
-    }
-
-    public void importDagDotLanguage(String filePath) {
+    public void importDagFromDotFile(String filePath) {
         sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
-        DOTImporter<ProductType, CustomEdge> importer = new DOTImporter<ProductType, CustomEdge>();
+        ProductTypeCustomEdgeIO importer = new ProductTypeCustomEdgeIO();
+        importer.readDotFile(filePath, sharedDag);
 
-        BiFunction<String, Map<String, Attribute>, ProductType> vertexFactoryFunction = (vertexName, attributesMap) -> {
-
-            ProductType vertex;
-            String vertexType;
-
-            try {
-                vertexType = attributesMap.get("vertex_type").toString();
-            } catch (NullPointerException e) {
-                System.err.println("Import error: unable to find vertex_type field for node: " + vertexName);
-                return new RawMaterialType("");
-            }
-
-            if (vertexType.equals("RawMaterialType")) {
-                vertex = new RawMaterialType(vertexName);
-            } else if (vertexType.equals("ProcessedType")) {
-                try {
-                    Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
-                    vertex = new ProcessedType(vertexName, quantityProduced);
-
-                } catch (NullPointerException e) {
-                    System.err.println("Import error: unable to find quantity_produced field for node: " + vertexName);
-                    return new RawMaterialType("");
-                }
-            } else {
-                System.err.println("Import error: unknown type for vertex_type field: " + vertexName);
-                return new RawMaterialType("");
-            }
-
-            return vertex;
-        };
-
-        importer.setVertexWithAttributesFactory(vertexFactoryFunction);
-
-        Function<Map<String, Attribute>, CustomEdge> edgeWithAttributesFactory = (attributesMap) -> {
-            CustomEdge edge = new CustomEdge();
-
-            try {
-                Integer quantityRequired = Integer.valueOf((attributesMap.get("quantity_required").getValue()));
-                edge.setQuantityRequired(quantityRequired);
-
-            } catch (NullPointerException e) {
-                System.err.println("Import error: unable to find quantity_required field");
-                return edge;
-            }
-
-            return edge;
-        };
-
-        importer.setEdgeWithAttributesFactory(edgeWithAttributesFactory);
-
-        try {
-            FileReader reader = new FileReader(filePath);
-            sharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
-            importer.importGraph(sharedDag, reader);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        
         // TODO: not deleting this part at the moment just because we could need it
         // while removing the RequirementEntryType
         // // Generate ProcessedType requirements based on edge connections
@@ -214,6 +143,10 @@ public class ProductGraph {
         // }
 
         checkSharedDagExist();
+    }
+
+    void renderDotFile(String dotFilePath, String outputFilePath, double scale){
+        BasicImportExport.renderDotFile(dotFilePath, outputFilePath, scale);
     }
 
     public boolean isDagConnected(DagType dagType) throws ExceptionQesm {

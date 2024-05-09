@@ -1,5 +1,7 @@
 package com.qesm;
 
+import java.util.UUID;
+
 public interface STPNBlock {
 
     public void printBlockInfo(int indentNum);
@@ -18,4 +20,6 @@ public interface STPNBlock {
         return null;
     }
     
+    public UUID getUuid();
+    public String getLabel();
 }
