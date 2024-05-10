@@ -29,23 +29,50 @@ public class ComposedBlock implements STPNBlock{
     }
 
     @Override
-    public String getLabel() {
-        String cellOpening = "<TR><TD>";
-        String cellClosing = "</TD></TR>";
-        String tableOpening = "<TABLE>";
-        String tableClosing = "</TABLE>";
+    public String getHTMLLabel(Class<?> callerClass) {
+        String openRow = "<TR>";
+        String closeRow = "</TR>";
+        String openCellData = "<TD>";
+        String closeCellData = "</TD>";
+        String closeTable = "</TABLE>";
+        String closeFont = "</FONT>";
 
         String label = new String();
-        label += tableOpening;
-        label += cellOpening;
+        
 
-        for (STPNBlock blockElement : composedElements) {
-            blockElement.getLabel();
+        
+        if(this.getClass() == SeqBlock.class){
+            label += (getColoredOpenTable("red") + openRow + openCellData);
+            label += getColoredOpenFont("red") + this.getClass().getSimpleName() + closeFont;
+            label += (closeCellData + closeRow);
+
+            for (STPNBlock blockElement : composedElements) {
+                label += (openRow + openCellData) + blockElement.getHTMLLabel(SeqBlock.class) + (closeCellData + closeRow);
+            }
+
+            label += closeTable;
+        }
+        else if (this.getClass() == AndBlock.class){
+            label += (getColoredOpenTable("blue") + openRow + openCellData);
+            label += getColoredOpenFont("blue") + this.getClass().getSimpleName() + closeFont;
+            label += (closeCellData + closeRow);
+            label += (openRow + openCellData + getColoredOpenTable("black") + openRow);
+
+            for (STPNBlock blockElement : composedElements) {
+                label += blockElement.getHTMLLabel(AndBlock.class);
+            }
+
+            label += closeRow + closeTable + closeCellData + closeRow + closeTable;
         }
 
-
         return label;
-        // return this.getClass().getSimpleName();
     }
 
+    private String getColoredOpenTable(String color){
+        return "<TABLE " + "color='" + color + "' CELLBORDER='0'>";
+    }
+
+    private String getColoredOpenFont(String color){
+        return "<FONT " + "color='" + color + "'>";
+    }
 }

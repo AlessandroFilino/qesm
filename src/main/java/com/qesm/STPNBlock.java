@@ -21,5 +21,5 @@ public interface STPNBlock {
     }
     
     public UUID getUuid();
-    public String getLabel();
+    public String getHTMLLabel(Class<?> callerClass);
 }

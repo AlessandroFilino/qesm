@@ -40,8 +40,15 @@ public class SimpleBlock implements STPNBlock{
     }
 
     @Override
-    public String getLabel() {
-        return simpleElement.getNameType();
+    public String getHTMLLabel(Class<?> callerClass) {
+        String value = new String();
+        if(callerClass == SeqBlock.class){
+            value = "<TR><TD>" + simpleElement.getNameType() + "</TD></TR>";
+        }
+        else if (callerClass == AndBlock.class){
+            value = "<TD>" + simpleElement.getNameType() + "</TD>";
+        }
+        return value;
     }
 
     

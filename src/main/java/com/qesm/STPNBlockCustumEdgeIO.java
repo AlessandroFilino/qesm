@@ -32,7 +32,7 @@ public class STPNBlockCustumEdgeIO implements BasicImportExport<STPNBlock, Custo
         this.vertexAttributeProvider =  v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("box", AttributeType.STRING));
-            map.put("label", new DefaultAttribute<String>(v.getLabel(), AttributeType.STRING));
+            map.put("label", new DefaultAttribute<String>(v.getHTMLLabel(null), AttributeType.HTML));
 
             return map;
         };

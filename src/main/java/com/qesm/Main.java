@@ -13,7 +13,7 @@ public class Main {
         
         graphTest.generateRandomDAG(10, 10, 3, 3);
 
-        graphTest.renderDotFile("./output/test.dot", "./media/test.png", 3);
+        // graphTest.renderDotFile("./output/test.dot", "./media/test.png", 3);
         // graphTest.printDAG(DagType.SHARED);
         
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
@@ -27,7 +27,8 @@ public class Main {
         // graphTest.renderDotFile("./output/unsharedDAGTest.dot", "./media/unsharedDAGTest.png", 3);
         // graphTest.renderDotFile("./output/sharedDAGTest.dot", "./media/sharedDAGTest.png", 3);
 
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        structuredTree.testPrint();
         // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
         // structuredTree.exportStructuredTreeToDotFile("./output/structuredTree.dot");
         // structuredTree.renderDotFile("./output/structuredTree.dot", "./media/structuredTree.png", 3);
