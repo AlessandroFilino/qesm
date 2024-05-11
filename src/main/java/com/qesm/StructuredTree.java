@@ -2,6 +2,7 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ public class StructuredTree {
     private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
     private final ProductType originalRootNode;
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
-    private STPNBlock structuredTreeRootNode;
+    private STPNBlock structuredTreeRootBlock;
 
     public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag, ProductType rootNode) {
         this.originalWorkflow = dag;
@@ -68,14 +69,23 @@ public class StructuredTree {
 
             }
         }
+
+        // Find rootBlock
+        for (STPNBlock block : structuredWorkflow) {
+            if(structuredWorkflow.outDegreeOf(block) == 0){
+                structuredTreeRootBlock = block;
+                break;
+            }
+        }
+
     }
 
     public DirectedAcyclicGraph<STPNBlock, CustomEdge> getStructuredWorkflow() {
         return structuredWorkflow;
     }
 
-    public STPNBlock getStructuredTreeRootNode() {
-        return structuredTreeRootNode;
+    public STPNBlock getStructuredTreeRootBlock() {
+        return structuredTreeRootBlock;
     }
 
     private STPNBlock findSimpleBlockFromProcessedType(ProcessedType elementToFind) {
@@ -146,21 +156,41 @@ public class StructuredTree {
 
         STPNBlock stpnBlock15 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock11, stpnBlock12, stpnBlock13, stpnBlock14)));
 
-
-
-
         DirectedAcyclicGraph<STPNBlock, CustomEdge> testTree = new DirectedAcyclicGraph<>(CustomEdge.class);
         testTree.addVertex(stpnBlock15);
         STPNBlockCustumEdgeIO exporter = new STPNBlockCustumEdgeIO();
         exporter.writeDotFile("./output/test.html", testTree);
     }
 
-    public void buildStructuredTree() {
+    public void buildStructuredTree(boolean exportAllIteration) {
+        int seqReplacedCount = 0;
+        int andReplacedCount = 0;
+        int iterCount = 0;
+
+        do {
+            iterCount++;
+            seqReplacedCount = findAndReplaceSeqs();
+            if(exportAllIteration && seqReplacedCount > 0){
+                this.exportStructuredTreeToDotFile("./output/structuredTree_seq_" + iterCount + ".dot");
+            }
+
+            andReplacedCount = findAndReplaceAnds();
+            if(exportAllIteration && andReplacedCount > 0){
+                this.exportStructuredTreeToDotFile("./output/structuredTree_and_" + iterCount + ".dot");
+            }
+
+            
+        } while (seqReplacedCount > 0 || andReplacedCount > 0);
+    }
+
+    private int findAndReplaceSeqs(){
+
+        int seqReplacedCount = 0;
         // Calculate SEQs
         ArrayList<ArrayList<STPNBlock>> seqList = new ArrayList<>();
         for (STPNBlock block : structuredWorkflow.vertexSet()) {
 
-            if (block == structuredTreeRootNode) {
+            if (block == structuredTreeRootBlock && structuredWorkflow.inDegreeOf(block) == 1) {
                 ArrayList<STPNBlock> seq = new ArrayList<>();
                 calculateSeq(block, seq);
                 seqList.add(seq);
@@ -182,18 +212,31 @@ public class StructuredTree {
                 SeqBlock seqBlock = new SeqBlock(seq);
                 structuredWorkflow.addVertex(seqBlock);
 
-                STPNBlock targetBlock =  structuredWorkflow.getEdgeTarget(structuredWorkflow.outgoingEdgesOf(seq.get(0)).iterator().next());
-                STPNBlock sourceBlock =  structuredWorkflow.getEdgeSource(structuredWorkflow.outgoingEdgesOf(seq.get(seq.size() - 1)).iterator().next());
-                structuredWorkflow.addEdge(seqBlock, targetBlock);
-                structuredWorkflow.addEdge(sourceBlock, seqBlock);
+                
+                if(seq.get(0) == structuredTreeRootBlock){
+                    structuredTreeRootBlock = seqBlock;
+                }
+                else{
+                    STPNBlock targetBlock =  structuredWorkflow.getEdgeTarget(structuredWorkflow.outgoingEdgesOf(seq.get(0)).iterator().next());
+                    structuredWorkflow.addEdge(seqBlock, targetBlock);
+                }
+
+                if(structuredWorkflow.inDegreeOf(seq.get(seq.size() - 1)) == 1){
+                    STPNBlock sourceBlock =  structuredWorkflow.getEdgeSource(structuredWorkflow.incomingEdgesOf(seq.get(seq.size() - 1)).iterator().next());
+                    structuredWorkflow.addEdge(sourceBlock, seqBlock);
+                }
+                
 
                 for (STPNBlock blockToRemove : seq) {
                     structuredWorkflow.removeVertex(blockToRemove);
                     // System.out.print(seqBlock.getSimpleElement().getNameType() + " ");
                 }
                 // System.out.println("");
+                seqReplacedCount++;
             }
         }
+
+        return seqReplacedCount;
     }
 
     private void calculateSeq(STPNBlock startingBlock, ArrayList<STPNBlock> seq) {
@@ -219,6 +262,69 @@ public class StructuredTree {
                 break;
             }
         }
+    }
+
+    private int findAndReplaceAnds(){
+
+        int andReplacedCount = 0;
+        // Calculate ANDs
+        ArrayList<HashMap<STPNBlock, ArrayList<STPNBlock>>> andList = new ArrayList<>();
+        
+        for (STPNBlock block : structuredWorkflow.vertexSet()) {
+            
+            if(structuredWorkflow.inDegreeOf(block) > 1 ){
+                
+                HashMap<STPNBlock, ArrayList<STPNBlock>> forkMap = new HashMap<>();
+
+                for (CustomEdge customEdge : structuredWorkflow.incomingEdgesOf(block)) {
+                    STPNBlock childBlock = structuredWorkflow.getEdgeSource(customEdge);
+                    
+                    if(structuredWorkflow.inDegreeOf(childBlock) <= 1 && structuredWorkflow.outDegreeOf(childBlock) == 1){
+                        STPNBlock forkBlock;
+                        if(structuredWorkflow.inDegreeOf(childBlock) == 0){
+                            forkBlock = null;
+                        }
+                        else{
+                            forkBlock = structuredWorkflow.getEdgeSource(structuredWorkflow.incomingEdgesOf(childBlock).iterator().next());
+                        }
+                        
+                        if(!forkMap.containsKey(forkBlock)){
+                            forkMap.put(forkBlock, new ArrayList<>());
+                        }
+                        
+                        forkMap.get(forkBlock).add(childBlock);
+                        
+                    }
+                }
+                andList.add(forkMap);
+            }
+        }
+
+        // Replace Ands with andBlocks
+        for (HashMap<STPNBlock, ArrayList<STPNBlock>> andMap : andList) {
+            for (ArrayList<STPNBlock> andBlocks : andMap.values()) {
+                if(andBlocks.size() > 1){
+                    // System.out.println(andBlocks);
+                    AndBlock andBlock = new AndBlock(andBlocks);
+                    structuredWorkflow.addVertex(andBlock);
+
+                    STPNBlock targetBlock =  structuredWorkflow.getEdgeTarget(structuredWorkflow.outgoingEdgesOf(andBlocks.get(0)).iterator().next());
+                    structuredWorkflow.addEdge(andBlock, targetBlock);
+                    
+                    if(structuredWorkflow.inDegreeOf(andBlocks.get(0)) == 1){
+                        STPNBlock sourceBlock =  structuredWorkflow.getEdgeSource(structuredWorkflow.incomingEdgesOf(andBlocks.get(0)).iterator().next());
+                        structuredWorkflow.addEdge(sourceBlock, andBlock);
+                    }
+                    
+                    for (STPNBlock andBlockElements : andBlocks) {
+                        structuredWorkflow.removeVertex(andBlockElements);
+                    }
+                }
+            }
+        }
+
+
+        return andReplacedCount;
     }
 
     public void exportDagToDotFile(String filePath) {
