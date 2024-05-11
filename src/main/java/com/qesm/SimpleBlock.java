@@ -43,10 +43,13 @@ public class SimpleBlock implements STPNBlock{
     public String getHTMLLabel(Class<?> callerClass) {
         String value = new String();
         if(callerClass == SeqBlock.class){
-            value = "<TR><TD>" + simpleElement.getNameType() + "</TD></TR>";
+            value = "<TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE>";
         }
         else if (callerClass == AndBlock.class){
-            value = "<TD>" + simpleElement.getNameType() + "</TD>";
+            value = "<TD><TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE></TD>";
+        }
+        else{
+            value = "<TABLE color='black' border='0' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE>";
         }
         return value;
     }

@@ -128,19 +128,29 @@ public class StructuredTree {
         STPNBlock stpnBlock2 = new SimpleBlock(new ProcessedType("v2", 0));
         STPNBlock stpnBlock3 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock1, stpnBlock2)));
 
-        STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("v4", 0));
-        STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("v5", 0));
+        STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("v3", 0));
+        STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("v4", 0));
         STPNBlock stpnBlock6 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock4, stpnBlock5)));
 
 
         STPNBlock stpnBlock7 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock3, stpnBlock6)));
-        STPNBlock stpnBlock8 = new SimpleBlock(new ProcessedType("v8", 0));
+        STPNBlock stpnBlock8 = new SimpleBlock(new ProcessedType("v5", 0));
         STPNBlock stpnBlock9 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock7, stpnBlock8)));
 
-        // stpnBlock7.printBlockInfo(0);
+        STPNBlock stpnBlock10 = new SimpleBlock(new ProcessedType("v6", 0));
+        STPNBlock stpnBlock11 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock10, stpnBlock9)));
+        
+        STPNBlock stpnBlock12 = new SimpleBlock(new ProcessedType("v7", 0));
+        STPNBlock stpnBlock13 = new SimpleBlock(new ProcessedType("v8", 0));
+        STPNBlock stpnBlock14 = new SimpleBlock(new ProcessedType("v9", 0));
+
+        STPNBlock stpnBlock15 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock11, stpnBlock12, stpnBlock13, stpnBlock14)));
+
+
+
 
         DirectedAcyclicGraph<STPNBlock, CustomEdge> testTree = new DirectedAcyclicGraph<>(CustomEdge.class);
-        testTree.addVertex(stpnBlock9);
+        testTree.addVertex(stpnBlock15);
         STPNBlockCustumEdgeIO exporter = new STPNBlockCustumEdgeIO();
         exporter.writeDotFile("./output/test.html", testTree);
     }
