@@ -304,7 +304,7 @@ public class StructuredTree {
 
 
         return andReplacedCount;
-    }
+    } 
 
     public void exportDagToDotFile(String filePath) {
 

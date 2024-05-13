@@ -17,6 +17,22 @@
         </dependency>
 
         <dependency>
+            <groupId>com.eulero</groupId>
+            <artifactId>eulero</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/eulero.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sirio</groupId>
+            <artifactId>sirio</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/sirio.jar</systemPath>
+        </dependency>
+
+        <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-io</artifactId>
             <version>1.5.2</version> 

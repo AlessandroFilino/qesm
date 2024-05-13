@@ -11,27 +11,28 @@ public class Main {
 
         ProductGraph graphTest = new ProductGraph();
         
-        graphTest.generateRandomDAG(10, 10, 2, 5);
+        // graphTest.generateRandomDAG(4, 4, 2, 5);
         
-        graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
-        // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        // graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
+        graphTest.importDagFromDotFile("./output/sharedDAG.dot");
         // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
 
         // graphTest.exportDagToDotFile("./output/unsharedDAG.dot", DagType.UNSHARED);
         // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
         // graphTest.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
-        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
+        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
 
-        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
-        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
+        // String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
+        // String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
 
-        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
-        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
-
+        // structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
+        // Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
         
-        
+        DAGAnalyzer dagAnalyzer = new DAGAnalyzer(structuredTree.getStructuredWorkflow());
+        dagAnalyzer.analyze();
+
     }
 
     public static String mkEmptyDir(String folderPath){
