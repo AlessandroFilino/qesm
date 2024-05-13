@@ -33,6 +33,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version> <!-- Or the latest version available -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version> <!-- Or the latest version available -->
+        </dependency>
+
+        <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-io</artifactId>
             <version>1.5.2</version> 
