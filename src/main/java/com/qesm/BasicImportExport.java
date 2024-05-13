@@ -54,17 +54,4 @@ public interface BasicImportExport<V, E> {
             e.printStackTrace();
         }
     }
-
-    static public void renderDotFile(String dotFilePath, String outputFilePath, double scale) {
-        try {
-            // Render DOT file to PNG
-            Graphviz.fromFile(new File(dotFilePath))
-                    .scale(scale)
-                    .render(Format.PNG) // Render to PNG format
-                    .toFile(new File(outputFilePath)); // Save the rendered graph to a file
-            System.out.println("Graph rendered successfully.");
-        } catch (IOException e) {
-            System.err.println("Error rendering graph: " + e.getMessage());
-        }
-    }
 }

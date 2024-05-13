@@ -104,7 +104,15 @@ public class RandomDAGGenerator{
                     sourceVertex = dag.addVertex();
                     vTargetListCopy = new ArrayList<ProductType>(vTargetList);
 
-                    Integer branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;
+                    // Calculating branchingUpFactor to limit not well nested DAG
+                    Integer branchingUpFactor;
+                    if(random.nextInt(1, 101) > 80){
+                        branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;
+                    }
+                    else{
+                        branchingUpFactor = 1;
+                    }
+                     
 
                     while (!vTargetListCopy.isEmpty()) {
                         targetVertex = vTargetListCopy.remove(random.nextInt(vTargetListCopy.size()));

@@ -145,10 +145,6 @@ public class ProductGraph {
         checkSharedDagExist();
     }
 
-    void renderDotFile(String dotFilePath, String outputFilePath, double scale){
-        BasicImportExport.renderDotFile(dotFilePath, outputFilePath, scale);
-    }
-
     public boolean isDagConnected(DagType dagType) throws ExceptionQesm {
         DirectedAcyclicGraph<ProductType, CustomEdge> dag;
         try {

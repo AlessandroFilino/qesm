@@ -162,21 +162,37 @@ public class StructuredTree {
         exporter.writeDotFile("./output/test.html", testTree);
     }
 
-    public void buildStructuredTree(boolean exportAllIteration) {
+    public void buildStructuredTree(){
+        buildStructuredTree(false, null);
+    }
+
+    public void buildStructuredTreeAndExportSteps(String folderPath){
+        buildStructuredTree(true, folderPath);
+    }
+
+    private void buildStructuredTree(boolean exportAllIteration, String folderPath) {
         int seqReplacedCount = 0;
         int andReplacedCount = 0;
-        int iterCount = 0;
+        int stepCount = 0;
+
+        if(exportAllIteration){
+            this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+            stepCount++;
+        }
 
         do {
-            iterCount++;
             seqReplacedCount = findAndReplaceSeqs();
             if(exportAllIteration && seqReplacedCount > 0){
-                this.exportStructuredTreeToDotFile("./output/structuredTree_seq_" + iterCount + ".dot");
+                // System.out.println("Seq replaced: " + seqReplacedCount);
+                this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                stepCount++;
             }
 
             andReplacedCount = findAndReplaceAnds();
             if(exportAllIteration && andReplacedCount > 0){
-                this.exportStructuredTreeToDotFile("./output/structuredTree_and_" + iterCount + ".dot");
+                // System.out.println("And replaced: " + andReplacedCount);
+                this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                stepCount++;
             }
 
             
@@ -319,6 +335,8 @@ public class StructuredTree {
                     for (STPNBlock andBlockElements : andBlocks) {
                         structuredWorkflow.removeVertex(andBlockElements);
                     }
+
+                    andReplacedCount++;
                 }
             }
         }
@@ -353,10 +371,6 @@ public class StructuredTree {
         STPNBlockCustumEdgeIO importer = new STPNBlockCustumEdgeIO();
         importer.readDotFile(filePath, structuredWorkflow);
 
-    }
-
-    void renderDotFile(String dotFilePath, String outputFilePath, double scale) {
-        BasicImportExport.renderDotFile(dotFilePath, outputFilePath, scale);
     }
 
 }

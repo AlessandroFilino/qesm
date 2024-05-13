@@ -11,40 +11,43 @@ public class Main {
 
         ProductGraph graphTest = new ProductGraph();
         
-        graphTest.generateRandomDAG(10, 10, 2, 2);
-
-        // graphTest.renderDotFile("./output/test.dot", "./media/test.png", 3);
-        // graphTest.printDAG(DagType.SHARED);
+        graphTest.generateRandomDAG(10, 10, 2, 5);
         
         graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
-        graphTest.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
+        // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
 
         // graphTest.exportDagToDotFile("./output/unsharedDAG.dot", DagType.UNSHARED);
+        // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
         // graphTest.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
-        // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
-        // graphTest.exportDAGDotLanguage("./output/unsharedDAGTest.dot", DagType.UNSHARED);
-        // graphTest.renderDotFile("./output/unsharedDAGTest.dot", "./media/unsharedDAGTest.png", 3);
-        // graphTest.renderDotFile("./output/sharedDAGTest.dot", "./media/sharedDAGTest.png", 3);
-
-        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
         // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
 
-        structuredTree.exportStructuredTreeToDotFile("./output/structuredTree_0.dot");
-        structuredTree.renderDotFile("./output/structuredTree_0.dot", "./media/structuredTree_0.png", 3);
+        // String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
+        // String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
 
-        structuredTree.buildStructuredTree(false);
-        structuredTree.exportStructuredTreeToDotFile("./output/structuredTree_final.dot");
-        structuredTree.renderDotFile("./output/structuredTree_final.dot", "./media/structuredTree_final.png", 3);
+        // structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
+        // Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
 
-
-        // structuredTree.renderDotFile("./output/structuredTree_seq_1.dot", "./media/structuredTree_seq_1.png", 3);
-        // structuredTree.renderDotFile("./output/structuredTree_seq_2.dot", "./media/structuredTree_seq_2.png", 3);
-        // structuredTree.renderDotFile("./output/structuredTree_seq_3.dot", "./media/structuredTree_seq_3.png", 3);
-        // structuredTree.renderDotFile("./output/structuredTree_and_1.dot", "./media/structuredTree_and_1.png", 3);
-        // structuredTree.renderDotFile("./output/structuredTree_and_2.dot", "./media/structuredTree_and_2.png", 3);
-        // structuredTree.renderDotFile("./output/structuredTree_and_3.dot", "./media/structuredTree_and_3.png", 3);
         
+        
+    }
+
+    public static String mkEmptyDir(String folderPath){
+        File folder = new File(folderPath);
+        if(folder.isDirectory()){
+            for (File file : folder.listFiles()) {
+                if(file.getName().endsWith(".dot") || file.getName().endsWith(".png")){
+                    file.delete();
+                }
+            }
+        }
+        else{
+            folder.mkdir();
+        }
+
+        return folderPath;
     }
 
     public static void ensureFolderExists(String folderPath) {
