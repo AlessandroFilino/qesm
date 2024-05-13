@@ -21,14 +21,14 @@ public class Main {
         // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
         // graphTest.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
+        StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
         // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
 
-        // String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
-        // String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
 
-        // structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
-        // Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
 
         
         

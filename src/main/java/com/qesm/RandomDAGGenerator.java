@@ -105,6 +105,7 @@ public class RandomDAGGenerator{
                     vTargetListCopy = new ArrayList<ProductType>(vTargetList);
 
                     // Calculating branchingUpFactor to limit not well nested DAG
+                    // TODO: chose treshold and take it as argument
                     Integer branchingUpFactor;
                     if(random.nextInt(1, 101) > 80){
                         branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;

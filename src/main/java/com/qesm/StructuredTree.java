@@ -1,14 +1,11 @@
 package com.qesm;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-import com.qesm.ProductGraph.DagType;
 
 public class StructuredTree {
 
@@ -96,42 +93,6 @@ public class StructuredTree {
         }
         return null;
     }
-
-    // private STPNBlock initializeStructuredTree(ProductType currentNode){
-
-    // STPNBlock newBlock;
-    // newBlock = new SimpleBlock((ProcessedType)currentNode);
-    // boolean newBlockAlreadyInserted = false;
-    // for (STPNBlock block : structuredWorkflow.vertexSet()) {
-    // if(block.getSimpleElement() == newBlock.getSimpleElement()){
-    // newBlockAlreadyInserted = true;
-    // break;
-    // }
-    // }
-    // if(!newBlockAlreadyInserted){
-    // structuredWorkflow.addVertex(newBlock);
-    // }
-    // for(CustomEdge inEdge : originalWorkflow.incomingEdgesOf(currentNode)){
-    // ProductType childNode = originalWorkflow.getEdgeSource(inEdge);
-
-    // if(childNode.getClass() == RawMaterialType.class){
-    // newBlock.addEnablingToken((RawMaterialType)childNode);
-    // }
-    // else{
-    // STPNBlock childBlock = initializeStructuredTree(childNode);
-    // if(childBlock != null){
-    // structuredWorkflow.addEdge(childBlock, newBlock);
-    // }
-    // }
-    // }
-    // if(!newBlockAlreadyInserted){
-    // return newBlock;
-    // }
-    // else{
-    // return null;
-    // }
-
-    // }
 
     public void testPrint() {
         STPNBlock stpnBlock1 = new SimpleBlock(new ProcessedType("v1", 0));

@@ -3,9 +3,6 @@ package com.qesm;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-
 public class ComposedBlock implements STPNBlock {
 
     private ArrayList<STPNBlock> composedElements;
