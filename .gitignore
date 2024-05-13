@@ -3,3 +3,5 @@
 target/**
 output/**/*.dot
 media/**/*.png
+lib/eulero.jar
+lib/sirio.jar
