@@ -1,5 +1,6 @@
 package com.qesm;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public interface STPNBlock {
@@ -17,6 +18,10 @@ public interface STPNBlock {
     }
     
     public default ProcessedType getSimpleElement(){
+        return null;
+    }
+
+    public default ArrayList<STPNBlock> getComposedElements(){
         return null;
     }
     

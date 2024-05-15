@@ -32,6 +32,11 @@ public class ComposedBlock implements STPNBlock {
     }
 
     @Override
+    public ArrayList<STPNBlock> getComposedElements(){
+        return composedElements;
+    }
+
+    @Override
     public String getHTMLLabel(Class<?> callerClass) {
         String openRow = "<TR>";
         String closeRow = "</TR>";
@@ -133,4 +138,5 @@ public class ComposedBlock implements STPNBlock {
         }
         return "<FONT " + "color='" + color + "'>";
     }
+
 }

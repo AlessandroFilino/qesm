@@ -92,6 +92,7 @@ public class TestPetri {
     t9.addFeature(StochasticTransitionFeature.newDeterministicInstance(new BigDecimal("0"), MarkingExpr.from("1", net)));
     t9.addFeature(new Priority(0));
     
+
     RegTransient analysis = RegTransient.builder()
         .greedyPolicy(new BigDecimal("5"), new BigDecimal("0.005"))
         .timeStep(new BigDecimal("0.1"))
