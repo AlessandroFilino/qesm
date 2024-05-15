@@ -107,7 +107,7 @@ public class RandomDAGGenerator{
                     // Calculating branchingUpFactor to limit not well nested DAG
                     // TODO: chose treshold and take it as argument
                     Integer branchingUpFactor;
-                    if(random.nextInt(1, 101) > 80){
+                    if(random.nextInt(1, 101) > 60){
                         branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;
                     }
                     else{

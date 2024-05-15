@@ -1,24 +1,34 @@
 package com.qesm;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
+import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
+import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
-import org.oristool.petrinet.PetriNet;
+
 
 public class StructuredTreeConverter {
 
-    DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
+    private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     // TODO: add pdf to processedType during DagGeneration
-    StochasticTime pdf;
+    private StochasticTime pdf;
+    private HashSet<Activity> notWellNestedActivities;
+    private HashMap<STPNBlock, Activity> blocksAlreadyConverted; 
+
 
     public StructuredTreeConverter(DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow) {
         this.structuredWorkflow = structuredWorkflow;
         this.pdf = new UniformTime(0, 1);
+        this.notWellNestedActivities = new HashSet<>();
+        this.blocksAlreadyConverted = new HashMap<>();
     }
 
     public Activity convertToActivity(){
@@ -26,7 +36,13 @@ public class StructuredTreeConverter {
         for (STPNBlock stpnBlock : structuredWorkflow) {
             // find and start conversion from rootBlock;
             if(structuredWorkflow.outDegreeOf(stpnBlock) == 0){
-                return recursiveExploration(stpnBlock);
+                Activity rootActivity = recursiveExploration(stpnBlock);
+                if(rootActivity.pre().isEmpty()){
+                    return rootActivity;
+                }
+                else{
+                    return ModelFactory.DAG(notWellNestedActivities.toArray(new Activity[0]));
+                }
             }
         }
         // Should not happen
@@ -35,15 +51,24 @@ public class StructuredTreeConverter {
     }
 
     private Activity recursiveExploration(STPNBlock stpnBlock){
-        Activity currenActivity = calculateActivityFromBlock(stpnBlock);
-
-        for (CustomEdge inEdge : structuredWorkflow.incomingEdgesOf(stpnBlock)) {
-            STPNBlock stpnBlockChild = structuredWorkflow.getEdgeSource(inEdge);
-            Activity childActivity = recursiveExploration(stpnBlockChild);
-            currenActivity.addPrecondition(childActivity);
+        if(blocksAlreadyConverted.containsKey(stpnBlock)){
+            return blocksAlreadyConverted.get(stpnBlock);
         }
+        else{
+            Activity currentActivity = calculateActivityFromBlock(stpnBlock);
+            blocksAlreadyConverted.put(stpnBlock, currentActivity);
 
-        return currenActivity;
+            for (CustomEdge inEdge : structuredWorkflow.incomingEdgesOf(stpnBlock)) {
+                STPNBlock stpnBlockChild = structuredWorkflow.getEdgeSource(inEdge);
+                Activity childActivity = recursiveExploration(stpnBlockChild);
+                currentActivity.addPrecondition(childActivity);
+                // System.out.println(currentActivity.name() + " -> " + childActivity.name());
+                notWellNestedActivities.add(currentActivity);
+                notWellNestedActivities.add(childActivity);
+            }
+    
+            return currentActivity;
+        }
     }
     
     private Activity calculateActivityFromBlock(STPNBlock stpnBlock){

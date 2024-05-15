@@ -1,7 +1,10 @@
 package com.qesm;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.oristool.eulero.evaluation.approximator.TruncatedExponentialMixtureApproximation;
@@ -14,6 +17,7 @@ import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 import org.oristool.eulero.ui.ActivityViewer;
+import org.oristool.models.stpn.RewardRate;
 import org.oristool.models.stpn.TransientSolution;
 import org.oristool.models.stpn.TransientSolutionViewer;
 import org.oristool.models.stpn.trans.RegTransient;
@@ -24,26 +28,40 @@ import org.oristool.petrinet.Place;
 
 
 public class DAGAnalyzer {
-    private Activity rootActivity;
 
-    public DAGAnalyzer(Activity rooActivity) {
-        this.rootActivity = rooActivity;
+    public DAGAnalyzer() {
     }
 
-    public void analyze(){
+    public void analyzeActivity(Activity rootActivity){
         
         AnalysisHeuristicsVisitor visitor = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
 
         double[] cdf = rootActivity.analyze(rootActivity.max().add(BigDecimal.ONE), rootActivity.getFairTimeTick(), visitor);
 
 
-        ActivityViewer.CompareResults("", List.of("A", "B", "test"), List.of(
+        ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
                 new EvaluationResult("A", cdf, 0, cdf.length, rootActivity.getFairTimeTick().doubleValue(), 0)
         ));
 
-        System.out.println("Timestep used: " + rootActivity.getFairTimeTick().toString());
+        // System.out.println("Timestep used: " + rootActivity.getFairTimeTick().toString());
 
     }
+
+    public void analizePetriNet(PetriNet net, Place pReward, Place pStart){
+
+        RegTransient analysis = RegTransient.builder()
+            .greedyPolicy(new BigDecimal("6"), new BigDecimal("0.005"))
+            .timeStep(new BigDecimal("0.1"))
+            .build();
+
+        Marking marking = new Marking();
+        marking.setTokens(pStart, 1);
+        TransientSolution<DeterministicEnablingState, RewardRate> solution = TransientSolution.computeRewards(false, analysis.compute(net, marking), pReward.getName());
+
+        // Display transient probabilities
+        new TransientSolutionViewer(solution);
+    }
+
 
     public void test1(){
         StochasticTime pdf12 = new UniformTime(1, 2);
@@ -130,32 +148,45 @@ public class DAGAnalyzer {
         System.out.println(net);
 
         RegTransient analysis = RegTransient.builder()
-            .greedyPolicy(new BigDecimal("5"), new BigDecimal("0.005"))
-            .timeStep(new BigDecimal("0.1"))
+            .greedyPolicy(new BigDecimal("3"), new BigDecimal("0.005"))
+            .timeStep(new BigDecimal("0.01"))
             .build();
 
         Marking marking = new Marking();
         marking.setTokens(p0, 1);
 
-        TransientSolution<DeterministicEnablingState, Marking> solution =
-            analysis.compute(net, marking);
+        // TransientSolution<DeterministicEnablingState, Marking> solution =
+        //     analysis.compute(net, marking);
 
-        // solution.computeRewards(false, solution, null)
+        TransientSolution<DeterministicEnablingState, RewardRate> solution2 = TransientSolution.computeRewards(false, analysis.compute(net, marking), "p1");
 
         // Display transient probabilities
-        new TransientSolutionViewer(solution);
-        // System.out.println(solution.computeRewards(false, null, null));
+        // new TransientSolutionViewer(solution2);
+        double[][][] solution2Data = solution2.getSolution();
+        ArrayList<Double> solSirio = new ArrayList<>();
+        for (double[][] ds : solution2Data) {
+            for (double[] ds2 : ds) {
+                solSirio.add(ds2[0]);
+            }
+        }
 
+        System.out.println(solSirio);
 
         AnalysisHeuristicsVisitor start = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
         double[] cdf = s2.analyze(s2.max().add(BigDecimal.ONE), s2.getFairTimeTick(), start);
 
+        ArrayList<Double> solEulero = new ArrayList<Double>();
+        for (double value : cdf) {
+            solEulero.add(value);
+        }
 
-        ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
-                new EvaluationResult("A", cdf, 0, cdf.length, s2.getFairTimeTick().doubleValue(), 0)
-        ));
+        System.out.println(solEulero);
 
-        System.out.println("Timestep used: " + s2.getFairTimeTick().toString());
+        // ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
+        //         new EvaluationResult("A", cdf, 0, cdf.length, s2.getFairTimeTick().doubleValue(), 0)
+        // ));
+
+        // System.out.println("Timestep used: " + s2.getFairTimeTick().toString());
 
 
     }
