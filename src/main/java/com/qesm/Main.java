@@ -16,6 +16,9 @@ import com.qesm.ProductGraph.DagType;
 
 public class Main {
     public static void main(String[] args) {
+
+        System.setProperty("java.awt.headless", "false");
+
         ensureFolderExists("media");
         ensureFolderExists("output");
 
@@ -47,7 +50,8 @@ public class Main {
 
         DAGAnalyzer dagAnalyzer = new DAGAnalyzer(rootActivity);
         // dagAnalyzer.analyze();
-        dagAnalyzer.test2();
+        // dagAnalyzer.test2();
+        dagAnalyzer.test3();
 
     }
 

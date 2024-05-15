@@ -4,22 +4,24 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.oristool.eulero.evaluation.approximator.DoubleTruncatedEXPApproximation;
-import org.oristool.eulero.evaluation.approximator.EXPMixtureApproximation;
-import org.oristool.eulero.evaluation.approximator.SOSplineApproximation;
-import org.oristool.eulero.evaluation.approximator.SplineBodyEXPTailApproximation;
 import org.oristool.eulero.evaluation.approximator.TruncatedExponentialMixtureApproximation;
 import org.oristool.eulero.evaluation.heuristics.AnalysisHeuristicsVisitor;
 import org.oristool.eulero.evaluation.heuristics.EvaluationResult;
 import org.oristool.eulero.evaluation.heuristics.RBFHeuristicsVisitor;
-import org.oristool.eulero.evaluation.heuristics.SDFHeuristicsVisitor;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 import org.oristool.eulero.ui.ActivityViewer;
+import org.oristool.models.stpn.TransientSolution;
+import org.oristool.models.stpn.TransientSolutionViewer;
+import org.oristool.models.stpn.trans.RegTransient;
+import org.oristool.models.stpn.trees.DeterministicEnablingState;
+import org.oristool.petrinet.Marking;
+import org.oristool.petrinet.PetriNet;
+import org.oristool.petrinet.Place;
+
 
 public class DAGAnalyzer {
     private Activity rootActivity;
@@ -102,6 +104,58 @@ public class DAGAnalyzer {
         ));
 
         System.out.println("Timestep used: " + t5.getFairTimeTick().toString());
+
+    }
+
+    public void test3(){
+        StochasticTime pdf = new UniformTime(0, 1);
+        
+        Activity t0 = new Simple("t0", pdf);
+        Activity t1 = new Simple("t1", pdf);
+
+        Activity s0 = ModelFactory.sequence(t0,t1);
+
+        Activity t2 = new Simple("t2", pdf);
+        Activity t3 = new Simple("t3", pdf);
+        
+
+        Activity s1 = ModelFactory.sequence(t2,t3);
+        Activity s2 = ModelFactory.forkJoin(s0,s1);
+
+        PetriNet net = new PetriNet();
+        Place p0 = net.addPlace("p0");
+        Place p1 = net.addPlace("p1");
+        
+        s2.buildSTPN(net, p0, p1, 0);
+        System.out.println(net);
+
+        RegTransient analysis = RegTransient.builder()
+            .greedyPolicy(new BigDecimal("5"), new BigDecimal("0.005"))
+            .timeStep(new BigDecimal("0.1"))
+            .build();
+
+        Marking marking = new Marking();
+        marking.setTokens(p0, 1);
+
+        TransientSolution<DeterministicEnablingState, Marking> solution =
+            analysis.compute(net, marking);
+
+        // solution.computeRewards(false, solution, null)
+
+        // Display transient probabilities
+        new TransientSolutionViewer(solution);
+        // System.out.println(solution.computeRewards(false, null, null));
+
+
+        AnalysisHeuristicsVisitor start = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
+        double[] cdf = s2.analyze(s2.max().add(BigDecimal.ONE), s2.getFairTimeTick(), start);
+
+
+        ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
+                new EvaluationResult("A", cdf, 0, cdf.length, s2.getFairTimeTick().doubleValue(), 0)
+        ));
+
+        System.out.println("Timestep used: " + s2.getFairTimeTick().toString());
 
 
     }
