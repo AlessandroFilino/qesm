@@ -1,10 +1,8 @@
 package com.qesm;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.oristool.eulero.evaluation.approximator.TruncatedExponentialMixtureApproximation;
@@ -35,12 +33,14 @@ public class DAGAnalyzer {
     public void analyzeActivity(Activity rootActivity){
         
         AnalysisHeuristicsVisitor visitor = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
+        // AnalysisHeuristicsVisitor visitor = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new EXPMixtureApproximation());
 
-        double[] cdf = rootActivity.analyze(rootActivity.max().add(BigDecimal.ONE), rootActivity.getFairTimeTick(), visitor);
+        // double[] cdf = rootActivity.analyze(rootActivity.max().add(BigDecimal.ONE), rootActivity.getFairTimeTick(), visitor);
+        double[] cdf = rootActivity.analyze(BigDecimal.valueOf(6), BigDecimal.valueOf(0.01), visitor);
 
 
         ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
-                new EvaluationResult("A", cdf, 0, cdf.length, rootActivity.getFairTimeTick().doubleValue(), 0)
+                new EvaluationResult("A", cdf, 0, cdf.length, 0.01, 0)
         ));
 
         // System.out.println("Timestep used: " + rootActivity.getFairTimeTick().toString());
@@ -51,7 +51,7 @@ public class DAGAnalyzer {
 
         RegTransient analysis = RegTransient.builder()
             .greedyPolicy(new BigDecimal("6"), new BigDecimal("0.005"))
-            .timeStep(new BigDecimal("0.1"))
+            .timeStep(new BigDecimal("0.01"))
             .build();
 
         Marking marking = new Marking();

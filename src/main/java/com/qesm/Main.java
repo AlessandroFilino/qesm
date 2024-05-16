@@ -6,13 +6,9 @@ import java.math.BigDecimal;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
+import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
-import org.oristool.models.stpn.TransientSolution;
-import org.oristool.models.stpn.TransientSolutionViewer;
-import org.oristool.models.stpn.trans.RegTransient;
-import org.oristool.models.stpn.trees.DeterministicEnablingState;
-import org.oristool.petrinet.Marking;
 import org.oristool.petrinet.PetriNet;
 import org.oristool.petrinet.Place;
 
@@ -57,25 +53,25 @@ public class Main {
         PetriNet net = new PetriNet();
         Place pOut = net.addPlace("FINAL_PLACE");
         Place pIn = net.addPlace("STARTING_PLACE");
-        
         rootActivity.buildSTPN(net, pIn, pOut, 0);
+
+        
         // System.out.println(net);
 
         DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
         dagAnalyzer.analyzeActivity(rootActivity);
         dagAnalyzer.analizePetriNet(net, pOut, pIn);
-        // dagAnalyzer.test2();
-        // dagAnalyzer.test3();
         
+
     }
 
     public static Activity generateTestActivity(){
-        StochasticTime pdf = new UniformTime(0, 1);
+        StochasticTime pdf = new ExponentialTime(BigDecimal.valueOf(5));
         
         Activity t0 = new Simple("t0", pdf);
         
-        System.out.println(t0.isWellNested());
-        return t0;
+        
+        return ModelFactory.DAG(t0);
     }
 
     public static Activity generateTestActivity2(){
@@ -87,10 +83,11 @@ public class Main {
         Activity s0 = ModelFactory.sequence(t0,t1);
 
         Activity t3 = new Simple("t3", pdf);
-        // Activity t5 = new Simple("t5", pdf);
+        Activity t5 = new Simple("t5", pdf);
 
         t3.addPrecondition(s0);
-        return ModelFactory.DAG(t3, s0);
+        t5.addPrecondition(t3);
+        return ModelFactory.DAG(t3, s0, t5);
     }
 
     public static String mkEmptyDir(String folderPath){

@@ -1,6 +1,5 @@
 package com.qesm;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,8 +8,6 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
-import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
-import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
@@ -27,6 +24,7 @@ public class StructuredTreeConverter {
     public StructuredTreeConverter(DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow) {
         this.structuredWorkflow = structuredWorkflow;
         this.pdf = new UniformTime(0, 1);
+        // this.pdf = new ExponentialTime(BigDecimal.valueOf(5));
         this.notWellNestedActivities = new HashSet<>();
         this.blocksAlreadyConverted = new HashMap<>();
     }
