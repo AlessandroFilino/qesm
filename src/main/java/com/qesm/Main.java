@@ -12,7 +12,6 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 import org.oristool.petrinet.PetriNet;
 import org.oristool.petrinet.Place;
 
-import com.qesm.ProductGraph.DagType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class Main {
@@ -23,17 +22,19 @@ public class Main {
         ensureFolderExists("media");
         ensureFolderExists("output");
 
-        ProductGraph graphTest = new ProductGraph();
+        WorkflowType graphTest = new WorkflowType();
         
         graphTest.generateRandomDAG(5, 5, 2, 5, PdfType.UNIFORM);
         
-        graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
-        // // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
-        // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
-
-        // // graphTest.exportDagToDotFile("./output/unsharedDAG.dot", DagType.UNSHARED);
+        graphTest.exportDagToDotFile("./output/sharedDAG.dot");
+       // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
+        graphTest.toUnshared();
+        
+        
+        graphTest.exportDagToDotFile("./output/unsharedDAG.dot");
         // // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
-        // // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
+        Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
         // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
         // // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));

@@ -20,11 +20,11 @@ import org.junit.jupiter.api.BeforeAll;
 
 // @ExtendWith(MyTestWatcher.class)
 public class ProductGraphTest {
-    private ProductGraph productGraph;
+    private WorkflowType productGraph;
     private static Path tempDir;
 
     
-    public ProductGraph getProductGraph() {
+    public WorkflowType getProductGraph() {
         return productGraph;
     }
 

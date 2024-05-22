@@ -6,20 +6,22 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 public class DAGSharedToUnsharedConverter {
     
-    private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
     private DirectedAcyclicGraph<ProductType, CustomEdge> unsharedDag;
     private HashMap<ProductType, Integer> idCounter = new HashMap<ProductType, Integer>();
-    private ProductType sharedDagRootNode;
+    private ProductType rootNode;
 
 
-    public DAGSharedToUnsharedConverter(DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag, DirectedAcyclicGraph<ProductType, CustomEdge> unsharedDag, ProductType sharedDagRootNode) {
-        this.sharedDag = sharedDag;
-        this.unsharedDag = unsharedDag;
-        this.sharedDagRootNode = sharedDagRootNode;
+    public DAGSharedToUnsharedConverter(DirectedAcyclicGraph<ProductType, CustomEdge> dag, ProductType rootNode) {
+        this.dag = dag;
+        this.rootNode = rootNode;
+        this.unsharedDag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
     }
 
-    public void makeConversion(){
-        recursiveConversion(sharedDagRootNode);
+    public DirectedAcyclicGraph<ProductType, CustomEdge> makeConversion(){
+        recursiveConversion(rootNode);
+
+        return unsharedDag;
     }
 
     private ProductType recursiveConversion(ProductType node) {
@@ -40,7 +42,6 @@ public class DAGSharedToUnsharedConverter {
             else{
                 newNode = new ProcessedType(node.getNameType()+"_"+id, node.getQuantityProduced(), node.getPdf());
             }
-            
         }
         else {
             if(id == 0){
@@ -52,11 +53,11 @@ public class DAGSharedToUnsharedConverter {
         }
         unsharedDag.addVertex(newNode);
 
-        if(sharedDag.inDegreeOf(node) == 0){
+        if(dag.inDegreeOf(node) == 0){
             return newNode;
         } else { 
-            for(CustomEdge edge: sharedDag.incomingEdgesOf(node)) {
-                ProductType child = sharedDag.getEdgeSource(edge);
+            for(CustomEdge edge: dag.incomingEdgesOf(node)) {
+                ProductType child = dag.getEdgeSource(edge);
                 ProductType newChild = recursiveConversion(child);
                 CustomEdge newEdge = unsharedDag.addEdge(newChild, newNode);
                 newEdge.copyEdge(edge);
@@ -65,6 +66,4 @@ public class DAGSharedToUnsharedConverter {
         }
         return newNode;
     }
-
-    
 }

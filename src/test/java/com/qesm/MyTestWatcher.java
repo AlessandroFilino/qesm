@@ -14,7 +14,7 @@ public class MyTestWatcher implements TestWatcher {
             Optional <Object> testIstance = context.getTestInstance();
             ProductGraphTest curTestIstance = (ProductGraphTest) testIstance.get();
 
-            ProductGraph my_graph = curTestIstance.getProductGraph();
+            WorkflowType my_graph = curTestIstance.getProductGraph();
 
             testFailed = true;
         }
