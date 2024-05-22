@@ -9,6 +9,11 @@ import java.util.function.Supplier;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
+import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
+import org.oristool.eulero.modeling.stochastictime.ErlangTime;
+import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
+import org.oristool.eulero.modeling.stochastictime.StochasticTime;
+import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, CustomEdge> {
     final private Function<ProductType, String> vertexIdProvider;
@@ -39,6 +44,30 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
                                 AttributeType.STRING));
                 map.put("vertex_type", new DefaultAttribute<String>("ProcessedType", AttributeType.STRING));
                 map.put("quantity_produced", new DefaultAttribute<Integer>(v.getQuantityProduced(), AttributeType.INT));
+
+                // TODO: serialize pdf type and values
+                // StochasticTime pdf = v.getPdf();
+                // switch (pdf.getClass()) {
+                //     case UniformTime.class:
+                        
+                //         break;
+                //     case ErlangTime.class:
+                    
+                //         break;
+                //     case ExponentialTime.class:
+                    
+                //         break;
+                //     case DeterministicTime.class:
+                    
+                //         break;
+                
+                //     default:
+                        
+                //         break;
+                // }
+
+
+                // map.put("pdf", new DefaultAttribute<String>(v.getPdf().toString(), AttributeType.STRING));
             }
             return map;
         };
@@ -69,7 +98,8 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
                 vertexType = attributesMap.get("vertex_type").toString();
             } catch (NullPointerException e) {
                 System.err.println("Import error: unable to find vertex_type field for node: " + vertexName);
-                return new RawMaterialType("");
+                e.printStackTrace();
+                return null;
             }
 
             if (vertexType.equals("RawMaterialType")) {
@@ -77,15 +107,22 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
             } else if (vertexType.equals("ProcessedType")) {
                 try {
                     Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
-                    vertex = new ProcessedType(vertexName, quantityProduced);
+                    String pdfString = attributesMap.get("quantity_produced").getValue();
+                    
+                    // TODO: convert pdf from string to actual StochasticTime
+                    StochasticTime pdf = null;
+
+                    vertex = new ProcessedType(vertexName, quantityProduced, pdf);
 
                 } catch (NullPointerException e) {
-                    System.err.println("Import error: unable to find quantity_produced field for node: " + vertexName);
-                    return new RawMaterialType("");
+                    System.err.println("Import error: unable to find all necessary field for node: " + vertexName);
+                    e.printStackTrace();
+                    return null;
                 }
             } else {
                 System.err.println("Import error: unknown type for vertex_type field: " + vertexName);
-                return new RawMaterialType("");
+                return null;
+                
             }
 
             return vertex;

@@ -1,5 +1,6 @@
 package com.qesm;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,15 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
+import org.oristool.eulero.modeling.stochastictime.ErlangTime;
+import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
+import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
+import org.oristool.eulero.modeling.stochastictime.HistogramTime;
+import org.oristool.eulero.modeling.stochastictime.StochasticTime;
+import org.oristool.eulero.modeling.stochastictime.TruncatedExponentialMixtureTime;
+import org.oristool.eulero.modeling.stochastictime.TruncatedExponentialTime;
+import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class RandomDAGGenerator{
 
@@ -26,9 +36,19 @@ public class RandomDAGGenerator{
     private ProductType rootNode;
     private Supplier<ProductType> vSupplierRandom;
     private Supplier<ProductType> vSupplierProcessedType;
+    public enum PdfType{
+        DETERMINISTIC,
+        ERLANG,
+        EXPOLYNOMIAL,
+        EXPONENTIAL,
+        HISTOGRAM,
+        TRUNCEXPMIX,
+        TRUNCEXP,
+        UNIFORM
+    };
+    private PdfType pdfType;
 
-
-    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor){
+    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, PdfType pdfType){
         
         this.maxHeight = maxHeight;
         this.maxWidth = maxWidth;
@@ -38,7 +58,7 @@ public class RandomDAGGenerator{
         this.random = new Random();
         this.vId = 0;
         this.maxRandomQuantity = 10;
-
+        this.pdfType = pdfType;
         this.vSupplierRandom = new Supplier<ProductType>()
         {
             @Override
@@ -51,7 +71,7 @@ public class RandomDAGGenerator{
                     vId++;
                 }
                 else{
-                    vertex = new ProcessedType("v" + vId, -1);
+                    vertex = new ProcessedType("v" + vId, -1, getRandomPdf());
                     vId++;
                 }
                 
@@ -64,11 +84,50 @@ public class RandomDAGGenerator{
             @Override
             public ProductType get()
             {
-                ProductType vertex = new ProcessedType("v" + vId, -1);
+                ProductType vertex = new ProcessedType("v" + vId, -1, getRandomPdf());
                 vId++;
                 return vertex;
             }
         };
+    }
+
+    private StochasticTime getRandomPdf(){
+
+        StochasticTime pdf = null;
+        double eft = random.nextDouble(0, 10);
+        double lft = random.nextDouble(eft, eft + 10);
+
+        switch (pdfType) {
+            case DETERMINISTIC:
+                pdf = new DeterministicTime(BigDecimal.valueOf(random.nextInt(0, 10)));
+                break;
+            case ERLANG:
+                pdf = new ErlangTime(random.nextInt(1, 10) , random.nextDouble(0, 3) + 0.1);
+                break;
+            // case EXPOLYNOMIAL:
+            //     pdf = new ExpolynomialTime(null, null, null);
+            //     break;
+            case EXPONENTIAL:
+                pdf = new ExponentialTime(BigDecimal.valueOf(random.nextDouble(0, 10) + 0.1));
+                break;
+            // case HISTOGRAM:
+            //     pdf = new HistogramTime(null, null, null, null);
+            //     break;
+            // case TRUNCEXPMIX:
+            //     pdf = new TruncatedExponentialMixtureTime(null, null);
+            //     break;
+            case TRUNCEXP:
+                pdf = new TruncatedExponentialTime(eft, lft, random.nextDouble(0, 10) + 0.1);
+                break;
+            case UNIFORM:
+                pdf = new UniformTime(eft, lft);
+                break;
+            default:
+                System.err.println("Error pdfType: " + pdfType + " not supported in randomGeneration");
+                break;
+        }
+
+        return pdf;
     }
 
     public void generateGraph(DirectedAcyclicGraph<ProductType, CustomEdge> dag){

@@ -6,6 +6,8 @@ import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import com.qesm.RandomDAGGenerator.PdfType;
+
 
 public class ProductGraph {
     private DirectedAcyclicGraph<ProductType, CustomEdge> sharedDag;
@@ -80,9 +82,9 @@ public class ProductGraph {
         checkSharedDagExist();
     }
 
-    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor) {
+    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, PdfType pdfType) {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
-                maxBranchingDownFactor);
+                maxBranchingDownFactor, pdfType);
         randDAGGenerator.generateGraph(sharedDag);
         checkSharedDagExist();
     }

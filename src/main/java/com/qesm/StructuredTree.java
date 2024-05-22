@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.oristool.eulero.modeling.stochastictime.StochasticTime;
+import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 
 public class StructuredTree {
@@ -95,25 +97,26 @@ public class StructuredTree {
     }
 
     public void testPrint() {
-        STPNBlock stpnBlock1 = new SimpleBlock(new ProcessedType("v1", 0));
-        STPNBlock stpnBlock2 = new SimpleBlock(new ProcessedType("v2", 0));
+        StochasticTime pdf = new UniformTime(0,1);
+        STPNBlock stpnBlock1 = new SimpleBlock(new ProcessedType("v1", 0, pdf));
+        STPNBlock stpnBlock2 = new SimpleBlock(new ProcessedType("v2", 0, pdf));
         STPNBlock stpnBlock3 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock1, stpnBlock2)));
 
-        STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("v3", 0));
-        STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("v4", 0));
+        STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("v3", 0, pdf));
+        STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("v4", 0, pdf));
         STPNBlock stpnBlock6 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock4, stpnBlock5)));
 
 
         STPNBlock stpnBlock7 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock3, stpnBlock6)));
-        STPNBlock stpnBlock8 = new SimpleBlock(new ProcessedType("v5", 0));
+        STPNBlock stpnBlock8 = new SimpleBlock(new ProcessedType("v5", 0, pdf));
         STPNBlock stpnBlock9 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock7, stpnBlock8)));
 
-        STPNBlock stpnBlock10 = new SimpleBlock(new ProcessedType("v6", 0));
+        STPNBlock stpnBlock10 = new SimpleBlock(new ProcessedType("v6", 0, pdf));
         STPNBlock stpnBlock11 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock10, stpnBlock9)));
         
-        STPNBlock stpnBlock12 = new SimpleBlock(new ProcessedType("v7", 0));
-        STPNBlock stpnBlock13 = new SimpleBlock(new ProcessedType("v8", 0));
-        STPNBlock stpnBlock14 = new SimpleBlock(new ProcessedType("v9", 0));
+        STPNBlock stpnBlock12 = new SimpleBlock(new ProcessedType("v7", 0, pdf));
+        STPNBlock stpnBlock13 = new SimpleBlock(new ProcessedType("v8", 0, pdf));
+        STPNBlock stpnBlock14 = new SimpleBlock(new ProcessedType("v9", 0, pdf));
 
         STPNBlock stpnBlock15 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock11, stpnBlock12, stpnBlock13, stpnBlock14)));
 

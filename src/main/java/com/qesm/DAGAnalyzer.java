@@ -86,7 +86,9 @@ public class DAGAnalyzer {
 
         t24.addPrecondition(a1);
 
-        Activity DAG = ModelFactory.DAG(t14, t15, a0, t13, s0, t21, a1, t24);
+        // Activity DAG = ModelFactory.DAG(t14, t15, a0, t13, s0, t21, a1, t24);
+        Activity DAG = ModelFactory.DAG(a1, t24);
+
         
         AnalysisHeuristicsVisitor start = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
 

@@ -13,6 +13,7 @@ import org.oristool.petrinet.PetriNet;
 import org.oristool.petrinet.Place;
 
 import com.qesm.ProductGraph.DagType;
+import com.qesm.RandomDAGGenerator.PdfType;
 
 public class Main {
     public static void main(String[] args) {
@@ -22,11 +23,11 @@ public class Main {
         ensureFolderExists("media");
         ensureFolderExists("output");
 
-        // ProductGraph graphTest = new ProductGraph();
+        ProductGraph graphTest = new ProductGraph();
         
-        // graphTest.generateRandomDAG(5, 5, 2, 5);
+        graphTest.generateRandomDAG(5, 5, 2, 5, PdfType.UNIFORM);
         
-        // graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
+        graphTest.exportDagToDotFile("./output/sharedDAG.dot", DagType.SHARED);
         // // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
         // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
 
@@ -58,11 +59,11 @@ public class Main {
         
         // System.out.println(net);
 
-        DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
+        // DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
         // dagAnalyzer.analyzeActivity(rootActivity);
         // dagAnalyzer.analizePetriNet(net, pOut, pIn);
 
-        dagAnalyzer.testPetriNet1();
+        // dagAnalyzer.testPetriNet1();
         // dagAnalyzer.testPetriNet2();
         
 

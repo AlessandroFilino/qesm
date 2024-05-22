@@ -11,6 +11,8 @@ import java.util.Random;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.RepeatedTest;
 
+import com.qesm.RandomDAGGenerator.PdfType;
+
 public class RandomDAGGeneratorTest {
 
     private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
@@ -33,7 +35,7 @@ public class RandomDAGGeneratorTest {
 
         dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
-        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor);
+        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, PdfType.UNIFORM);
         randDAGGenerator.generateGraph(dag);
 
         for (ProductType vertex : dag.vertexSet()) {

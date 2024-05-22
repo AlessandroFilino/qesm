@@ -20,15 +20,5 @@ public class RawMaterialType implements ProductType {
     public String getNameType() {
         return nameType;
     }
-
-    @Override
-    public int getQuantityProduced() {
-        return 0;
-    }
-
-    @Override
-    public int setQuantityProduced(int quantityProduced) {
-        return 0;
-    }
     
 }
