@@ -7,7 +7,8 @@ public interface STPNBlock {
 
     public void printBlockInfo(int indentNum);
 
-    public default boolean addEnablingToken(RawMaterialType enablingToken){
+    // TODO: add enabling token during structured tree generation
+    public default boolean addEnablingToken(ProductType enablingToken){
         return false;
     }
 
@@ -17,7 +18,7 @@ public interface STPNBlock {
         }
     }
     
-    public default ProcessedType getSimpleElement(){
+    public default ProductType getSimpleElement(){
         return null;
     }
 

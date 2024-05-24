@@ -8,6 +8,8 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
+import com.qesm.ProductType.ItemType;
+
 
 public class StructuredTree {
 
@@ -27,16 +29,16 @@ public class StructuredTree {
         // Add all processedType as simpleBlock to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
 
-            if (node.getClass() == ProcessedType.class) {
+            if (node.getItemType() == ItemType.PROCESSED) {
 
-                STPNBlock newBlock = new SimpleBlock((ProcessedType) node);
-                ArrayList<RawMaterialType> enablingTokens = new ArrayList<>();
+                STPNBlock newBlock = new SimpleBlock(node);
+                ArrayList<ProductType> enablingTokens = new ArrayList<>();
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
 
-                    if (sourceNode.getClass() == RawMaterialType.class) {
-                        enablingTokens.add((RawMaterialType) sourceNode);
+                    if (sourceNode.getItemType() == ItemType.RAW_MATERIAL) {
+                        enablingTokens.add(sourceNode);
                     }
                 }
                 structuredWorkflow.addVertex(newBlock);
@@ -47,22 +49,22 @@ public class StructuredTree {
 
         // Mapping alla edges of originalWorkflow to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
-            if (node.getClass() == ProcessedType.class) {
-                STPNBlock currBlock = findSimpleBlockFromProcessedType((ProcessedType) node);
+            if (node.getItemType() == ItemType.PROCESSED) {
+                STPNBlock currBlock = findSimpleBlockFromProcessedType(node);
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
-                    if (sourceNode.getClass() == ProcessedType.class) {
-                        structuredWorkflow.addEdge(findSimpleBlockFromProcessedType((ProcessedType) sourceNode),
+                    if (sourceNode.getItemType() == ItemType.PROCESSED) {
+                        structuredWorkflow.addEdge(findSimpleBlockFromProcessedType(sourceNode),
                                 currBlock);
                     }
                 }
 
                 for (CustomEdge outEdge : originalWorkflow.outgoingEdgesOf(node)) {
                     ProductType targetNode = originalWorkflow.getEdgeTarget(outEdge);
-                    if (targetNode.getClass() == ProcessedType.class) {
+                    if (targetNode.getItemType() == ItemType.PROCESSED) {
                         structuredWorkflow.addEdge(currBlock,
-                                findSimpleBlockFromProcessedType((ProcessedType) targetNode));
+                                findSimpleBlockFromProcessedType(targetNode));
                     }
                 }
 
@@ -87,7 +89,7 @@ public class StructuredTree {
         return structuredTreeRootBlock;
     }
 
-    private STPNBlock findSimpleBlockFromProcessedType(ProcessedType elementToFind) {
+    private STPNBlock findSimpleBlockFromProcessedType(ProductType elementToFind) {
         for (STPNBlock block : structuredWorkflow) {
             if (elementToFind == block.getSimpleElement()) {
                 return block;
@@ -98,25 +100,25 @@ public class StructuredTree {
 
     public void testPrint() {
         StochasticTime pdf = new UniformTime(0,1);
-        STPNBlock stpnBlock1 = new SimpleBlock(new ProcessedType("v1", 0, pdf));
-        STPNBlock stpnBlock2 = new SimpleBlock(new ProcessedType("v2", 0, pdf));
+        STPNBlock stpnBlock1 = new SimpleBlock(new ProductType("v1", 0, pdf));
+        STPNBlock stpnBlock2 = new SimpleBlock(new ProductType("v2", 0, pdf));
         STPNBlock stpnBlock3 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock1, stpnBlock2)));
 
-        STPNBlock stpnBlock4 = new SimpleBlock(new ProcessedType("v3", 0, pdf));
-        STPNBlock stpnBlock5 = new SimpleBlock(new ProcessedType("v4", 0, pdf));
+        STPNBlock stpnBlock4 = new SimpleBlock(new ProductType("v3", 0, pdf));
+        STPNBlock stpnBlock5 = new SimpleBlock(new ProductType("v4", 0, pdf));
         STPNBlock stpnBlock6 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock4, stpnBlock5)));
 
 
         STPNBlock stpnBlock7 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock3, stpnBlock6)));
-        STPNBlock stpnBlock8 = new SimpleBlock(new ProcessedType("v5", 0, pdf));
+        STPNBlock stpnBlock8 = new SimpleBlock(new ProductType("v5", 0, pdf));
         STPNBlock stpnBlock9 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock7, stpnBlock8)));
 
-        STPNBlock stpnBlock10 = new SimpleBlock(new ProcessedType("v6", 0, pdf));
+        STPNBlock stpnBlock10 = new SimpleBlock(new ProductType("v6", 0, pdf));
         STPNBlock stpnBlock11 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock10, stpnBlock9)));
         
-        STPNBlock stpnBlock12 = new SimpleBlock(new ProcessedType("v7", 0, pdf));
-        STPNBlock stpnBlock13 = new SimpleBlock(new ProcessedType("v8", 0, pdf));
-        STPNBlock stpnBlock14 = new SimpleBlock(new ProcessedType("v9", 0, pdf));
+        STPNBlock stpnBlock12 = new SimpleBlock(new ProductType("v7", 0, pdf));
+        STPNBlock stpnBlock13 = new SimpleBlock(new ProductType("v8", 0, pdf));
+        STPNBlock stpnBlock14 = new SimpleBlock(new ProductType("v9", 0, pdf));
 
         STPNBlock stpnBlock15 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock11, stpnBlock12, stpnBlock13, stpnBlock14)));
 
@@ -311,7 +313,7 @@ public class StructuredTree {
 
     public void exportDagToDotFile(String filePath) {
 
-        ProductTypeCustomEdgeIO exporter = new ProductTypeCustomEdgeIO();
+        ProductTypeCustomEdgeIO<ProductType> exporter = new ProductTypeCustomEdgeIO<>(ProductType.class);
         exporter.writeDotFile(filePath, originalWorkflow);
     }
 

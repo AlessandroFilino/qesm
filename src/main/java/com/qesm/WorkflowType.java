@@ -2,11 +2,13 @@ package com.qesm;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 
@@ -69,14 +71,14 @@ public class WorkflowType {
     }
 
     public void exportDagToDotFile(String filePath) {
-        ProductTypeCustomEdgeIO exporter = new ProductTypeCustomEdgeIO();
+        ProductTypeCustomEdgeIO<ProductType> exporter = new ProductTypeCustomEdgeIO<>(ProductType.class);
         exporter.writeDotFile(filePath, dag);
     }
 
     public void importDagFromDotFile(String filePath) {
         dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
-        ProductTypeCustomEdgeIO importer = new ProductTypeCustomEdgeIO();
+        ProductTypeCustomEdgeIO<ProductType> importer = new ProductTypeCustomEdgeIO<>(ProductType.class);
         importer.readDotFile(filePath, dag);
     }
 
@@ -97,7 +99,7 @@ public class WorkflowType {
 
         HashMap<ProductType, Product> productTypeToProductMap = new HashMap<>();
 
-        // Deepcopy of all verteces
+        // Deepcopy of all vertexes
         for (ProductType vertex : dag.vertexSet()) {
             Product product = new Product(vertex);
             dagIstance.addVertex(product);
@@ -111,12 +113,52 @@ public class WorkflowType {
             dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType), new CustomEdge(edge));
         }
 
-
-        
-
-
         Workflow workflow = new Workflow(dagIstance);
+
+
+        for (Product product : dagIstance.vertexSet()) {
+            if(product.getItemType() == ItemType.PROCESSED){
+                product.setProductWorkflow(buildSubgraphWorkflow(dagIstance, product));
+            }
+        }
+
         return workflow;
+
+    }
+
+    private Workflow buildSubgraphWorkflow(DirectedAcyclicGraph<Product, CustomEdge> fullDag, Product currentVertex){
+        DirectedAcyclicGraph<Product, CustomEdge> subGraph = new DirectedAcyclicGraph<>(CustomEdge.class);
+
+        Set<Product>  subGraphVertexSet = fullDag.getAncestors(currentVertex); 
+        subGraphVertexSet.add(currentVertex);
+
+        // Add all subgraph vertexes
+        for (Product product : subGraphVertexSet) {
+            subGraph.addVertex(product);
+        }
+
+        // Add all subgraph edges
+        for (Product product : subGraphVertexSet) {
+            for (CustomEdge edge : fullDag.edgesOf(product)) {
+
+                Product sourceProduct = fullDag.getEdgeSource(edge);
+                if(!subGraphVertexSet.contains(sourceProduct)){
+                    continue;
+                }
+
+                Product targetProduct = fullDag.getEdgeTarget(edge);
+                if(!subGraphVertexSet.contains(targetProduct)){
+                    continue;
+                }
+                
+                subGraph.addEdge(sourceProduct, targetProduct, edge);
+            }
+            
+        }
+
+
+        Workflow subgraphWorkflow = new Workflow(subGraph);
+        return subgraphWorkflow;
 
     }
 

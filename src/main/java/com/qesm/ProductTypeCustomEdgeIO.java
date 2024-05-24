@@ -15,16 +15,18 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, CustomEdge> {
-    final private Function<ProductType, String> vertexIdProvider;
-    final private Function<ProductType, Map<String, Attribute>> vertexAttributeProvider;
+import com.qesm.ProductType.ItemType;
+
+public class ProductTypeCustomEdgeIO <T extends ProductType> implements BasicImportExport<T, CustomEdge> {
+    final private Function<T, String> vertexIdProvider;
+    final private Function<T, Map<String, Attribute>> vertexAttributeProvider;
     final private Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider;
     final private Supplier<Map<String, Attribute>> graphAttributeProvider;
 
-    final private BiFunction<String, Map<String, Attribute>, ProductType> vertexFactoryFunction;
+    final private BiFunction<String, Map<String, Attribute>, T> vertexFactoryFunction;
     final private Function<Map<String, Attribute>, CustomEdge> edgeWithAttributesFactory;
 
-    ProductTypeCustomEdgeIO() {
+    ProductTypeCustomEdgeIO(Class<T> classType) {
 
         // Exporter's Providers
         this.vertexIdProvider = v -> v.getNameType();
@@ -32,7 +34,7 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
         this.vertexAttributeProvider = v -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
-            if (v.getClass().equals(RawMaterialType.class)) {
+            if (v.getItemType() == ItemType.RAW_MATERIAL) {
                 map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
                 map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nRAW_TYPE", AttributeType.STRING));
                 map.put("vertex_type", new DefaultAttribute<String>("RawMaterialType", AttributeType.STRING));
@@ -47,6 +49,7 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
 
                 // TODO: serialize pdf type and values
                 StochasticTime pdf = v.getPdf();
+
                 Class<? extends StochasticTime> pdfClass = pdf.getClass();
                 String pdfString = pdfClass.getSimpleName() + ";";
                 if(pdfClass == UniformTime.class){
@@ -89,7 +92,7 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
         // Importer's Factories
         this.vertexFactoryFunction = (vertexName, attributesMap) -> {
 
-            ProductType vertex;
+            T vertex = null;
             String vertexType;
 
             try {
@@ -101,7 +104,13 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
             }
 
             if (vertexType.equals("RawMaterialType")) {
-                vertex = new RawMaterialType(vertexName);
+                try {
+                    vertex = classType.getDeclaredConstructor(String.class, ItemType.class).newInstance(vertexName, ItemType.RAW_MATERIAL);
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+                
+                // vertex = new ProductType(vertexName, ItemType.RAW_MATERIAL);
             } else if (vertexType.equals("ProcessedType")) {
                 try {
                     Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
@@ -109,8 +118,17 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
                     
                     // TODO: convert pdf from string to actual StochasticTime
                     StochasticTime pdf = null;
-
-                    vertex = new ProcessedType(vertexName, quantityProduced, pdf);
+                    try {
+                        vertex = classType.getDeclaredConstructor(String.class, ItemType.class).newInstance(vertexName, ItemType.PROCESSED);
+                        vertex.setPdf(pdf);
+                        vertex.setQuantityProduced(quantityProduced);
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                    }
+                    
+                    // vertex = new ProductType(vertexName, ItemType.PROCESSED);
+                    // vertex.setPdf(pdf);
+                    // vertex.setQuantityProduced(quantityProduced);
 
                 } catch (NullPointerException e) {
                     System.err.println("Import error: unable to find all necessary field for node: " + vertexName);
@@ -153,17 +171,17 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
     }
 
     @Override
-    public Function<ProductType, Map<String, Attribute>> getVertexAttributeProvider() {
+    public Function<T, Map<String, Attribute>> getVertexAttributeProvider() {
         return vertexAttributeProvider;
     }
 
     @Override
-    public Function<ProductType, String> getVertexIdProvider() {
+    public Function<T, String> getVertexIdProvider() {
         return vertexIdProvider;
     }
 
     @Override
-    public BiFunction<String, Map<String, Attribute>, ProductType> getVertexFactoryFunction() {
+    public BiFunction<String, Map<String, Attribute>, T> getVertexFactoryFunction() {
         return vertexFactoryFunction;
     }
 

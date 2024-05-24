@@ -12,6 +12,7 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 import org.oristool.petrinet.PetriNet;
 import org.oristool.petrinet.Place;
 
+import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class Main {
@@ -29,17 +30,32 @@ public class Main {
         graphTest.exportDagToDotFile("./output/sharedDAG.dot");
        // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
         Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
-        graphTest.toUnshared();
+        // graphTest.toUnshared();
         
         
-        graphTest.exportDagToDotFile("./output/unsharedDAG.dot");
+        // graphTest.exportDagToDotFile("./output/unsharedDAG.dot");
         // // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
-        Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
+        // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getSharedDag(), graphTest.getRootNode(DagType.SHARED));
-        // // StructuredTree structuredTree = new StructuredTree(graphTest.getUnsharedDag(), graphTest.getRootNode(DagType.UNSHARED));
+        // TODO: add method to export and render all subgraphs
+        Workflow workflow = graphTest.makeIstance();
+        workflow.exportDagToDotFile("./output/istance.dot");
+        Renderer.renderDotFile("./output/istance.dot", "./media/istance.png", 3);
+        int i = 2;
+        for (Product product : workflow.getDag().vertexSet()) {
+            if(product.getItemType() == ItemType.PROCESSED){
+                i--;
+                if(i == 0){
+                    product.getProductWorkflow().exportDagToDotFile("./output/istanceSubgraph.dot");
+                    Renderer.renderDotFile("./output/istanceSubgraph.dot", "./media/istanceSubgraph.png", 3);
+                } 
+            }
+            
+        }
 
-        // // structuredTree.buildStructuredTree();
+        // StructuredTree structuredTree = new StructuredTree(graphTest.getDag(), graphTest.getRootNode());
+
+        // structuredTree.buildStructuredTree();
 
         // String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
         // String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");

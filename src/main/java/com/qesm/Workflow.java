@@ -10,4 +10,13 @@ public class Workflow {
         this.dag = dag;
     }
 
+    public DirectedAcyclicGraph<Product, CustomEdge> getDag() {
+        return dag;
+    }
+
+    public void exportDagToDotFile(String filePath) {
+        ProductTypeCustomEdgeIO<Product> exporter = new ProductTypeCustomEdgeIO<>(Product.class);
+        exporter.writeDotFile(filePath, dag);
+    }
+
 }

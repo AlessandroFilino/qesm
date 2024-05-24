@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
+import com.qesm.ProductType.ItemType;
+
 public class DAGSharedToUnsharedConverter {
     
     private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
@@ -35,20 +37,24 @@ public class DAGSharedToUnsharedConverter {
             idCounter.put(node, id);
         }
         ProductType newNode;
-        if (node.getClass() == ProcessedType.class) {
+        if (node.getItemType() == ItemType.PROCESSED) {
             if(id == 0){
-                newNode = new ProcessedType(node.getNameType(), node.getQuantityProduced(), node.getPdf());
+                newNode = new ProductType(node.getNameType(), ItemType.PROCESSED);
+                newNode.setQuantityProduced(node.getQuantityProduced());
+                newNode.setPdf(node.getPdf());
             }
             else{
-                newNode = new ProcessedType(node.getNameType()+"_"+id, node.getQuantityProduced(), node.getPdf());
+                newNode = new ProductType(node.getNameType()+"_"+id, ItemType.PROCESSED);
+                newNode.setQuantityProduced(node.getQuantityProduced());
+                newNode.setPdf(node.getPdf());
             }
         }
         else {
             if(id == 0){
-                newNode = new RawMaterialType(node.getNameType());
+                newNode = new ProductType(node.getNameType(), ItemType.RAW_MATERIAL);
             }
             else{
-                newNode = new RawMaterialType(node.getNameType()+"_"+id);
+                newNode = new ProductType(node.getNameType()+"_"+id, ItemType.RAW_MATERIAL);
             }
         }
         unsharedDag.addVertex(newNode);

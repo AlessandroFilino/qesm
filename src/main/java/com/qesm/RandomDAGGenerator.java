@@ -12,13 +12,12 @@ import java.util.function.Supplier;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
-import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
-import org.oristool.eulero.modeling.stochastictime.HistogramTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
-import org.oristool.eulero.modeling.stochastictime.TruncatedExponentialMixtureTime;
 import org.oristool.eulero.modeling.stochastictime.TruncatedExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
+
+import com.qesm.ProductType.ItemType;
 
 public class RandomDAGGenerator{
 
@@ -67,11 +66,13 @@ public class RandomDAGGenerator{
                 ProductType vertex;
 
                 if(random.nextBoolean()){
-                    vertex = new RawMaterialType("v" + vId);
+                    vertex = new ProductType("v" + vId, ItemType.RAW_MATERIAL);
                     vId++;
                 }
                 else{
-                    vertex = new ProcessedType("v" + vId, -1, getRandomPdf());
+                    vertex = new ProductType("v" + vId, ItemType.PROCESSED);
+                    vertex.setQuantityProduced(-1);
+                    vertex.setPdf(getRandomPdf());
                     vId++;
                 }
                 
@@ -84,7 +85,9 @@ public class RandomDAGGenerator{
             @Override
             public ProductType get()
             {
-                ProductType vertex = new ProcessedType("v" + vId, -1, getRandomPdf());
+                ProductType vertex = new ProductType("v" + vId, ItemType.PROCESSED);
+                vertex.setQuantityProduced(-1);
+                vertex.setPdf(getRandomPdf());
                 vId++;
                 return vertex;
             }
@@ -94,8 +97,8 @@ public class RandomDAGGenerator{
     private StochasticTime getRandomPdf(){
 
         StochasticTime pdf = null;
-        double eft = random.nextDouble(0, 10);
-        double lft = random.nextDouble(eft, eft + 10);
+        double eft = Math.round(random.nextDouble(0, 10));
+        double lft = Math.round(random.nextDouble(eft, eft + 10));
 
         switch (pdfType) {
             case DETERMINISTIC:
@@ -126,7 +129,7 @@ public class RandomDAGGenerator{
                 System.err.println("Error pdfType: " + pdfType + " not supported in randomGeneration");
                 break;
         }
-
+        
         return pdf;
     }
 
@@ -150,6 +153,7 @@ public class RandomDAGGenerator{
                 dag.setVertexSupplier(vSupplierProcessedType);
 
                 rootNode = dag.addVertex();
+
                 rootNode.setQuantityProduced(1);
                 vertexToLevels.put(rootNode, new ArrayList<Integer>(List.of(0)));
                 levelToVertices.put(0, new ArrayList<ProductType>(List.of(rootNode)));
@@ -249,7 +253,7 @@ public class RandomDAGGenerator{
 
                     // Update TargetList if vertex is connected to graph
                     if(dag.outDegreeOf(sourceVertex) > 0){
-                        if(sourceVertex.getClass() == ProcessedType.class){
+                        if(sourceVertex.getItemType() == ItemType.PROCESSED){
                             vTargetList.add(sourceVertex);
                         }
                     }
@@ -286,14 +290,14 @@ public class RandomDAGGenerator{
 
         // Substitute every processedType leaf with rawMaterialType
         for (ProductType node : vertexSetCopy) {
-            if(dag.inDegreeOf(node) == 0 && node.getClass() == ProcessedType.class){
+            if(dag.inDegreeOf(node) == 0 && node.getItemType() == ItemType.PROCESSED){
                 ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
                 for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
                     oldEdges.add(oldEdge);
                 }
 
                 dag.removeVertex(node);
-                ProductType newLeaf = new RawMaterialType(node.getNameType());
+                ProductType newLeaf = new ProductType(node.getNameType(), ItemType.RAW_MATERIAL);
                 dag.addVertex(newLeaf);
 
                 for (CustomEdge oldEdge : oldEdges) {
@@ -306,7 +310,7 @@ public class RandomDAGGenerator{
     private void updateQuantityProduced(){
         // Set quantityProduced according to upper nodes requirements
         for (ProductType node : dag.vertexSet()) {
-            if(node.getClass() == ProcessedType.class && dag.outDegreeOf(node) > 0){
+            if(node.getItemType() == ItemType.PROCESSED && dag.outDegreeOf(node) > 0){
                 int totalQuantityNeeded = 0;
                 for (CustomEdge outEdge : dag.outgoingEdgesOf(node)) {
                     totalQuantityNeeded += outEdge.getQuantityRequired();

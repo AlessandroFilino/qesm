@@ -5,18 +5,18 @@ import java.util.UUID;
 
 public class SimpleBlock implements STPNBlock{
 
-    private ProcessedType simpleElement;
-    private ArrayList<RawMaterialType> enablingTokens;
+    private ProductType simpleElement;
+    private ArrayList<ProductType> enablingTokens;
     private UUID uuid;
 
-    public SimpleBlock(ProcessedType basicElement) {
+    public SimpleBlock(ProductType basicElement) {
         this.simpleElement = basicElement;
-        this.enablingTokens = new ArrayList<RawMaterialType>();
+        this.enablingTokens = new ArrayList<ProductType>();
         this.uuid = UUID.randomUUID();
     }
 
     @Override
-    public boolean addEnablingToken(RawMaterialType enablingToken) {
+    public boolean addEnablingToken(ProductType enablingToken) {
         enablingTokens.add(enablingToken);
         return true;
     }
@@ -30,7 +30,7 @@ public class SimpleBlock implements STPNBlock{
     }
 
     @Override
-    public ProcessedType getSimpleElement() {
+    public ProductType getSimpleElement() {
         return simpleElement;
     }
 
@@ -53,19 +53,5 @@ public class SimpleBlock implements STPNBlock{
         }
         return value;
     }
-
-    
-
-    // @Override
-    // public boolean equals(Object arg0) {
-    //     if(arg0.getClass() != SimpleBlock.class){
-    //         return false;
-    //     }
-    //     else{
-    //         SimpleBlock blockToCheck = (SimpleBlock)arg0;
-    //         System.out.println("è uguale: " + this.simpleElement.getNameType() + "  " + blockToCheck.getSimpleElement().getNameType());
-    //         return this.simpleElement == blockToCheck.getSimpleElement();
-    //     }
-    // }
 
 }

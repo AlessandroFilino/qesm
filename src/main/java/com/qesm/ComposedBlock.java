@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class ComposedBlock implements STPNBlock {
-
+    // TODO: merge And and Seq class into this one using Enum type
     private ArrayList<STPNBlock> composedElements;
     private UUID uuid;
 
