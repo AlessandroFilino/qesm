@@ -9,7 +9,7 @@ public class CustomEdge extends DefaultEdge{
 
     }
 
-    public void copyEdge(CustomEdge edgeToCopy){
+    public CustomEdge(CustomEdge edgeToCopy){
         setQuantityRequired(edgeToCopy.getQuantityRequired());
     }
 

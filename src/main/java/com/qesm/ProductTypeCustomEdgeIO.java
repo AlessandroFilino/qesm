@@ -46,28 +46,26 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
                 map.put("quantity_produced", new DefaultAttribute<Integer>(v.getQuantityProduced(), AttributeType.INT));
 
                 // TODO: serialize pdf type and values
-                // StochasticTime pdf = v.getPdf();
-                // switch (pdf.getClass()) {
-                //     case UniformTime.class:
-                        
-                //         break;
-                //     case ErlangTime.class:
+                StochasticTime pdf = v.getPdf();
+                Class<? extends StochasticTime> pdfClass = pdf.getClass();
+                String pdfString = pdfClass.getSimpleName() + ";";
+                if(pdfClass == UniformTime.class){
+                    pdfString += pdf.getEFT() + ";" + pdf.getLFT();
+                }
+                else if(pdfClass == ErlangTime.class){
                     
-                //         break;
-                //     case ExponentialTime.class:
-                    
-                //         break;
-                //     case DeterministicTime.class:
-                    
-                //         break;
-                
-                //     default:
-                        
-                //         break;
-                // }
+                }
+                else if(pdfClass == ExponentialTime.class){
 
-
-                // map.put("pdf", new DefaultAttribute<String>(v.getPdf().toString(), AttributeType.STRING));
+                }
+                else if(pdfClass == DeterministicTime.class){
+                    // pdfString += pdf.get
+                }
+                else{
+                    System.err.println("Export error: pdfClass " + pdfClass + " not supported");
+                    pdfString = null;
+                }
+                map.put("pdf", new DefaultAttribute<String>(pdfString, AttributeType.STRING));
             }
             return map;
         };
@@ -120,7 +118,7 @@ public class ProductTypeCustomEdgeIO implements BasicImportExport<ProductType, C
                     return null;
                 }
             } else {
-                System.err.println("Import error: unknown type for vertex_type field: " + vertexName);
+                System.err.println("Import error: unknown type for vertexType field: " + vertexName);
                 return null;
                 
             }

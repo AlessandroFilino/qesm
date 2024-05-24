@@ -1,5 +1,6 @@
 package com.qesm;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -92,10 +93,30 @@ public class WorkflowType {
 
     //TODO Completare reflection
     public Workflow makeIstance() {
-        Workflow dag = new Workflow();
+        DirectedAcyclicGraph<Product, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
+
+        HashMap<ProductType, Product> productTypeToProductMap = new HashMap<>();
+
+        // Deepcopy of all verteces
+        for (ProductType vertex : dag.vertexSet()) {
+            Product product = new Product(vertex);
+            dagIstance.addVertex(product);
+            productTypeToProductMap.put(vertex, product);
+        }
+
+        // Add all the edges from the original DAG to the copy 
+        for (CustomEdge edge : dag.edgeSet()) {
+            ProductType sourceType = dag.getEdgeSource(edge);
+            ProductType targetType = dag.getEdgeTarget(edge);
+            dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType), new CustomEdge(edge));
+        }
 
 
-        return dag;
+        
+
+
+        Workflow workflow = new Workflow(dagIstance);
+        return workflow;
 
     }
 

@@ -297,8 +297,7 @@ public class RandomDAGGenerator{
                 dag.addVertex(newLeaf);
 
                 for (CustomEdge oldEdge : oldEdges) {
-                    CustomEdge newEdge = dag.addEdge(newLeaf, dag.getEdgeTarget(oldEdge));
-                    newEdge.copyEdge(oldEdge);
+                    dag.addEdge(newLeaf, dag.getEdgeTarget(oldEdge), new CustomEdge(oldEdge));
                 }
             }
         }

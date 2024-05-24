@@ -59,8 +59,8 @@ public class DAGSharedToUnsharedConverter {
             for(CustomEdge edge: dag.incomingEdgesOf(node)) {
                 ProductType child = dag.getEdgeSource(edge);
                 ProductType newChild = recursiveConversion(child);
-                CustomEdge newEdge = unsharedDag.addEdge(newChild, newNode);
-                newEdge.copyEdge(edge);
+                CustomEdge newEdge = new CustomEdge(edge);
+                unsharedDag.addEdge(newChild, newNode, newEdge);
                 newChild.setQuantityProduced(newEdge.getQuantityRequired());
             }
         }
