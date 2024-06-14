@@ -25,7 +25,7 @@ public class Main {
 
         WorkflowType graphTest = new WorkflowType();
         
-        graphTest.generateRandomDAG(5, 5, 2, 5, PdfType.UNIFORM);
+        graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
         graphTest.exportDagToDotFile("./output/sharedDAG.dot");
        // graphTest.importDagFromDotFile("./output/sharedDAG.dot");

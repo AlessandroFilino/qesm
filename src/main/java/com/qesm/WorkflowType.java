@@ -50,9 +50,9 @@ public class WorkflowType {
         return null;
     }
 
-    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, PdfType pdfType) {
+    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType) {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
-                maxBranchingDownFactor, pdfType);
+                maxBranchingDownFactor, branchingUpProbability, pdfType);
         randDAGGenerator.generateGraph(dag);
     }
 

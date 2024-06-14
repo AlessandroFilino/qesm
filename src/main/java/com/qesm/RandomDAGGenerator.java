@@ -28,6 +28,7 @@ public class RandomDAGGenerator{
     private int maxWidth;                   //Max number of vertex in each level
     private int maxBranchingUpFactor;       //Max number of incoming edge for each node
     private int maxBranchingDownFactor;     //Max number of outcoming edge for each node
+    private int branchingUpProbability;     // Probaility (range [0, 100]) of having more than one up branch
     
     private Random random;
     private int vId;
@@ -47,12 +48,13 @@ public class RandomDAGGenerator{
     };
     private PdfType pdfType;
 
-    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, PdfType pdfType){
+    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType){
         
         this.maxHeight = maxHeight;
         this.maxWidth = maxWidth;
         this.maxBranchingUpFactor = maxBranchingUpFactor;
         this.maxBranchingDownFactor = maxBranchingDownFactor;
+        this.branchingUpProbability = branchingUpProbability;
 
         this.random = new Random();
         this.vId = 0;
@@ -168,9 +170,8 @@ public class RandomDAGGenerator{
                     vTargetListCopy = new ArrayList<ProductType>(vTargetList);
 
                     // Calculating branchingUpFactor to limit not well nested DAG
-                    // TODO: chose treshold and take it as argument
                     Integer branchingUpFactor;
-                    if(random.nextInt(1, 101) > 60){
+                    if(random.nextInt(1, 101) > branchingUpProbability){
                         branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;
                     }
                     else{
