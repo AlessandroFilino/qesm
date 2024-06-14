@@ -31,11 +31,12 @@ public class RandomDAGGeneratorTest {
         int maxHeight = random.nextInt(20) + 1;
         int maxWidth = random.nextInt(20) + 1;
         int maxBranchingUpFactor = random.nextInt(5) + 1;
-        int maxBranchingDownFactor = random.nextInt(5) + 1; 
+        int maxBranchingDownFactor = random.nextInt(5) + 1;
+        int branchingUpProbability = random.nextInt(1, 101);
 
         dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
 
-        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, PdfType.UNIFORM);
+        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, branchingUpProbability, PdfType.UNIFORM);
         randDAGGenerator.generateGraph(dag);
 
         for (ProductType vertex : dag.vertexSet()) {
