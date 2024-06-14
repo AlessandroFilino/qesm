@@ -1,6 +1,10 @@
 package com.qesm;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 
 import org.oristool.eulero.modeling.Activity;
@@ -25,10 +29,13 @@ public class Main {
 
         WorkflowType graphTest = new WorkflowType();
         
-        graphTest.generateRandomDAG(5, 5, 2, 5, PdfType.UNIFORM);
-        
+        // testSerialization();
+
+        graphTest.generateRandomDAG(5, 5, 2, 5, PdfType.DETERMINISTIC);
+
         graphTest.exportDagToDotFile("./output/sharedDAG.dot");
-       // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        graphTest.exportDagToDotFile("./output/sharedDAG.dot");
         Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
         // graphTest.toUnshared();
         
@@ -38,20 +45,20 @@ public class Main {
         // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
         // TODO: add method to export and render all subgraphs
-        Workflow workflow = graphTest.makeIstance();
-        workflow.exportDagToDotFile("./output/istance.dot");
-        Renderer.renderDotFile("./output/istance.dot", "./media/istance.png", 3);
-        int i = 2;
-        for (Product product : workflow.getDag().vertexSet()) {
-            if(product.getItemType() == ItemType.PROCESSED){
-                i--;
-                if(i == 0){
-                    product.getProductWorkflow().exportDagToDotFile("./output/istanceSubgraph.dot");
-                    Renderer.renderDotFile("./output/istanceSubgraph.dot", "./media/istanceSubgraph.png", 3);
-                } 
-            }
+        // Workflow workflow = graphTest.makeIstance();
+        // workflow.exportDagToDotFile("./output/istance.dot");
+        // Renderer.renderDotFile("./output/istance.dot", "./media/istance.png", 3);
+        // int i = 2;
+        // for (Product product : workflow.getDag().vertexSet()) {
+        //     if(product.getItemType() == ItemType.PROCESSED){
+        //         i--;
+        //         if(i == 0){
+        //             product.getProductWorkflow().exportDagToDotFile("./output/istanceSubgraph.dot");
+        //             Renderer.renderDotFile("./output/istanceSubgraph.dot", "./media/istanceSubgraph.png", 3);
+        //         } 
+        //     }
             
-        }
+        // }
 
         // StructuredTree structuredTree = new StructuredTree(graphTest.getDag(), graphTest.getRootNode());
 
@@ -83,6 +90,33 @@ public class Main {
         // dagAnalyzer.testPetriNet1();
         // dagAnalyzer.testPetriNet2();
         
+
+    }
+
+    public static void testSerialization(){
+
+        ProductType productType = new ProductType("test1", 1, new UniformTime(0,2));
+        // ProductType productType = new ProductType("test2");
+
+        try {
+            FileOutputStream fos = new FileOutputStream("./output/test.ser");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(productType);
+            oos.close();
+            fos.close();
+
+            FileInputStream fis = new FileInputStream("./output/test.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            ProductType deserializedProductType = (ProductType) ois.readObject();
+            System.out.println(deserializedProductType.getNameType() + " " + deserializedProductType.getQuantityProduced() + " " + deserializedProductType.getPdf());
+            ois.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
+
 
     }
 

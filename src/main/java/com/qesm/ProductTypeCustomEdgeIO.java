@@ -1,5 +1,10 @@
 package com.qesm;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -9,11 +14,6 @@ import java.util.function.Supplier;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
-import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
-import org.oristool.eulero.modeling.stochastictime.ErlangTime;
-import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
-import org.oristool.eulero.modeling.stochastictime.StochasticTime;
-import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import com.qesm.ProductType.ItemType;
 
@@ -37,42 +37,28 @@ public class ProductTypeCustomEdgeIO <T extends ProductType> implements BasicImp
             if (v.getItemType() == ItemType.RAW_MATERIAL) {
                 map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
                 map.put("label", new DefaultAttribute<String>(v.getNameType() + "\nRAW_TYPE", AttributeType.STRING));
-                map.put("vertex_type", new DefaultAttribute<String>("RawMaterialType", AttributeType.STRING));
             } else {
                 map.put("color", new DefaultAttribute<String>("orange", AttributeType.STRING));
                 map.put("label",
                         new DefaultAttribute<String>(
                                 v.getNameType() + "\nPROCESSED_TYPE" + "\nquantityProduced: " + v.getQuantityProduced(),
                                 AttributeType.STRING));
-                map.put("vertex_type", new DefaultAttribute<String>("ProcessedType", AttributeType.STRING));
-                map.put("quantity_produced", new DefaultAttribute<Integer>(v.getQuantityProduced(), AttributeType.INT));
-
-                // TODO: serialize pdf type and values
-                StochasticTime pdf = v.getPdf();
-
-                Class<? extends StochasticTime> pdfClass = pdf.getClass();
-                String pdfString = pdfClass.getSimpleName() + ";";
-                if(pdfClass == UniformTime.class){
-                    pdfString += pdf.getEFT() + ";" + pdf.getLFT();
-                }
-                else if(pdfClass == ErlangTime.class){
-                    
-                }
-                else if(pdfClass == ExponentialTime.class){
-
-                }
-                else if(pdfClass == DeterministicTime.class){
-                    // pdfString += pdf.get
-                }
-                else{
-                    System.err.println("Export error: pdfClass " + pdfClass + " not supported");
-                    pdfString = null;
-                }
-                map.put("pdf", new DefaultAttribute<String>(pdfString, AttributeType.STRING));
             }
+            // Serialize vertex object
+            try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)){
+                    objectOutputStream.writeObject(v);
+                    String encodedVertex = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+                    map.put("vertex_data", new DefaultAttribute<String>(encodedVertex, AttributeType.STRING));
+            }catch (Exception exception) {
+                exception.printStackTrace();
+            } 
+
             return map;
         };
 
+
+        //TODO: add edge serialization (like vertex)
         this.edgeAttributeProvider = e -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
 
@@ -92,56 +78,19 @@ public class ProductTypeCustomEdgeIO <T extends ProductType> implements BasicImp
         // Importer's Factories
         this.vertexFactoryFunction = (vertexName, attributesMap) -> {
 
-            T vertex = null;
-            String vertexType;
-
+            // Deserialize vertex object
             try {
-                vertexType = attributesMap.get("vertex_type").toString();
-            } catch (NullPointerException e) {
-                System.err.println("Import error: unable to find vertex_type field for node: " + vertexName);
+                String encodedVertex = attributesMap.get("vertex_data").toString();
+                
+                byte[] data = Base64.getDecoder().decode(encodedVertex);
+                ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data));
+                T vertex = castDeserializedObject(objectInputStream.readObject(), classType);
+                return vertex;
+
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
-
-            if (vertexType.equals("RawMaterialType")) {
-                try {
-                    vertex = classType.getDeclaredConstructor(String.class, ItemType.class).newInstance(vertexName, ItemType.RAW_MATERIAL);
-                } catch (Exception e) {
-                    // TODO: handle exception
-                }
-                
-                // vertex = new ProductType(vertexName, ItemType.RAW_MATERIAL);
-            } else if (vertexType.equals("ProcessedType")) {
-                try {
-                    Integer quantityProduced = Integer.valueOf(attributesMap.get("quantity_produced").getValue());
-                    String pdfString = attributesMap.get("quantity_produced").getValue();
-                    
-                    // TODO: convert pdf from string to actual StochasticTime
-                    StochasticTime pdf = null;
-                    try {
-                        vertex = classType.getDeclaredConstructor(String.class, ItemType.class).newInstance(vertexName, ItemType.PROCESSED);
-                        vertex.setPdf(pdf);
-                        vertex.setQuantityProduced(quantityProduced);
-                    } catch (Exception e) {
-                        // TODO: handle exception
-                    }
-                    
-                    // vertex = new ProductType(vertexName, ItemType.PROCESSED);
-                    // vertex.setPdf(pdf);
-                    // vertex.setQuantityProduced(quantityProduced);
-
-                } catch (NullPointerException e) {
-                    System.err.println("Import error: unable to find all necessary field for node: " + vertexName);
-                    e.printStackTrace();
-                    return null;
-                }
-            } else {
-                System.err.println("Import error: unknown type for vertexType field: " + vertexName);
-                return null;
-                
-            }
-
-            return vertex;
         };
 
         this.edgeWithAttributesFactory = (attributesMap) -> {
@@ -158,6 +107,14 @@ public class ProductTypeCustomEdgeIO <T extends ProductType> implements BasicImp
 
             return edge;
         };
+    }
+
+    private T castDeserializedObject(Object object, Class<T> classType){
+        if (classType.isInstance(object)) {
+            return classType.cast(object);
+        } else {
+            throw new ClassCastException("Cannot cast object to " + classType.getName());
+        }
     }
 
     @Override
