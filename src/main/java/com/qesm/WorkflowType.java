@@ -14,7 +14,7 @@ import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 
-public class WorkflowType {
+public class WorkflowType implements DotFileConverter<ProductType>{
 
     private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
 
@@ -38,8 +38,19 @@ public class WorkflowType {
         }
     }
 
+    @Override
     public DirectedAcyclicGraph<ProductType, CustomEdge> getDag() {
         return dag;
+    }
+
+    @Override
+    public void setDag(DirectedAcyclicGraph<ProductType, CustomEdge> dagToSet) {
+        dag = dagToSet;
+    }
+
+    @Override
+    public Class<ProductType> getVertexClass() {
+        return ProductType.class;
     }
 
     public ProductType getRootNode() {
@@ -70,18 +81,6 @@ public class WorkflowType {
             }
         }
         return result;
-    }
-
-    public void exportDagToDotFile(String filePath) {
-        ProductTypeCustomEdgeIO<ProductType> exporter = new ProductTypeCustomEdgeIO<>(ProductType.class);
-        exporter.writeDotFile(filePath, dag);
-    }
-
-    public void importDagFromDotFile(String filePath) {
-        dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
-
-        ProductTypeCustomEdgeIO<ProductType> importer = new ProductTypeCustomEdgeIO<>(ProductType.class);
-        importer.readDotFile(filePath, dag);
     }
 
     public boolean isDagConnected() {

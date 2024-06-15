@@ -5,18 +5,21 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.oristool.eulero.modeling.stochastictime.StochasticTime;
-import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import com.qesm.ProductType.ItemType;
 
 
-public class StructuredTree {
+public class StructuredTree implements DotFileConverter<STPNBlock>{
 
     private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
     private final ProductType originalRootNode;
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     private STPNBlock structuredTreeRootBlock;
+
+    public StructuredTree(){
+        originalRootNode = null;
+        originalWorkflow = null;
+    }
 
     public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag, ProductType rootNode) {
         this.originalWorkflow = dag;
@@ -98,36 +101,6 @@ public class StructuredTree {
         return null;
     }
 
-    public void testPrint() {
-        StochasticTime pdf = new UniformTime(0,1);
-        STPNBlock stpnBlock1 = new SimpleBlock(new ProductType("v1", 0, pdf));
-        STPNBlock stpnBlock2 = new SimpleBlock(new ProductType("v2", 0, pdf));
-        STPNBlock stpnBlock3 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock1, stpnBlock2)));
-
-        STPNBlock stpnBlock4 = new SimpleBlock(new ProductType("v3", 0, pdf));
-        STPNBlock stpnBlock5 = new SimpleBlock(new ProductType("v4", 0, pdf));
-        STPNBlock stpnBlock6 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock4, stpnBlock5)));
-
-
-        STPNBlock stpnBlock7 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock3, stpnBlock6)));
-        STPNBlock stpnBlock8 = new SimpleBlock(new ProductType("v5", 0, pdf));
-        STPNBlock stpnBlock9 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock7, stpnBlock8)));
-
-        STPNBlock stpnBlock10 = new SimpleBlock(new ProductType("v6", 0, pdf));
-        STPNBlock stpnBlock11 = new SeqBlock(new ArrayList<STPNBlock>(List.of(stpnBlock10, stpnBlock9)));
-        
-        STPNBlock stpnBlock12 = new SimpleBlock(new ProductType("v7", 0, pdf));
-        STPNBlock stpnBlock13 = new SimpleBlock(new ProductType("v8", 0, pdf));
-        STPNBlock stpnBlock14 = new SimpleBlock(new ProductType("v9", 0, pdf));
-
-        STPNBlock stpnBlock15 = new AndBlock(new ArrayList<STPNBlock>(List.of(stpnBlock11, stpnBlock12, stpnBlock13, stpnBlock14)));
-
-        DirectedAcyclicGraph<STPNBlock, CustomEdge> testTree = new DirectedAcyclicGraph<>(CustomEdge.class);
-        testTree.addVertex(stpnBlock15);
-        STPNBlockCustumEdgeIO exporter = new STPNBlockCustumEdgeIO();
-        exporter.writeDotFile("./output/test.html", testTree);
-    }
-
     public void buildStructuredTree(){
         buildStructuredTree(false, null);
     }
@@ -142,22 +115,23 @@ public class StructuredTree {
         int stepCount = 0;
 
         if(exportAllIteration){
-            this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+            this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
             stepCount++;
         }
 
         do {
+            
             seqReplacedCount = findAndReplaceSeqs();
             if(exportAllIteration && seqReplacedCount > 0){
                 // System.out.println("Seq replaced: " + seqReplacedCount);
-                this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
                 stepCount++;
             }
 
             andReplacedCount = findAndReplaceAnds();
             if(exportAllIteration && andReplacedCount > 0){
                 // System.out.println("And replaced: " + andReplacedCount);
-                this.exportStructuredTreeToDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
                 stepCount++;
             }
 
@@ -311,32 +285,53 @@ public class StructuredTree {
         return andReplacedCount;
     } 
 
-    public void exportDagToDotFile(String filePath) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
 
-        ProductTypeCustomEdgeIO<ProductType> exporter = new ProductTypeCustomEdgeIO<>(ProductType.class);
-        exporter.writeDotFile(filePath, originalWorkflow);
+        StructuredTree structuredTreeToCompare = (StructuredTree) obj;
+
+        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for ProductType
+        List<STPNBlock> vertexListToCompare = new ArrayList<>(structuredTreeToCompare.getDag().vertexSet());
+        List<STPNBlock> vertexList = new ArrayList<>(structuredWorkflow.vertexSet());
+
+        if(! vertexList.equals(vertexListToCompare)){
+            return false;
+        }
+
+        List<CustomEdge> edgeListToCompare = new ArrayList<>(structuredTreeToCompare.getDag().edgeSet());
+        List<CustomEdge> edgeList = new ArrayList<>(structuredWorkflow.edgeSet());
+
+        if(! edgeList.equals(edgeListToCompare)){
+            return false;
+        }
+
+        return true;
     }
 
-    // TODO check if it will be needed
-    // public void importDagFromDotFile(String filePath) {
-
-    // ProductTypeCustomEdgeIO importer = new ProductTypeCustomEdgeIO();
-    // originalWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
-    // importer.readDotFile(filePath, originalWorkflow);
-
-    // }
-
-    public void exportStructuredTreeToDotFile(String filePath) {
-
-        STPNBlockCustumEdgeIO exporter = new STPNBlockCustumEdgeIO();
-        exporter.writeDotFile(filePath, structuredWorkflow);
+    @Override
+    public DirectedAcyclicGraph<STPNBlock, CustomEdge> getDag() {
+        return structuredWorkflow;
     }
 
-    public void importStructuredTreeFromDotFile(String filePath) {
-
-        STPNBlockCustumEdgeIO importer = new STPNBlockCustumEdgeIO();
-        importer.readDotFile(filePath, structuredWorkflow);
-
+    @Override
+    public Class<STPNBlock> getVertexClass() {
+        return STPNBlock.class;
     }
+
+    @Override
+    public void setDag(DirectedAcyclicGraph<STPNBlock, CustomEdge> dagToSet) {
+        structuredWorkflow = dagToSet;
+    }
+
+    
 
 }

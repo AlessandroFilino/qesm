@@ -1,7 +1,13 @@
 package com.qesm;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.AttributeType;
+import org.jgrapht.nio.DefaultAttribute;
 
 public class SimpleBlock implements STPNBlock{
 
@@ -13,6 +19,10 @@ public class SimpleBlock implements STPNBlock{
         this.simpleElement = basicElement;
         this.enablingTokens = new ArrayList<ProductType>();
         this.uuid = UUID.randomUUID();
+    }
+
+    public ArrayList<ProductType> getEnablingTokens(){
+        return enablingTokens;
     }
 
     @Override
@@ -37,6 +47,43 @@ public class SimpleBlock implements STPNBlock{
     @Override
     public UUID getUuid() {
         return uuid;
+    }
+
+    @Override
+    public Map<String, Attribute> getExporterAttributes() {
+        Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("shape", new DefaultAttribute<String>("box", AttributeType.STRING));
+            map.put("label", new DefaultAttribute<String>(this.getHTMLLabel(null), AttributeType.HTML));
+
+            return map;
+    }
+
+    @Override
+    public String getExporterId() {
+        return "_" + uuid.toString().replaceAll("-","_");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
+
+        SimpleBlock simpleBlockToCompare = (SimpleBlock) obj;
+        if(! simpleBlockToCompare.getSimpleElement().equals(simpleElement)){
+            return false;
+        }
+        if(! simpleBlockToCompare.getEnablingTokens().equals(enablingTokens)){
+            return false;
+        }
+        
+        return true;
     }
 
     @Override

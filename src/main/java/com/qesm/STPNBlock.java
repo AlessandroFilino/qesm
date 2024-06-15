@@ -1,9 +1,10 @@
 package com.qesm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public interface STPNBlock {
+public interface STPNBlock extends DotFileConvertible, Serializable{
 
     public void printBlockInfo(int indentNum);
 

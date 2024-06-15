@@ -8,22 +8,17 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
-import org.oristool.eulero.modeling.stochastictime.StochasticTime;
-import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 
 public class StructuredTreeConverter {
 
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
-    // TODO: add pdf to processedType during DagGeneration
-    private StochasticTime pdf;
     private HashSet<Activity> notWellNestedActivities;
     private HashMap<STPNBlock, Activity> blocksAlreadyConverted; 
 
 
     public StructuredTreeConverter(DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow) {
         this.structuredWorkflow = structuredWorkflow;
-        this.pdf = new UniformTime(0, 1);
         // this.pdf = new ExponentialTime(BigDecimal.valueOf(5));
         this.notWellNestedActivities = new HashSet<>();
         this.blocksAlreadyConverted = new HashMap<>();
@@ -73,7 +68,7 @@ public class StructuredTreeConverter {
 
         Activity activity = null;
         if(stpnBlock.getClass() == SimpleBlock.class){
-            activity = new Simple(stpnBlock.getSimpleElement().getNameType(), pdf);
+            activity = new Simple(stpnBlock.getSimpleElement().getNameType(), stpnBlock.getSimpleElement().getPdf());
         }
         else if (stpnBlock.getClass() == AndBlock.class){
             ArrayList<Activity> activityList = new ArrayList<>();

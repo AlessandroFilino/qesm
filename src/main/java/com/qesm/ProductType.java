@@ -5,15 +5,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.AttributeType;
+import org.jgrapht.nio.DefaultAttribute;
 import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-public class ProductType implements Serializable{
+public class ProductType implements Serializable, DotFileConvertible{
     
     private String nameType;
     private UUID uuid;
@@ -174,7 +179,7 @@ public class ProductType implements Serializable{
                         ExponentialTime exponentialPdfToCompare = (ExponentialTime) pdfToCompare;
                         ExponentialTime exponentialPdf = (ExponentialTime) pdf;
                         
-                        if(exponentialPdfToCompare.getRate() != (exponentialPdf.getRate())){
+                        if( ! exponentialPdfToCompare.getRate().equals(exponentialPdf.getRate())){
                             return false;
                         } 
                     }
@@ -192,6 +197,28 @@ public class ProductType implements Serializable{
         }
         
         return true;
+    }
+
+    @Override
+    public Map<String, Attribute> getExporterAttributes() {
+        Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+        map.put("shape", new DefaultAttribute<String>("circle", AttributeType.STRING));
+        if (this.isProcessedType()) {
+            map.put("color", new DefaultAttribute<String>("orange", AttributeType.STRING));
+            map.put("label",
+                    new DefaultAttribute<String>(nameType + "\nPROCESSED_TYPE" + "\nquantityProduced: " + quantityProduced,
+                            AttributeType.STRING));
+        } else {
+            map.put("color", new DefaultAttribute<String>("blue", AttributeType.STRING));
+            map.put("label", new DefaultAttribute<String>(nameType + "\nRAW_TYPE", AttributeType.STRING));
+        }
+        return map;
+    }
+
+    @Override
+    public String getExporterId() {
+        // Id based on name
+        return nameType;
     }
 
     // Custom serialization logic for StochasticTime

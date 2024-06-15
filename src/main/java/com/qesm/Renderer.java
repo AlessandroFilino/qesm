@@ -11,8 +11,6 @@ import guru.nidi.graphviz.engine.Graphviz;
 
 public class Renderer {
 
-    // TODO: implement our own method to render
-
     public static void renderDotFile(String dotFilePath, String outputFilePath, double scale) {
 
         try {

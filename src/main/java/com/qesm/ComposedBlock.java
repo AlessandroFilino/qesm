@@ -1,8 +1,14 @@
 package com.qesm;
 
 import java.util.ArrayList;
+
+import java.util.Map;
 import java.util.UUID;
 
+import org.jgrapht.nio.Attribute;
+
+
+//TODO: probably this class should be abstract
 public class ComposedBlock implements STPNBlock {
     // TODO: merge And and Seq class into this one using Enum type
     private ArrayList<STPNBlock> composedElements;
@@ -34,6 +40,37 @@ public class ComposedBlock implements STPNBlock {
     @Override
     public ArrayList<STPNBlock> getComposedElements(){
         return composedElements;
+    }
+
+    @Override
+    public Map<String, Attribute> getExporterAttributes() {
+        // method implementation should be defined in AndBlock and SeqBlock 
+        return null;
+    }
+
+    @Override
+    public String getExporterId() {
+        return "_" + uuid.toString().replaceAll("-","_");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
+
+        ComposedBlock composedBlockToCompare = (ComposedBlock) obj;
+        if(! composedBlockToCompare.getComposedElements().equals(composedElements)){
+            return false;
+        }
+
+        return true;
     }
 
     @Override

@@ -1,6 +1,16 @@
 package com.qesm;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
+
 import org.jgrapht.graph.DefaultEdge;
+import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
+import org.oristool.eulero.modeling.stochastictime.ErlangTime;
+import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
+import org.oristool.eulero.modeling.stochastictime.StochasticTime;
+import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class CustomEdge extends DefaultEdge{
     int quantityRequired;
@@ -50,6 +60,4 @@ public class CustomEdge extends DefaultEdge{
         
         return true;
     }
-    
-    
 }

@@ -31,10 +31,10 @@ public class Main {
         
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
-        graphTest.exportDagToDotFile("./output/sharedDAG.dot");
-        graphTest.importDagFromDotFile("./output/sharedDAG.dot");
-        graphTest.exportDagToDotFile("./output/sharedDAG.dot");
-        Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
+        // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
+        // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
+        // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
+        // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
         // graphTest.toUnshared();
         
         
