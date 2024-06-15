@@ -100,7 +100,7 @@ public class RandomDAGGenerator{
 
         StochasticTime pdf = null;
         double eft = Math.round(random.nextDouble(0, 10));
-        double lft = Math.round(random.nextDouble(eft, eft + 10));
+        double lft = Math.round(random.nextDouble(eft + 1, eft + 10));
 
         switch (pdfType) {
             case DETERMINISTIC:

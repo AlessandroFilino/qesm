@@ -19,7 +19,7 @@ public class ProductType implements Serializable{
     private UUID uuid;
     private int quantityProduced;
     private transient StochasticTime pdf;
-    private Workflow productWorkflow;
+    // private Workflow productWorkflow;
     
     enum ItemType{
         RAW_MATERIAL,
@@ -51,17 +51,17 @@ public class ProductType implements Serializable{
         return itemType;
     }
 
-    public Workflow getProductWorkflow() {
-        return returnWithItemTypeCheck(productWorkflow);
-    }
+    // public Workflow getProductWorkflow() {
+    //     return returnWithItemTypeCheck(productWorkflow);
+    // }
 
-    public Integer setProductWorkflow(Workflow productWorkflow) {
-        Integer returnValue = returnWithItemTypeCheck(0);
-        if(returnValue != null){
-            this.productWorkflow = productWorkflow;
-        }
-        return returnValue;
-    }
+    // public Integer setProductWorkflow(Workflow productWorkflow) {
+    //     Integer returnValue = returnWithItemTypeCheck(0);
+    //     if(returnValue != null){
+    //         this.productWorkflow = productWorkflow;
+    //     }
+    //     return returnValue;
+    // }
 
     public Integer getQuantityProduced() {
         return returnWithItemTypeCheck(quantityProduced);
@@ -111,6 +111,87 @@ public class ProductType implements Serializable{
         else{
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        String productTypeString = nameType + " " + itemType;
+
+        if(this.isProcessedType()){
+            productTypeString += " quantityProduced: " + quantityProduced + " pdf: " + pdf; 
+        }
+        return productTypeString;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
+        
+        ProductType productTypeToCompare = (ProductType) obj;
+
+        if(! productTypeToCompare.getNameType().equals(nameType) ||
+           ! productTypeToCompare.getItemType().equals(itemType)){
+            return false;
+        }
+        
+        if(this.isProcessedType()){
+
+            if(! productTypeToCompare.getQuantityProduced().equals(quantityProduced)){
+                return false;
+            }
+            else{
+                // Custum equals for pdf (StochasticTime doesn't implement it)
+                StochasticTime pdfToCompare = productTypeToCompare.getPdf();
+                if(! pdfToCompare.getClass().isInstance(pdf)){
+                    return false;
+                }
+                else{
+
+                    if(pdfToCompare.getClass() == UniformTime.class){
+                        if(! pdfToCompare.getEFT().equals(pdf.getEFT()) ||
+                           ! pdfToCompare.getLFT().equals(pdf.getLFT())){
+                            return false;
+                        } 
+                    }
+                    else if(pdfToCompare.getClass() == ErlangTime.class){
+                        ErlangTime erlangPdfToCompare = (ErlangTime) pdfToCompare;
+                        ErlangTime erlangPdf = (ErlangTime) pdf;
+                        
+                        if(erlangPdfToCompare.getK() != (erlangPdf.getK()) ||
+                           erlangPdfToCompare.getRate() != (erlangPdf.getRate())){
+                            return false;
+                        } 
+                    }
+                    else if(pdfToCompare.getClass() == ExponentialTime.class){
+                        ExponentialTime exponentialPdfToCompare = (ExponentialTime) pdfToCompare;
+                        ExponentialTime exponentialPdf = (ExponentialTime) pdf;
+                        
+                        if(exponentialPdfToCompare.getRate() != (exponentialPdf.getRate())){
+                            return false;
+                        } 
+                    }
+                    else if(pdfToCompare.getClass() == DeterministicTime.class){
+                        if(! pdfToCompare.getEFT().equals(pdf.getEFT()) ||
+                           ! pdfToCompare.getLFT().equals(pdf.getLFT())){
+                            return false;
+                        } 
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
 
     // Custom serialization logic for StochasticTime

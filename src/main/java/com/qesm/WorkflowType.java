@@ -1,7 +1,9 @@
 package com.qesm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
@@ -91,6 +93,38 @@ public class WorkflowType {
     public void toUnshared() {
         DAGSharedToUnsharedConverter dagConverter = new DAGSharedToUnsharedConverter(dag, getRootNode());
         dag = dagConverter.makeConversion();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
+
+        WorkflowType workflowTypeToCompare = (WorkflowType) obj;
+
+        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for ProductType
+        List<ProductType> vertexListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().vertexSet());
+        List<ProductType> vertexList = new ArrayList<>(dag.vertexSet());
+
+        if(! vertexList.equals(vertexListToCompare)){
+            return false;
+        }
+
+        List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().edgeSet());
+        List<CustomEdge> edgeList = new ArrayList<>(dag.edgeSet());
+
+        if(! edgeList.equals(edgeListToCompare)){
+            return false;
+        }
+
+        return true;
     }
 
     //TODO Completare reflection

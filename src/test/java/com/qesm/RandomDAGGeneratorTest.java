@@ -19,6 +19,7 @@ public class RandomDAGGeneratorTest {
     ProductType rootNode;
     HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
 
+    // TODO: update test with new hyperparameters
     @RepeatedTest(100)
     void testGenerateGraph() {
 

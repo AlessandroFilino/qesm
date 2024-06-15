@@ -21,5 +21,35 @@ public class CustomEdge extends DefaultEdge{
         return quantityRequired;
     }
 
+    @Override
+    public String toString() {
+        
+        return "( " + this.getSource() + " -> " + this.getTarget() + " quantityRequired: " + quantityRequired + " )";
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj){
+            return true;
+        }
+        if (obj == null){
+            return false;
+        }
+        if (getClass() != obj.getClass()){
+            return false;
+        }
+
+        CustomEdge customEdgeToCompare = (CustomEdge) obj;
+        if (quantityRequired != customEdgeToCompare.getQuantityRequired()){
+            return false;
+        }
+        if(! customEdgeToCompare.getSource().equals(this.getSource()) ||
+           ! customEdgeToCompare.getTarget().equals(this.getTarget())){
+            return false;
+        }
+        
+        return true;
+    }
+    
+    
 }
