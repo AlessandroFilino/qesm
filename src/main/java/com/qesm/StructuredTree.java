@@ -27,8 +27,6 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
         this.originalWorkflow = dag;
         this.structuredWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-
-
         // Add all processedType as simpleBlock to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
 

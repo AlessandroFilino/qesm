@@ -65,5 +65,5 @@ public class Workflow implements DotFileConverter<Product>, Serializable{
         return true;
     }
 
-    // TODO: add method select a specific process type and it's subgraph
+    // TODO: Add a method that allows you to select a specific process type and it's subgraph
 }

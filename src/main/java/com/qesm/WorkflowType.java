@@ -38,6 +38,8 @@ public class WorkflowType implements DotFileConverter<ProductType>{
         }
     }
 
+    // TODO: Add metric to measure the paralellization/balance of the dag
+
     @Override
     public DirectedAcyclicGraph<ProductType, CustomEdge> getDag() {
         return dag;
@@ -126,7 +128,7 @@ public class WorkflowType implements DotFileConverter<ProductType>{
         return true;
     }
 
-    //TODO Completare reflection
+    //TODO Check and complete reflection
     public Workflow makeIstance() {
         DirectedAcyclicGraph<Product, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
 

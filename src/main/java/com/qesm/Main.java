@@ -24,6 +24,8 @@ public class Main {
         
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
+        //TODO: Add useful tests for all classes that need them (ex DagAnalyzer, StructuredTree, Workflow and WorkflowType)
+
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
         // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");

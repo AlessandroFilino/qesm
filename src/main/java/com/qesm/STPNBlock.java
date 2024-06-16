@@ -8,7 +8,6 @@ public interface STPNBlock extends DotFileConvertible, Serializable{
 
     public void printBlockInfo(int indentNum);
 
-    // TODO: add enabling token during structured tree generation
     public default boolean addEnablingToken(ProductType enablingToken){
         return false;
     }
