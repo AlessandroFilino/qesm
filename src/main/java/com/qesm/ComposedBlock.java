@@ -8,9 +8,7 @@ import java.util.UUID;
 import org.jgrapht.nio.Attribute;
 
 
-//TODO: probably this class should be abstract
-public class ComposedBlock implements STPNBlock {
-    // TODO: merge And and Seq class into this one using Enum type
+public abstract class ComposedBlock implements STPNBlock {
     private ArrayList<STPNBlock> composedElements;
     private UUID uuid;
 

@@ -19,14 +19,8 @@ public class RandomDAGGeneratorTest {
     ProductType rootNode;
     HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
 
-    // TODO: update test with new hyperparameters
     @RepeatedTest(100)
     void testGenerateGraph() {
-
-        // int maxHeight = 5;
-        // int maxWidth = 3;
-        // int maxBranchingUpFactor = 3;
-        // int maxBranchingDownFactor = 3; 
 
         Random random = new Random();
         int maxHeight = random.nextInt(20) + 1;
@@ -40,6 +34,7 @@ public class RandomDAGGeneratorTest {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, branchingUpProbability, PdfType.UNIFORM);
         randDAGGenerator.generateGraph(dag);
 
+        // Test maxBranchingDownFactor and maxBranchingUpFactor
         for (ProductType vertex : dag.vertexSet()) {
             assertTrue(dag.inDegreeOf(vertex) <= maxBranchingDownFactor && dag.outDegreeOf(vertex) <= maxBranchingUpFactor);
         }
@@ -53,14 +48,8 @@ public class RandomDAGGeneratorTest {
             }
             recursiveSearch(0, vertex, vertex);
         }
-
         
-
-        // ProductGraph testGraph = new ProductGraph();
-        // testGraph.importDag(dag);
-        // testGraph.exportDAGDotLanguage("./output/test.dot");
-        // testGraph.renderDotFile("./output/test.dot", "./media/testGenerateGraph.png", 3);
-        
+        // Test maxWidth
         for (Integer level : levelToVertices.keySet()) {
             // System.out.println("Level: " + level);
             // for (ProductType vertex: levelToVertices.get(level)) {
@@ -69,7 +58,10 @@ public class RandomDAGGeneratorTest {
             assertTrue(levelToVertices.get(level).size() <= maxWidth);
         }
 
+        // Test maxHeight
         assertTrue(Collections.max(levelToVertices.keySet()) <= maxHeight);
+
+        // No need to test for branchingUpProbability
 
     }
 

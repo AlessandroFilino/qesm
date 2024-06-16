@@ -2,9 +2,13 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.nio.Attribute;
 
 import com.qesm.ProductType.ItemType;
 
@@ -12,22 +16,18 @@ import com.qesm.ProductType.ItemType;
 public class StructuredTree implements DotFileConverter<STPNBlock>{
 
     private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
-    private final ProductType originalRootNode;
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     private STPNBlock structuredTreeRootBlock;
 
     public StructuredTree(){
-        originalRootNode = null;
         originalWorkflow = null;
     }
 
-    public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag, ProductType rootNode) {
+    public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag) {
         this.originalWorkflow = dag;
         this.structuredWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-        this.originalRootNode = rootNode;
 
-        // this.structuredTreeRootNode = initializeStructuredTree(rootNode);
 
         // Add all processedType as simpleBlock to structuredWorkflow
         for (ProductType node : originalWorkflow.vertexSet()) {
@@ -102,20 +102,25 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
     }
 
     public void buildStructuredTree(){
-        buildStructuredTree(false, null);
+        buildStructuredTree(false, false, null);
     }
 
-    public void buildStructuredTreeAndExportSteps(String folderPath){
-        buildStructuredTree(true, folderPath);
+    public void buildStructuredTreeAndExportSteps(String folderPath, boolean serialization){
+        buildStructuredTree(true, serialization, folderPath);
     }
 
-    private void buildStructuredTree(boolean exportAllIteration, String folderPath) {
+    private void buildStructuredTree(boolean exportAllIteration, boolean serialization, String folderPath) {
         int seqReplacedCount = 0;
         int andReplacedCount = 0;
         int stepCount = 0;
 
         if(exportAllIteration){
-            this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+            if(serialization){
+                this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+            }
+            else{
+                this.exportDotFileNoSerialization(folderPath + "/structuredTree_" + stepCount + ".dot");
+            }
             stepCount++;
         }
 
@@ -124,14 +129,24 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
             seqReplacedCount = findAndReplaceSeqs();
             if(exportAllIteration && seqReplacedCount > 0){
                 // System.out.println("Seq replaced: " + seqReplacedCount);
-                this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                if(serialization){
+                    this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                }
+                else{
+                    this.exportDotFileNoSerialization(folderPath + "/structuredTree_" + stepCount + ".dot");
+                }
                 stepCount++;
             }
 
             andReplacedCount = findAndReplaceAnds();
             if(exportAllIteration && andReplacedCount > 0){
                 // System.out.println("And replaced: " + andReplacedCount);
-                this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                if(serialization){
+                    this.exportDotFile(folderPath + "/structuredTree_" + stepCount + ".dot");
+                }
+                else{
+                    this.exportDotFileNoSerialization(folderPath + "/structuredTree_" + stepCount + ".dot");
+                }
                 stepCount++;
             }
 
@@ -332,6 +347,15 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
         structuredWorkflow = dagToSet;
     }
 
-    
+    // Override of attribute provider for edges (structured tree doesn't utilize any of the attribute of edges)
+    @Override
+    public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
+        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            return map;
+        };
+
+        return edgeAttributeProvider;
+    }
 
 }

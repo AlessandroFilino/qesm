@@ -45,7 +45,7 @@ public class DotFileConverterTest {
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
         // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
 
-        StructuredTree structuredTree1 = new StructuredTree(workFlowType1.getDag(), workFlowType1.getRootNode());
+        StructuredTree structuredTree1 = new StructuredTree(workFlowType1.getDag());
         structuredTree1.buildStructuredTree();
         structuredTree1.exportDotFile("./output/structuredTree1.dot");
 
@@ -63,7 +63,7 @@ public class DotFileConverterTest {
         rmDotFile("./output/structuredTree2.dot");
     }
 
-    // NOTE: (serializing workflow object leads to massive string, dot render has a limit of (2^14 chars))  
+    
     @Test
     void workflowIstanceIOTest(){
         WorkflowType workFlowType1 = new WorkflowType();
@@ -76,17 +76,15 @@ public class DotFileConverterTest {
 
         Workflow workFlowIstance1 = workFlowType1.makeIstance();
         workFlowIstance1.exportDotFile("./output/workFlowIstance1.dot");
-        // workFlowIstance1.exportDotFileNoSerialization("./output/workFlowIstance1NoSerialization.dot");
 
         Workflow workFlowIstance2 = new Workflow();
         workFlowIstance2.importDotFile("./output/workFlowIstance1.dot");
 
-        // Renderer.renderDotFile("./output/workFlowIstance1NoSerialization.dot", "./media/workFlowIstance1.png", 3);
+        
 
         assertTrue(workFlowIstance1.equals(workFlowIstance2));
 
         rmDotFile("./output/workFlowIstance1.dot");
-        rmDotFile("./output/workFlowIstance1NoSerialization.dot");
         
     }
 

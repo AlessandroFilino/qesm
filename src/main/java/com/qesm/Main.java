@@ -1,10 +1,6 @@
 package com.qesm;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 
 import org.oristool.eulero.modeling.Activity;
@@ -13,10 +9,7 @@ import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
-import org.oristool.petrinet.PetriNet;
-import org.oristool.petrinet.Place;
 
-import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class Main {
@@ -42,7 +35,7 @@ public class Main {
         // // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
         // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
 
-        // TODO: add method to export and render all subgraphs
+        
         // Workflow workflow = graphTest.makeIstance();
         // workflow.exportDagToDotFile("./output/istance.dot");
         // Renderer.renderDotFile("./output/istance.dot", "./media/istance.png", 3);
@@ -88,33 +81,6 @@ public class Main {
         // dagAnalyzer.testPetriNet1();
         // dagAnalyzer.testPetriNet2();
         
-
-    }
-
-    public static void testSerialization(){
-
-        ProductType productType = new ProductType("test1", 1, new UniformTime(0,2));
-        // ProductType productType = new ProductType("test2");
-
-        try {
-            FileOutputStream fos = new FileOutputStream("./output/test.ser");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(productType);
-            oos.close();
-            fos.close();
-
-            FileInputStream fis = new FileInputStream("./output/test.ser");
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            ProductType deserializedProductType = (ProductType) ois.readObject();
-            System.out.println(deserializedProductType.getNameType() + " " + deserializedProductType.getQuantityProduced() + " " + deserializedProductType.getPdf());
-            ois.close();
-            fis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        
-
 
     }
 

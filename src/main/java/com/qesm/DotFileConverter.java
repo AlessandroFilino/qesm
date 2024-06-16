@@ -56,7 +56,7 @@ public interface DotFileConverter <T extends DotFileConvertible> {
     }
 
     default public void exportDotFileNoSerialization(String filePath) {
-
+        // NOTE: (serializing big object (ex workflow) can leads to massive attribute string, dot renderer has a limit of (2^14 chars))  
         DOTExporter<T, CustomEdge> exporter = setExporterProviders(false);
         
         // export graph to dotFile

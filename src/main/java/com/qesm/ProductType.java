@@ -260,7 +260,7 @@ public class ProductType implements Serializable, DotFileConvertible{
 
         ois.defaultReadObject();
         
-        Class<? extends StochasticTime> pdfClass = (Class<? extends StochasticTime>) ois.readObject();
+        Class<?> pdfClass = (Class<?>) ois.readObject();
 
         if(pdfClass == null){
             // RawMaterial
@@ -286,6 +286,5 @@ public class ProductType implements Serializable, DotFileConvertible{
         }
 
     }
-
 
 }
