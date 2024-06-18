@@ -6,11 +6,11 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-public class Product extends ProductType{
+public class ProductIstance extends ProductType{
 
-    private Workflow productWorkflow;
+    private WorkflowIstance productWorkflow;
    
-    protected Product(ProductType productType){
+    protected ProductIstance(ProductType productType){
         super(new String(productType.getNameType()), productType.getItemType());
 
         if(productType.getItemType() == ItemType.PROCESSED){
@@ -40,11 +40,11 @@ public class Product extends ProductType{
     }
 
    
-    public Workflow getProductWorkflow() {
+    public WorkflowIstance getProductWorkflow() {
         return returnWithItemTypeCheck(productWorkflow);
     }
 
-    public Integer setProductWorkflow(Workflow productWorkflow) {
+    public Integer setProductWorkflow(WorkflowIstance productWorkflow) {
         Integer returnValue = returnWithItemTypeCheck(0);
         if(returnValue != null){
             this.productWorkflow = productWorkflow;

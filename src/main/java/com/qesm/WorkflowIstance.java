@@ -7,33 +7,31 @@ import java.util.Optional;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-import guru.nidi.graphviz.engine.GraphvizCmdLineEngine.Option;
+public class WorkflowIstance implements DotFileConverter<ProductIstance>, Serializable{
 
-public class Workflow implements DotFileConverter<Product>, Serializable{
+    private DirectedAcyclicGraph<ProductIstance, CustomEdge> dag;
 
-    private DirectedAcyclicGraph<Product, CustomEdge> dag;
-
-    public Workflow(){
+    public WorkflowIstance(){
         this.dag = null;
     }
 
-    public Workflow(DirectedAcyclicGraph<Product, CustomEdge> dag) {
+    public WorkflowIstance(DirectedAcyclicGraph<ProductIstance, CustomEdge> dag) {
         this.dag = dag;
     }
 
     @Override
-    public DirectedAcyclicGraph<Product, CustomEdge> getDag() {
+    public DirectedAcyclicGraph<ProductIstance, CustomEdge> getDag() {
         return dag;
     }
 
     @Override
-    public void setDag(DirectedAcyclicGraph<Product, CustomEdge> dagToSet) {
+    public void setDag(DirectedAcyclicGraph<ProductIstance, CustomEdge> dagToSet) {
         dag = dagToSet;
     }
 
     @Override
-    public Class<Product> getVertexClass() {
-        return Product.class;
+    public Class<ProductIstance> getVertexClass() {
+        return ProductIstance.class;
     }
 
     @Override
@@ -48,11 +46,11 @@ public class Workflow implements DotFileConverter<Product>, Serializable{
             return false;
         }
 
-        Workflow workflowIstanceToCompare = (Workflow) obj;
+        WorkflowIstance workflowIstanceToCompare = (WorkflowIstance) obj;
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for Product
-        List<Product> vertexListToCompare = new ArrayList<>(workflowIstanceToCompare.getDag().vertexSet());
-        List<Product> vertexList = new ArrayList<>(dag.vertexSet());
+        List<ProductIstance> vertexListToCompare = new ArrayList<>(workflowIstanceToCompare.getDag().vertexSet());
+        List<ProductIstance> vertexList = new ArrayList<>(dag.vertexSet());
 
         if(! vertexList.equals(vertexListToCompare)){
             return false;
@@ -68,9 +66,9 @@ public class Workflow implements DotFileConverter<Product>, Serializable{
         return true;
     }
 
-    // TODO: Add a method that allows you to select a specific process type and its subgraph
-    public Optional<Product> findProduct(String productName){
-        for(Product product : dag.vertexSet()){
+    // TODO: Move method to abstract super class
+    public Optional<ProductIstance> findProduct(String productName){
+        for(ProductIstance product : dag.vertexSet()){
             if(product.getNameType().equals(productName)){
                 return Optional.of(product);
             }

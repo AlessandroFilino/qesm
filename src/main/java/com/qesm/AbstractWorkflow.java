@@ -13,48 +13,52 @@ import org.jgrapht.traverse.DepthFirstIterator;
 import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
+public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>{
 
-public class WorkflowType implements DotFileConverter<ProductType>{
+    private DirectedAcyclicGraph<T, CustomEdge> dag;
+    private final Class<T> vertexClass;
 
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-
-    public WorkflowType() {
-        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+    public AbstractWorkflow(Class<T> vertexClass) {
+        this.vertexClass = vertexClass;
+        this.dag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
     }
 
-    public WorkflowType(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport) {
-        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+    public AbstractWorkflow(DirectedAcyclicGraph<T, CustomEdge> dagToImport, Class<T> vertexClass) {
+        this.vertexClass = vertexClass;
+        this.dag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
 
         // import all verteces
-        for (ProductType vertex : dagToImport.vertexSet()) {
+        for (T vertex : dagToImport.vertexSet()) {
             dag.addVertex(vertex);
         }
 
         // Add all the edges from the original DAG to the copy 
         for (CustomEdge edge : dagToImport.edgeSet()) {
-            ProductType source = dagToImport.getEdgeSource(edge);
-            ProductType target = dagToImport.getEdgeTarget(edge);
+            T source = dagToImport.getEdgeSource(edge);
+            T target = dagToImport.getEdgeTarget(edge);
             dag.addEdge(source, target, edge);
         }
     }
 
+    // TODO: Add metric to measure the paralellization/balance of the dag
+
     @Override
-    public DirectedAcyclicGraph<ProductType, CustomEdge> getDag() {
+    public DirectedAcyclicGraph<T, CustomEdge> getDag() {
         return dag;
     }
 
     @Override
-    public void setDag(DirectedAcyclicGraph<ProductType, CustomEdge> dagToSet) {
+    public void setDag(DirectedAcyclicGraph<T, CustomEdge> dagToSet) {
         dag = dagToSet;
     }
 
     @Override
-    public Class<ProductType> getVertexClass() {
-        return ProductType.class;
+    public Class<T> getVertexClass() {
+        return this.vertexClass;
     }
 
-    public ProductType getRootNode() {
-        for (ProductType node : dag.vertexSet()) {
+    public T getRootNode() {
+        for (T node : dag.vertexSet()) {
             if (dag.outDegreeOf(node) == 0) {
                 return node;
             }
@@ -63,28 +67,13 @@ public class WorkflowType implements DotFileConverter<ProductType>{
         return null;
     }
 
-    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType) {
-        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
-                maxBranchingDownFactor, branchingUpProbability, pdfType);
-        randDAGGenerator.generateGraph(dag);
-    }
-
     public String toString() {
-        String result = "";
-        Iterator<ProductType> iter = new DepthFirstIterator<ProductType, CustomEdge>(dag);
-        while (iter.hasNext()) {
-            ProductType vertex = iter.next();
-            result += "Vertex " + vertex.getNameType() + " type: " + vertex.getClass() + " is connected to: \n";
-            for (CustomEdge connectedEdge : dag.edgesOf(vertex)) {
-                result += "\t[" + dag.getEdgeSource(connectedEdge).getNameType() + " -> "
-                        + dag.getEdgeTarget(connectedEdge).getNameType() + "]\n";
-            }
-        }
-        return result;
+        // TODO: check if toString does the job
+        return dag.toString();
     }
 
     public boolean isDagConnected() {
-        ConnectivityInspector<ProductType, CustomEdge> connInspector = new ConnectivityInspector<ProductType, CustomEdge>(
+        ConnectivityInspector<T, CustomEdge> connInspector = new ConnectivityInspector<T, CustomEdge>(
                 dag);
         return connInspector.isConnected();
     }
@@ -108,9 +97,9 @@ public class WorkflowType implements DotFileConverter<ProductType>{
 
         WorkflowType workflowTypeToCompare = (WorkflowType) obj;
 
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for ProductType
-        List<ProductType> vertexListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().vertexSet());
-        List<ProductType> vertexList = new ArrayList<>(dag.vertexSet());
+        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for T
+        List<T> vertexListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().vertexSet());
+        List<T> vertexList = new ArrayList<>(dag.vertexSet());
 
         if(! vertexList.equals(vertexListToCompare)){
             return false;
@@ -129,20 +118,20 @@ public class WorkflowType implements DotFileConverter<ProductType>{
     public WorkflowIstance makeIstance() {
         DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-        HashMap<ProductType, ProductIstance> productTypeToProductMap = new HashMap<>();
+        HashMap<T, ProductIstance> TToProductMap = new HashMap<>();
 
         // Deepcopy of all vertexes
-        for (ProductType vertex : dag.vertexSet()) {
+        for (T vertex : dag.vertexSet()) {
             ProductIstance product = new ProductIstance(vertex);
             dagIstance.addVertex(product);
-            productTypeToProductMap.put(vertex, product);
+            TToProductMap.put(vertex, product);
         }
 
         // Add all the edges from the original DAG to the copy 
         for (CustomEdge edge : dag.edgeSet()) {
-            ProductType sourceType = dag.getEdgeSource(edge);
-            ProductType targetType = dag.getEdgeTarget(edge);
-            dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType), new CustomEdge(edge));
+            T sourceType = dag.getEdgeSource(edge);
+            T targetType = dag.getEdgeTarget(edge);
+            dagIstance.addEdge(TToProductMap.get(sourceType), TToProductMap.get(targetType), new CustomEdge(edge));
         }
 
         WorkflowIstance workflow = new WorkflowIstance(dagIstance);
@@ -193,5 +182,4 @@ public class WorkflowType implements DotFileConverter<ProductType>{
         return subgraphWorkflow;
 
     }
-
 }

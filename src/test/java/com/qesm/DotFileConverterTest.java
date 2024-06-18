@@ -74,10 +74,10 @@ public class DotFileConverterTest {
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
         // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
 
-        Workflow workFlowIstance1 = workFlowType1.makeIstance();
+        WorkflowIstance workFlowIstance1 = workFlowType1.makeIstance();
         workFlowIstance1.exportDotFile("./output/workFlowIstance1.dot");
 
-        Workflow workFlowIstance2 = new Workflow();
+        WorkflowIstance workFlowIstance2 = new WorkflowIstance();
         workFlowIstance2.importDotFile("./output/workFlowIstance1.dot");
 
         

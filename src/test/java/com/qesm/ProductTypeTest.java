@@ -13,8 +13,4 @@ public class ProductTypeTest {
         // TODO TEST: Implement test
     }
 
-    @Test
-    void testToString() {
-        // TODO TEST: Implement test
-    }
 }

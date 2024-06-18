@@ -11,7 +11,7 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class DAGSharedToUnsharedConverterTest {
 
-    //TODO Change the test method. Form shared, count the expected edges and nodes
+    //TODO TEST: Change the test method. Form shared, count the expected edges and nodes
     //To test this method we generate a shared graph, then we create a list of nodes end remove the duplicate. The final result is the edges number fo shared graph 
     @Test
     public void testCheckEdgeNumberFromUnsharedToShared(){

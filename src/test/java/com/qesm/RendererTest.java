@@ -67,7 +67,7 @@ public class RendererTest {
 
         workFlowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        Workflow workFlowIstance = workFlowType.makeIstance();
+        WorkflowIstance workFlowIstance = workFlowType.makeIstance();
 
         ensureFolderExists("output");
         ensureFolderExists("media");
