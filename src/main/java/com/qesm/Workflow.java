@@ -3,8 +3,11 @@ package com.qesm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+
+import guru.nidi.graphviz.engine.GraphvizCmdLineEngine.Option;
 
 public class Workflow implements DotFileConverter<Product>, Serializable{
 
@@ -65,5 +68,13 @@ public class Workflow implements DotFileConverter<Product>, Serializable{
         return true;
     }
 
-    // TODO: Add a method that allows you to select a specific process type and it's subgraph
+    // TODO: Add a method that allows you to select a specific process type and its subgraph
+    public Optional<Product> findProduct(String productName){
+        for(Product product : dag.vertexSet()){
+            if(product.getNameType().equals(productName)){
+                return Optional.of(product);
+            }
+        }
+        return Optional.empty();
+    } 
 }

@@ -2,6 +2,7 @@ package com.qesm;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
@@ -23,7 +24,20 @@ public class Main {
         WorkflowType graphTest = new WorkflowType();
         
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        graphTest.exportDotFile("./output/shared_WorkflowType.dot");
+        Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.png", 3);
+
+        Workflow workflow = graphTest.makeIstance();
+        workflow.exportDotFile("./output/shared_Workflow.dot");
+        Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.png", 3);
         
+        Optional<Product> optionalProduct = workflow.findProduct("v0");
+        if(optionalProduct.isPresent()){
+            Product product = optionalProduct.get();
+            System.out.println("Name: " + product.getNameType());
+        }
+
+
         //TODO: Add useful tests for all classes that need them (ex DagAnalyzer, StructuredTree, Workflow and WorkflowType)
 
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
