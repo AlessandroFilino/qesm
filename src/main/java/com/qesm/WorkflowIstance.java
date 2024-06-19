@@ -1,22 +1,21 @@
 package com.qesm;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-public class WorkflowIstance implements DotFileConverter<ProductIstance>, Serializable{
+public class WorkflowIstance extends AbstractWorkflow<ProductIstance>{
 
     private DirectedAcyclicGraph<ProductIstance, CustomEdge> dag;
 
     public WorkflowIstance(){
-        this.dag = null;
+        super(ProductIstance.class);
+        // this.dag = null;
     }
 
     public WorkflowIstance(DirectedAcyclicGraph<ProductIstance, CustomEdge> dag) {
-        this.dag = dag;
+        super(dag, ProductIstance.class);
     }
 
     @Override
@@ -65,14 +64,4 @@ public class WorkflowIstance implements DotFileConverter<ProductIstance>, Serial
 
         return true;
     }
-
-    // TODO: Move method to abstract super class
-    public Optional<ProductIstance> findProduct(String productName){
-        for(ProductIstance product : dag.vertexSet()){
-            if(product.getNameType().equals(productName)){
-                return Optional.of(product);
-            }
-        }
-        return Optional.empty();
-    } 
 }

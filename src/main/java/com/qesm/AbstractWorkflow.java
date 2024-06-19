@@ -1,22 +1,17 @@
 package com.qesm;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.traverse.DepthFirstIterator;
 
-import com.qesm.ProductType.ItemType;
-import com.qesm.RandomDAGGenerator.PdfType;
 
 public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>{
 
-    private DirectedAcyclicGraph<T, CustomEdge> dag;
-    private final Class<T> vertexClass;
+    protected DirectedAcyclicGraph<T, CustomEdge> dag;
+    protected final Class<T> vertexClass;
 
     public AbstractWorkflow(Class<T> vertexClass) {
         this.vertexClass = vertexClass;
@@ -78,11 +73,6 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         return connInspector.isConnected();
     }
 
-    public void toUnshared() {
-        DAGSharedToUnsharedConverter dagConverter = new DAGSharedToUnsharedConverter(dag, getRootNode());
-        dag = dagConverter.makeConversion();
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj){
@@ -95,17 +85,18 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
             return false;
         }
 
-        WorkflowType workflowTypeToCompare = (WorkflowType) obj;
+        // TODO: check if this cast using "?" works and che if "equals" function works
+        AbstractWorkflow<?> workflowToCompare = (AbstractWorkflow<?>) obj;
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for T
-        List<T> vertexListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().vertexSet());
+        List<?> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
         List<T> vertexList = new ArrayList<>(dag.vertexSet());
 
         if(! vertexList.equals(vertexListToCompare)){
             return false;
         }
 
-        List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowTypeToCompare.getDag().edgeSet());
+        List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowToCompare.getDag().edgeSet());
         List<CustomEdge> edgeList = new ArrayList<>(dag.edgeSet());
 
         if(! edgeList.equals(edgeListToCompare)){
@@ -115,71 +106,12 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         return true;
     }
 
-    public WorkflowIstance makeIstance() {
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
-
-        HashMap<T, ProductIstance> TToProductMap = new HashMap<>();
-
-        // Deepcopy of all vertexes
-        for (T vertex : dag.vertexSet()) {
-            ProductIstance product = new ProductIstance(vertex);
-            dagIstance.addVertex(product);
-            TToProductMap.put(vertex, product);
-        }
-
-        // Add all the edges from the original DAG to the copy 
-        for (CustomEdge edge : dag.edgeSet()) {
-            T sourceType = dag.getEdgeSource(edge);
-            T targetType = dag.getEdgeTarget(edge);
-            dagIstance.addEdge(TToProductMap.get(sourceType), TToProductMap.get(targetType), new CustomEdge(edge));
-        }
-
-        WorkflowIstance workflow = new WorkflowIstance(dagIstance);
-
-
-        for (ProductIstance product : dagIstance.vertexSet()) {
-            if(product.getItemType() == ItemType.PROCESSED){
-                product.setProductWorkflow(buildSubgraphWorkflow(dagIstance, product));
+    public Optional<T> findProduct(String productName){
+        for(T product : dag.vertexSet()){
+            if(product.getNameType().equals(productName)){
+                return Optional.of(product);
             }
         }
-
-        return workflow;
-
-    }
-
-    private WorkflowIstance buildSubgraphWorkflow(DirectedAcyclicGraph<ProductIstance, CustomEdge> fullDag, ProductIstance currentVertex){
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> subGraph = new DirectedAcyclicGraph<>(CustomEdge.class);
-
-        Set<ProductIstance>  subGraphVertexSet = fullDag.getAncestors(currentVertex); 
-        subGraphVertexSet.add(currentVertex);
-
-        // Add all subgraph vertexes
-        for (ProductIstance product : subGraphVertexSet) {
-            subGraph.addVertex(product);
-        }
-
-        // Add all subgraph edges
-        for (ProductIstance product : subGraphVertexSet) {
-            for (CustomEdge edge : fullDag.edgesOf(product)) {
-
-                ProductIstance sourceProduct = fullDag.getEdgeSource(edge);
-                if(!subGraphVertexSet.contains(sourceProduct)){
-                    continue;
-                }
-
-                ProductIstance targetProduct = fullDag.getEdgeTarget(edge);
-                if(!subGraphVertexSet.contains(targetProduct)){
-                    continue;
-                }
-                
-                subGraph.addEdge(sourceProduct, targetProduct, edge);
-            }
-            
-        }
-
-
-        WorkflowIstance subgraphWorkflow = new WorkflowIstance(subGraph);
-        return subgraphWorkflow;
-
-    }
+        return Optional.empty();
+    } 
 }
