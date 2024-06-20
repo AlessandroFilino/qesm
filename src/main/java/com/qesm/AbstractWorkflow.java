@@ -99,18 +99,66 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         AbstractWorkflow<T> workflowToCompare = uncheckedCast(obj);
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
+        
         List<T> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
         List<T> vertexList = new ArrayList<>(dag.vertexSet());
 
-        if(! vertexList.equals(vertexListToCompare)){
-            return false;
+        // Check if all element of a list are contained in the other and vice versa 
+        // (very inneficent, need to implement custum hashcode if it will be developed further)
+        for (T vertex : vertexList) {
+            Boolean isContained = false;
+            for (T vertexToCompare : vertexListToCompare) {
+                if(vertex.equals(vertexToCompare)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
+        }
+
+        for (T vertexToCompare : vertexListToCompare) {
+            Boolean isContained = false;
+            for (T vertex : vertexList) {
+                if(vertexToCompare.equals(vertex)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
         }
 
         List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowToCompare.getDag().edgeSet());
         List<CustomEdge> edgeList = new ArrayList<>(dag.edgeSet());
 
-        if(! edgeList.equals(edgeListToCompare)){
-            return false;
+        
+        for (CustomEdge customEdge : edgeList) {
+            Boolean isContained = false;
+            for (CustomEdge customEdgeToCompare : edgeListToCompare) {
+                if(customEdge.equals(customEdgeToCompare)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
+        }
+
+        for (CustomEdge customEdgeToCompare : edgeListToCompare) {
+            Boolean isContained = false;
+            for (CustomEdge customEdge : edgeList) {
+                if(customEdgeToCompare.equals(customEdge)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
         }
 
         return true;

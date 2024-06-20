@@ -24,7 +24,6 @@ public class ProductType implements Serializable, DotFileConvertible{
     private UUID uuid;
     private int quantityProduced;
     private transient StochasticTime pdf;
-    // private Workflow productWorkflow;
     
     enum ItemType{
         RAW_MATERIAL,
@@ -55,18 +54,6 @@ public class ProductType implements Serializable, DotFileConvertible{
     public ItemType getItemType() {
         return itemType;
     }
-
-    // public Workflow getProductWorkflow() {
-    //     return returnWithItemTypeCheck(productWorkflow);
-    // }
-
-    // public Integer setProductWorkflow(Workflow productWorkflow) {
-    //     Integer returnValue = returnWithItemTypeCheck(0);
-    //     if(returnValue != null){
-    //         this.productWorkflow = productWorkflow;
-    //     }
-    //     return returnValue;
-    // }
 
     public Integer getQuantityProduced() {
         return returnWithItemTypeCheck(quantityProduced);
@@ -142,19 +129,24 @@ public class ProductType implements Serializable, DotFileConvertible{
         
         ProductType productTypeToCompare = (ProductType) obj;
 
-        if(! productTypeToCompare.getNameType().equals(nameType) ||
-           ! productTypeToCompare.getItemType().equals(itemType)){
+        return equalsAttributes(productTypeToCompare);
+        
+    }
+
+    public <T extends ProductType> boolean equalsAttributes(T productToCompare){
+        if(! productToCompare.getNameType().equals(nameType) ||
+           ! productToCompare.getItemType().equals(itemType)){
             return false;
         }
         
         if(this.isProcessedType()){
 
-            if(! productTypeToCompare.getQuantityProduced().equals(quantityProduced)){
+            if(! productToCompare.getQuantityProduced().equals(quantityProduced)){
                 return false;
             }
             else{
                 // Custum equals for pdf (StochasticTime doesn't implement it)
-                StochasticTime pdfToCompare = productTypeToCompare.getPdf();
+                StochasticTime pdfToCompare = productToCompare.getPdf();
                 if(! pdfToCompare.getClass().isInstance(pdf)){
                     return false;
                 }
@@ -197,7 +189,7 @@ public class ProductType implements Serializable, DotFileConvertible{
         }
         
         return true;
-    }
+    } 
 
     @Override
     public Map<String, Attribute> getExporterAttributes() {
