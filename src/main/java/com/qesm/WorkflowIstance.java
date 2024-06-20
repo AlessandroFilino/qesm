@@ -1,8 +1,5 @@
 package com.qesm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
 public class WorkflowIstance extends AbstractWorkflow<ProductIstance>{
@@ -16,35 +13,4 @@ public class WorkflowIstance extends AbstractWorkflow<ProductIstance>{
         super(dag, ProductIstance.class);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj){
-            return true;
-        }
-        if (obj == null){
-            return false;
-        }
-        if (getClass() != obj.getClass()){
-            return false;
-        }
-
-        WorkflowIstance workflowIstanceToCompare = (WorkflowIstance) obj;
-
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for Product
-        List<ProductIstance> vertexListToCompare = new ArrayList<>(workflowIstanceToCompare.getDag().vertexSet());
-        List<ProductIstance> vertexList = new ArrayList<>(dag.vertexSet());
-
-        if(! vertexList.equals(vertexListToCompare)){
-            return false;
-        }
-
-        List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowIstanceToCompare.getDag().edgeSet());
-        List<CustomEdge> edgeList = new ArrayList<>(dag.edgeSet());
-
-        if(! edgeList.equals(edgeListToCompare)){
-            return false;
-        }
-
-        return true;
-    }
 }

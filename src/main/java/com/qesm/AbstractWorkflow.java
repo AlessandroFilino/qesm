@@ -1,5 +1,6 @@
 package com.qesm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,10 +11,10 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 
-public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>{
+public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>, Serializable{
 
     protected DirectedAcyclicGraph<T, CustomEdge> dag;
-    protected final Class<T> vertexClass;
+    protected transient final Class<T> vertexClass;
 
     public AbstractWorkflow(Class<T> vertexClass) {
         this.vertexClass = vertexClass;
@@ -95,11 +96,10 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
             return false;
         }
 
-        // TODO: check if this cast using "?" works and che if "equals" function works
-        AbstractWorkflow<?> workflowToCompare = (AbstractWorkflow<?>) obj;
+        AbstractWorkflow<T> workflowToCompare = uncheckedCast(obj);
 
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for T
-        List<?> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
+        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
+        List<T> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
         List<T> vertexList = new ArrayList<>(dag.vertexSet());
 
         if(! vertexList.equals(vertexListToCompare)){
@@ -124,4 +124,11 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         }
         return Optional.empty();
     } 
+
+    // Jgrapht does the same
+    @SuppressWarnings("unchecked")
+    private AbstractWorkflow<T> uncheckedCast(Object o)
+    {
+        return (AbstractWorkflow<T>) o;
+    }
 }
