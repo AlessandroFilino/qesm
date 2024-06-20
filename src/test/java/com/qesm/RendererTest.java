@@ -11,21 +11,16 @@ public class RendererTest {
 
 
     @Test
-    public void renderWorkflowType(){
+    public void testRenderWorkflowType(){
+
         WorkflowType workFlowType = new WorkflowType();
         workFlowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        ensureFolderExists("output");
-        ensureFolderExists("media");
-
-        workFlowType.exportDotFileNoSerialization("./output/workFlowTypeRenderTest.dot");
-        Renderer.renderDotFile("./output/workFlowTypeRenderTest.dot", "./media/workFlowTypeRenderTest.png", 3);
-        
-        rmDotFile("./output/workFlowTypeRenderTest.dot");
+        renderWorkflowType(workFlowType);
     }
 
     @Test
-    public void renderStructureTree(){
+    public void testRenderStructureTree(){
         WorkflowType workFlowType = new WorkflowType();
         workFlowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
@@ -43,10 +38,11 @@ public class RendererTest {
     }
 
     @Test
-    public void renderStructureTreeWithAllSteps(){
+    public void testRenderStructureTreeWithAllSteps(){
         WorkflowType workFlowType = new WorkflowType();
         workFlowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        
+        renderWorkflowType(workFlowType);
+
         StructuredTree structuredTree = new StructuredTree(workFlowType.getDag());
 
         ensureFolderExists("output");
@@ -62,20 +58,31 @@ public class RendererTest {
     }
 
     @Test
-    public void renderWorkflowIstance(){
+    public void testRenderWorkflowIstance(){
         WorkflowType workFlowType = new WorkflowType();
 
         workFlowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        renderWorkflowType(workFlowType);
 
         WorkflowIstance workFlowIstance = workFlowType.makeIstance();
 
         ensureFolderExists("output");
         ensureFolderExists("media");
 
-        workFlowIstance.exportDotFile("./output/workFlowIstanceRendererTest.dot");
+        workFlowIstance.exportDotFileNoSerialization("./output/workFlowIstanceRendererTest.dot");
         Renderer.renderDotFile("./output/workFlowIstanceRendererTest.dot", "./media/workFlowIstanceRendererTest.png", 3);
 
         rmDotFile("./output/workFlowIstanceRendererTest.dot");
+    }
+
+    private static void renderWorkflowType(WorkflowType workflowTypeToRender){
+        ensureFolderExists("output");
+        ensureFolderExists("media");
+
+        workflowTypeToRender.exportDotFileNoSerialization("./output/workFlowTypeRenderTest.dot");
+        Renderer.renderDotFile("./output/workFlowTypeRenderTest.dot", "./media/workFlowTypeRenderTest.png", 3);
+        
+        rmDotFile("./output/workFlowTypeRenderTest.dot");
     }
 
     private static void ensureFolderExists(String folderPath) {
