@@ -1,11 +1,13 @@
 package com.qesm;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 
 public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>{
@@ -63,8 +65,16 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
     }
 
     public String toString() {
-        // TODO: check if toString does the job
-        return dag.toString();
+        String dagInfo = "";
+        Iterator<T> iter = new DepthFirstIterator<T, CustomEdge>(dag);
+        while (iter.hasNext()) {
+            T vertex = iter.next();
+            dagInfo += vertex.toString() + " is connected to: \n";
+            for (CustomEdge connectedEdge : dag.outgoingEdgesOf(vertex)) {
+                dagInfo += "\t" + connectedEdge.toString() + "\n";
+            }
+        }
+        return dagInfo;
     }
 
     public boolean isDagConnected() {
