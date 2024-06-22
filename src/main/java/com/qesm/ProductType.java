@@ -32,19 +32,19 @@ public class ProductType implements Serializable, DotFileConvertible{
 
     private ItemType itemType;
 
-    protected ProductType(String nameType, ItemType itemType){
+    public ProductType(String nameType, ItemType itemType){
         this.nameType = nameType;
         this.uuid = UUID.randomUUID();
         this.itemType = itemType;
     }
 
-    protected ProductType(String nameType){
+    public ProductType(String nameType){
         this.nameType = nameType;
         this.uuid = UUID.randomUUID();
         this.itemType = ItemType.RAW_MATERIAL;
     }
 
-    protected ProductType(String nameType, int quantityProduced, StochasticTime pdf){
+    public ProductType(String nameType, int quantityProduced, StochasticTime pdf){
         this.nameType = nameType;
         this.uuid = UUID.randomUUID();
         this.itemType = ItemType.PROCESSED;

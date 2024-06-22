@@ -1,11 +1,9 @@
 package com.qesm;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
-import com.qesm.ProductType.ItemType;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 
@@ -24,12 +22,6 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
                 maxBranchingDownFactor, branchingUpProbability, pdfType);
         randDAGGenerator.generateGraph(dag);
-    }
-
-    // TODO: Should "toUnshared" be a superclass method?
-    public void toUnshared() {
-        DAGSharedToUnsharedConverter dagConverter = new DAGSharedToUnsharedConverter(dag, getRootNode());
-        dag = dagConverter.makeConversion();
     }
 
     public WorkflowIstance makeIstance() {
@@ -51,53 +43,10 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
             dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType), new CustomEdge(edge));
         }
 
-        WorkflowIstance workflow = new WorkflowIstance(dagIstance);
+        WorkflowIstance workflowIstance = new WorkflowIstance(dagIstance);
+        workflowIstance.updateSubgraphs();
 
-
-        for (ProductIstance product : dagIstance.vertexSet()) {
-            if(product.getItemType() == ItemType.PROCESSED){
-                product.setProductWorkflow(buildSubgraphWorkflow(dagIstance, product));
-            }
-        }
-
-        return workflow;
-
-    }
-
-    private WorkflowIstance buildSubgraphWorkflow(DirectedAcyclicGraph<ProductIstance, CustomEdge> fullDag, ProductIstance currentVertex){
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> subGraph = new DirectedAcyclicGraph<>(CustomEdge.class);
-
-        Set<ProductIstance>  subGraphVertexSet = fullDag.getAncestors(currentVertex); 
-        subGraphVertexSet.add(currentVertex);
-
-        // Add all subgraph vertexes
-        for (ProductIstance product : subGraphVertexSet) {
-            subGraph.addVertex(product);
-        }
-
-        // Add all subgraph edges
-        for (ProductIstance product : subGraphVertexSet) {
-            for (CustomEdge edge : fullDag.edgesOf(product)) {
-
-                ProductIstance sourceProduct = fullDag.getEdgeSource(edge);
-                if(!subGraphVertexSet.contains(sourceProduct)){
-                    continue;
-                }
-
-                ProductIstance targetProduct = fullDag.getEdgeTarget(edge);
-                if(!subGraphVertexSet.contains(targetProduct)){
-                    continue;
-                }
-                
-                subGraph.addEdge(sourceProduct, targetProduct, edge);
-            }
-            
-        }
-
-
-        WorkflowIstance subgraphWorkflow = new WorkflowIstance(subGraph);
-        return subgraphWorkflow;
-
+        return workflowIstance;
     }
 
 }

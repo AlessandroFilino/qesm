@@ -87,14 +87,4 @@ public class DAGSharedToUnsharedConverterTest {
             return nodeNumberAfterConv;
         }
     }
-
-
-    @Test
-    public void testGenerateUsharedGraph(){
-        WorkflowType graphTest = new WorkflowType();
-        graphTest.generateRandomDAG(10, 10, 5, 5, 60, PdfType.UNIFORM);
-        graphTest.toUnshared();
-        graphTest.exportDotFileNoSerialization("./output/WorkflowTypeTest.dot");
-        Renderer.renderDotFile("./output/WorkflowTypeTest.dot", "./media/WorkflowTypeTest.png", 3);
-    }
 }

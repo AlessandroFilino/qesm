@@ -164,6 +164,11 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         return true;
     }
 
+    public void toUnshared() {
+        DAGSharedToUnsharedConverter<T> dagConverter = new DAGSharedToUnsharedConverter<T>(dag, getRootNode(), vertexClass);
+        dag = dagConverter.makeConversion();
+    } 
+
     public Optional<T> findProduct(String productName){
         for(T product : dag.vertexSet()){
             if(product.getNameType().equals(productName)){

@@ -73,7 +73,6 @@ public class WorkflowTypeTest {
     private  DirectedAcyclicGraph<ProductIstance, CustomEdge> createSubgraph(DirectedAcyclicGraph<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
         DirectedAcyclicGraph<ProductIstance, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-        // Get the ancestors of the root, including the root itself
         Set<ProductIstance> subgraphVertices = originalDAG.getAncestors(root);
         subgraphVertices.add(root);
 

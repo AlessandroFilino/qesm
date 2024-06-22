@@ -39,6 +39,9 @@ public class ProductIstance extends ProductType{
         
     }
 
+    public ProductIstance(String nameType, ItemType itemType){
+        super(nameType, itemType);
+    }
    
     public WorkflowIstance getProductWorkflow() {
         return returnWithItemTypeCheck(productWorkflow);

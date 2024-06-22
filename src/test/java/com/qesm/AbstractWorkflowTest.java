@@ -12,9 +12,4 @@ public class AbstractWorkflowTest {
     void testFindProduct() {
         // TODO TEST: Implement test
     }
-
-    @Test
-    void testToString() {
-        // TODO TEST: Implement test  
-    }
 }
