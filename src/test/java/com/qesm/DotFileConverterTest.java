@@ -45,11 +45,11 @@ public class DotFileConverterTest {
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
         // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
 
-        StructuredTree structuredTree1 = new StructuredTree(workFlowType1.getDag());
+        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.getDag(), ProductType.class);
         structuredTree1.buildStructuredTree();
         structuredTree1.exportDotFile("./output/structuredTree1.dot");
 
-        StructuredTree structuredTree2 = new StructuredTree();
+        StructuredTree<ProductType> structuredTree2 = new StructuredTree<>(ProductType.class);
         structuredTree2.importDotFile("./output/structuredTree1.dot");
         structuredTree2.exportDotFile("./output/structuredTree2.dot");
 

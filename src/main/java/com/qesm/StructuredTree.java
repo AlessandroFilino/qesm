@@ -13,30 +13,33 @@ import org.jgrapht.nio.Attribute;
 import com.qesm.ProductType.ItemType;
 
 
-public class StructuredTree implements DotFileConverter<STPNBlock>{
+public class StructuredTree<V extends ProductType> implements DotFileConverter<STPNBlock>{
 
-    private final DirectedAcyclicGraph<ProductType, CustomEdge> originalWorkflow;
+    private final DirectedAcyclicGraph<V, CustomEdge> originalWorkflow;
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     private STPNBlock structuredTreeRootBlock;
+    private Class<V> dagVertexClass;
 
-    public StructuredTree(){
+    public StructuredTree(Class<V> dagVertexClass){
         originalWorkflow = null;
+        this.dagVertexClass = dagVertexClass;
     }
 
-    public StructuredTree(DirectedAcyclicGraph<ProductType, CustomEdge> dag) {
+    public StructuredTree(DirectedAcyclicGraph<V, CustomEdge> dag, Class<V> dagVertexClass) {
         this.originalWorkflow = dag;
         this.structuredWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
+        this.dagVertexClass = dagVertexClass;
 
         // Add all processedType as simpleBlock to structuredWorkflow
-        for (ProductType node : originalWorkflow.vertexSet()) {
+        for (V node : originalWorkflow.vertexSet()) {
 
             if (node.getItemType() == ItemType.PROCESSED) {
 
                 STPNBlock newBlock = new SimpleBlock(node);
-                ArrayList<ProductType> enablingTokens = new ArrayList<>();
+                ArrayList<V> enablingTokens = new ArrayList<>();
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
-                    ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
+                    V sourceNode = originalWorkflow.getEdgeSource(inEdge);
 
                     if (sourceNode.getItemType() == ItemType.RAW_MATERIAL) {
                         enablingTokens.add(sourceNode);
@@ -46,15 +49,13 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
             }
         }
 
-        // originalWorkflow.forEach(n -> System.out.println(n.getNameType()));
-
         // Mapping alla edges of originalWorkflow to structuredWorkflow
-        for (ProductType node : originalWorkflow.vertexSet()) {
+        for (V node : originalWorkflow.vertexSet()) {
             if (node.getItemType() == ItemType.PROCESSED) {
                 STPNBlock currBlock = findSimpleBlockFromProcessedType(node);
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
-                    ProductType sourceNode = originalWorkflow.getEdgeSource(inEdge);
+                    V sourceNode = originalWorkflow.getEdgeSource(inEdge);
                     if (sourceNode.getItemType() == ItemType.PROCESSED) {
                         structuredWorkflow.addEdge(findSimpleBlockFromProcessedType(sourceNode),
                                 currBlock);
@@ -62,7 +63,7 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
                 }
 
                 for (CustomEdge outEdge : originalWorkflow.outgoingEdgesOf(node)) {
-                    ProductType targetNode = originalWorkflow.getEdgeTarget(outEdge);
+                    V targetNode = originalWorkflow.getEdgeTarget(outEdge);
                     if (targetNode.getItemType() == ItemType.PROCESSED) {
                         structuredWorkflow.addEdge(currBlock,
                                 findSimpleBlockFromProcessedType(targetNode));
@@ -90,7 +91,7 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
         return structuredTreeRootBlock;
     }
 
-    private STPNBlock findSimpleBlockFromProcessedType(ProductType elementToFind) {
+    private STPNBlock findSimpleBlockFromProcessedType(V elementToFind) {
         for (STPNBlock block : structuredWorkflow) {
             if (elementToFind == block.getSimpleElement()) {
                 return block;
@@ -310,7 +311,16 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
             return false;
         }
 
-        StructuredTree structuredTreeToCompare = (StructuredTree) obj;
+        
+        // Check if generic types are different
+        StructuredTree<?> genericStructuredTreeToCompare = (StructuredTree<?>) obj;
+        Class<?> dagVertexClassToCompare = genericStructuredTreeToCompare.getDAGVertexClass();
+
+        if (!dagVertexClass.equals(dagVertexClassToCompare)){
+            return false;
+        } 
+
+        StructuredTree<V> structuredTreeToCompare = uncheckedCast(obj);
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for ProductType
         List<STPNBlock> vertexListToCompare = new ArrayList<>(structuredTreeToCompare.getDag().vertexSet());
@@ -328,6 +338,16 @@ public class StructuredTree implements DotFileConverter<STPNBlock>{
         }
 
         return true;
+    }
+
+    protected Class<V> getDAGVertexClass(){
+        return dagVertexClass;
+    }
+
+    @SuppressWarnings("unchecked")
+    private StructuredTree<V> uncheckedCast(Object o)
+    {
+        return (StructuredTree<V>) o;
     }
 
     @Override

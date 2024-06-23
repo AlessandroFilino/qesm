@@ -20,12 +20,12 @@ public class WorkflowTypeTest {
     @Test
     void testMakeIstance() {
         // Check if the WorkflowIstance' dag matches the WorkflowType's one
-        WorkflowType workFlowType = new WorkflowType();
+        WorkflowType workflowType = new WorkflowType();
 
-        workFlowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
-        WorkflowIstance workflowIstance = workFlowType.makeIstance();
+        workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowIstance workflowIstance = workflowType.makeIstance();
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workFlowType.getDag();
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.getDag();
         DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDag();
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());

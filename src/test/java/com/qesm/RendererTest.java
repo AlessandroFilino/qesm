@@ -60,7 +60,7 @@ public class RendererTest {
         WorkflowType workflowType = new WorkflowType();
         workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
-        StructuredTree structuredTree = new StructuredTree(workflowType.getDag());
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.getDag(), ProductType.class);
         structuredTree.buildStructuredTree();
 
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
@@ -76,7 +76,7 @@ public class RendererTest {
         workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         renderWorkflowType(workflowType);
 
-        StructuredTree structuredTree = new StructuredTree(workflowType.getDag());
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.getDag(), ProductType.class);
 
         String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderTest");
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderTest");
