@@ -9,6 +9,8 @@ import java.util.function.Function;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.AttributeType;
+import org.jgrapht.nio.DefaultAttribute;
 
 import com.qesm.ProductType.ItemType;
 
@@ -370,6 +372,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
     public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
         Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired(), AttributeType.INT));
             return map;
         };
 
