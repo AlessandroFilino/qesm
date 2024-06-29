@@ -4,12 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.traverse.DepthFirstIterator;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
@@ -25,39 +21,19 @@ public class WorkflowTypeTest {
         workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
         WorkflowIstance workflowIstance = workflowType.makeIstance();
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.getDag();
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDag();
+        ListenableDAG<ProductType, CustomEdge> dagType = workflowType.getDag();
+        ListenableDAG<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDag();
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());
         assertEquals(dagType.edgeSet().size(), dagIstance.edgeSet().size());
         
-        // Checks if all nodes matches (same attributes and same number of in/out edges) 
-        ArrayList<ProductType> workflowTypeNodes = new ArrayList<>();
-        ArrayList<ProductIstance> workflowIstanceNodes = new ArrayList<>();
-
-        Iterator<ProductType> iterWorkflowType = new DepthFirstIterator<ProductType, CustomEdge>(dagType);
-        while (iterWorkflowType.hasNext()) {
-            workflowTypeNodes.add(iterWorkflowType.next());
-        }
-
-        Iterator<ProductIstance> iterWorkflowIstance = new DepthFirstIterator<ProductIstance, CustomEdge>(dagIstance);
-        while (iterWorkflowIstance.hasNext()) {
-            workflowIstanceNodes.add(iterWorkflowIstance.next());
-        }
-
-        Integer totalNodes = dagType.vertexSet().size();
-        for (int nodeNumber = 0; nodeNumber < totalNodes; nodeNumber++) {
-            ProductType nodeType = workflowTypeNodes.get(nodeNumber);
-            ProductIstance nodeIstance = workflowIstanceNodes.get(nodeNumber);
-            assertTrue(nodeType.equalsAttributes(nodeIstance));
-            assertEquals(dagType.inDegreeOf(nodeType), dagIstance.inDegreeOf(nodeIstance));
-            assertEquals(dagType.outDegreeOf(nodeType), dagIstance.outDegreeOf(nodeIstance));
-        }
+        // Checks if all nodes matches (same attributes) 
+        assertTrue(workflowType.equalsNodesAttributes(workflowIstance));
 
         // Check in workflowIstance if all ProcessedTypes have their subgraph specified 
         for (ProductIstance nodeIstance : dagIstance.vertexSet()) {
             
-            if(nodeIstance.isProcessedType()){
+            if(nodeIstance.isProcessed()){
                 WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagIstance, nodeIstance));
                 assertEquals(subgraphIstance, nodeIstance.getProductWorkflow());
                 // System.out.println(nodeIstance.getProductWorkflow().equals(subgraphIstance));
@@ -70,8 +46,8 @@ public class WorkflowTypeTest {
 
     }
 
-    private  DirectedAcyclicGraph<ProductIstance, CustomEdge> createSubgraph(DirectedAcyclicGraph<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
+    private  ListenableDAG<ProductIstance, CustomEdge> createSubgraph(ListenableDAG<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
+        ListenableDAG<ProductIstance, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
 
         Set<ProductIstance> subgraphVertices = originalDAG.getAncestors(root);
         subgraphVertices.add(root);
@@ -101,7 +77,7 @@ public class WorkflowTypeTest {
     void testReflection(){
         // Create a workflowtype, make an istance, modify the dag of WorkflowType and make another istance.
         // Verify that the two istances are not equals
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
         ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
         ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
@@ -133,6 +109,88 @@ public class WorkflowTypeTest {
         WorkflowIstance workflowIstance3 = workflowType.makeIstance();
 
         assertNotEquals(workflowIstance3, workflowIstance1);
+
+    }
+
+    @Test
+    public void testDAGUpdating(){
+        //  DAG:
+        //  v0 
+        //  v1
+        //  v2
+        //  v3
+        //  v4
+
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
+        ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
+        ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0,2));
+        ProductType v4 = new ProductType("v4");
+        ProductType v5 = new ProductType("v5");
+        
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+
+        dag.addEdge(v4, v3);
+        dag.addEdge(v3, v2);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v1, v0);
+
+        WorkflowType workflowType = new WorkflowType(dag);
+
+        dag.addVertex(v5);
+        dag.addEdge(v5, v2);
+
+        //  DAG:
+        //  v0 
+        //  v1
+        //  v2
+        //  v3 v5
+        //  v4
+
+        assertTrue(workflowType.findProduct("v2").get().getProductWorkflow().getDag().containsVertex(v5));
+        assertTrue(workflowType.findProduct("v1").get().getProductWorkflow().getDag().containsVertex(v5));
+        assertTrue(workflowType.findProduct("v0").get().getProductWorkflow().getDag().containsVertex(v5));
+
+    }
+
+    @Test 
+    public void testMakeIstanceOfSubGraph(){
+        //  DAG:
+        //  v0 
+        //  v1
+        //  v2
+        //  v3
+        //  v4
+
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
+        ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
+        ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0,2));
+        ProductType v4 = new ProductType("v4");
+        
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+
+        dag.addEdge(v4, v3);
+        dag.addEdge(v3, v2);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v1, v0);
+
+        WorkflowType workflowType = new WorkflowType(dag);
+        WorkflowType workflowTypeV2 =  workflowType.findProduct("v2").get().getProductWorkflow();
+        WorkflowIstance workflowIstanceV2 = workflowTypeV2.makeIstance();
+
+        assertTrue(workflowTypeV2.equalsNodesAttributes(workflowIstanceV2));
+
 
     }
 

@@ -1,8 +1,7 @@
 package com.qesm;
 
 import java.util.HashMap;
-
-import org.jgrapht.graph.DirectedAcyclicGraph;
+import java.util.Set;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
@@ -11,21 +10,27 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
 
 
     public WorkflowType() {
-        super(ProductType.class);
+        super(ProductType.class, true);
     }
 
-    public WorkflowType(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport) {
-        super(dagToImport, ProductType.class);
+    public WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport) {
+        super(dagToImport, ProductType.class, true);
+    }
+
+    private WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport, Boolean isRootGraph) {
+        super(dagToImport, ProductType.class, isRootGraph);
     }
 
     public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType) {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
                 maxBranchingDownFactor, branchingUpProbability, pdfType);
-        randDAGGenerator.generateGraph(dag);
+        dag = randDAGGenerator.generateGraph();
+        setGraphListener();
+        updateAllSubgraphs();
     }
 
     public WorkflowIstance makeIstance() {
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ListenableDAG<ProductIstance, CustomEdge> dagIstance = new ListenableDAG<>(CustomEdge.class);
 
         HashMap<ProductType, ProductIstance> productTypeToProductMap = new HashMap<>();
 
@@ -44,9 +49,17 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
         }
 
         WorkflowIstance workflowIstance = new WorkflowIstance(dagIstance);
-        workflowIstance.updateSubgraphs();
 
         return workflowIstance;
+    }
+
+    @Override
+    protected void buildChangedSubGraphs(Set<ProductType> vertexSet) {
+        for (ProductType productType : vertexSet) {
+            if(productType.isProcessed()){
+                productType.setProductWorkflow(new WorkflowType(createSubgraph(dag, productType), false));
+            }
+        }
     }
 
 }

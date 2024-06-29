@@ -6,14 +6,14 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-public class ProductIstance extends ProductType{
-
-    private WorkflowIstance productWorkflow;
+public class ProductIstance extends AbstractProduct{
    
-    protected ProductIstance(ProductType productType){
-        super(new String(productType.getNameType()), productType.getItemType());
+    private WorkflowIstance productWorkflow;
 
-        if(productType.getItemType() == ItemType.PROCESSED){
+    protected ProductIstance(ProductType productType){
+        super(new String(productType.getName()), productType.getItemGroup());
+
+        if(productType.getItemGroup() == ItemGroup.PROCESSED){
             setQuantityProduced(productType.getQuantityProduced());
 
             StochasticTime pdfToCopy = productType.getPdf();
@@ -39,20 +39,19 @@ public class ProductIstance extends ProductType{
         
     }
 
-    public ProductIstance(String nameType, ItemType itemType){
-        super(nameType, itemType);
+    public ProductIstance(String name, ItemGroup itemGroup){
+        super(name, itemGroup);
     }
-   
+    
     public WorkflowIstance getProductWorkflow() {
-        return returnWithItemTypeCheck(productWorkflow);
+        return returnWithItemGroupCheck(productWorkflow);
     }
 
     public Integer setProductWorkflow(WorkflowIstance productWorkflow) {
-        Integer returnValue = returnWithItemTypeCheck(0);
+        Integer returnValue = returnWithItemGroupCheck(0);
         if(returnValue != null){
             this.productWorkflow = productWorkflow;
         }
         return returnValue;
     }
-    
 }

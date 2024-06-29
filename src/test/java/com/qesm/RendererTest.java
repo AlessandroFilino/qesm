@@ -112,8 +112,8 @@ public class RendererTest {
         String subgraphsMediaFolder = mkEmptyDir("./media/subgraphsRenderTest");
 
         for (ProductIstance nodeIstance : workflowIstance.getDag().vertexSet()) {
-            if(nodeIstance.isProcessedType()){
-                nodeIstance.getProductWorkflow().exportDotFileNoSerialization(subgraphsDotFolder + "/subgraph" + nodeIstance.getNameType() + ".dot");
+            if(nodeIstance.isProcessed()){
+                nodeIstance.getProductWorkflow().exportDotFileNoSerialization(subgraphsDotFolder + "/subgraph" + nodeIstance.getName() + ".dot");
             }
         }
 

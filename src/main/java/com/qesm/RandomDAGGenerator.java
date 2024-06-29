@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
@@ -17,11 +16,11 @@ import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.TruncatedExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.ProductType.ItemType;
+import com.qesm.AbstractProduct.ItemGroup;
 
 public class RandomDAGGenerator{
 
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    private ListenableDAG<ProductType, CustomEdge> dag;
 
     // Level definition: hop distance from root. A node can belong to more than one level
     private int maxHeight;                  //Max level number
@@ -49,7 +48,7 @@ public class RandomDAGGenerator{
     private PdfType pdfType;
 
     public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType){
-        
+        this.dag = new ListenableDAG<ProductType, CustomEdge>(CustomEdge.class);
         this.maxHeight = maxHeight;
         this.maxWidth = maxWidth;
         this.maxBranchingUpFactor = maxBranchingUpFactor;
@@ -68,11 +67,11 @@ public class RandomDAGGenerator{
                 ProductType vertex;
 
                 if(random.nextBoolean()){
-                    vertex = new ProductType("v" + vId, ItemType.RAW_MATERIAL);
+                    vertex = new ProductType("v" + vId, ItemGroup.RAW_MATERIAL);
                     vId++;
                 }
                 else{
-                    vertex = new ProductType("v" + vId, ItemType.PROCESSED);
+                    vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
                     vertex.setQuantityProduced(-1);
                     vertex.setPdf(getRandomPdf());
                     vId++;
@@ -87,7 +86,7 @@ public class RandomDAGGenerator{
             @Override
             public ProductType get()
             {
-                ProductType vertex = new ProductType("v" + vId, ItemType.PROCESSED);
+                ProductType vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
                 vertex.setQuantityProduced(-1);
                 vertex.setPdf(getRandomPdf());
                 vId++;
@@ -135,9 +134,7 @@ public class RandomDAGGenerator{
         return pdf;
     }
 
-    public void generateGraph(DirectedAcyclicGraph<ProductType, CustomEdge> dag){
-
-        this.dag = dag;
+    public ListenableDAG<ProductType, CustomEdge> generateGraph(){
 
         class DAGPopulator{
             
@@ -254,7 +251,7 @@ public class RandomDAGGenerator{
 
                     // Update TargetList if vertex is connected to graph
                     if(dag.outDegreeOf(sourceVertex) > 0){
-                        if(sourceVertex.getItemType() == ItemType.PROCESSED){
+                        if(sourceVertex.isProcessed()){
                             vTargetList.add(sourceVertex);
                         }
                     }
@@ -282,6 +279,8 @@ public class RandomDAGGenerator{
         dagPopulator.populate();
         setLeafNodes();
         updateQuantityProduced();
+
+        return dag;
     }
 
     private void setLeafNodes(){
@@ -291,14 +290,14 @@ public class RandomDAGGenerator{
 
         // Substitute every processedType leaf with rawMaterialType
         for (ProductType node : vertexSetCopy) {
-            if(dag.inDegreeOf(node) == 0 && node.getItemType() == ItemType.PROCESSED){
+            if(dag.inDegreeOf(node) == 0 && node.isProcessed()){
                 ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
                 for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
                     oldEdges.add(oldEdge);
                 }
 
                 dag.removeVertex(node);
-                ProductType newLeaf = new ProductType(node.getNameType(), ItemType.RAW_MATERIAL);
+                ProductType newLeaf = new ProductType(node.getName(), ItemGroup.RAW_MATERIAL);
                 dag.addVertex(newLeaf);
 
                 for (CustomEdge oldEdge : oldEdges) {
@@ -311,7 +310,7 @@ public class RandomDAGGenerator{
     private void updateQuantityProduced(){
         // Set quantityProduced according to upper nodes requirements
         for (ProductType node : dag.vertexSet()) {
-            if(node.getItemType() == ItemType.PROCESSED && dag.outDegreeOf(node) > 0){
+            if(node.isProcessed() && dag.outDegreeOf(node) > 0){
                 int totalQuantityNeeded = 0;
                 for (CustomEdge outEdge : dag.outgoingEdgesOf(node)) {
                     totalQuantityNeeded += outEdge.getQuantityRequired();

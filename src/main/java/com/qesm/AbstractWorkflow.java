@@ -5,58 +5,66 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
-import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.event.GraphEdgeChangeEvent;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.GraphVertexChangeEvent;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 
-public abstract class AbstractWorkflow <T extends ProductType> implements DotFileConverter<T>, Serializable{
 
-    protected DirectedAcyclicGraph<T, CustomEdge> dag;
-    protected transient final Class<T> vertexClass;
+public abstract class AbstractWorkflow <V extends AbstractProduct> implements DotFileConverter<V>, Serializable{
 
-    public AbstractWorkflow(Class<T> vertexClass) {
+    protected ListenableDAG<V, CustomEdge> dag;
+    protected transient final Class<V> vertexClass;
+    protected Boolean graphListenerAdded = false;
+    protected Boolean isRootGraph = false;
+
+    public AbstractWorkflow(Class<V> vertexClass, Boolean isRootGraph) {
         this.vertexClass = vertexClass;
-        this.dag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
+        this.dag = new ListenableDAG<V, CustomEdge>(CustomEdge.class);
+        this.isRootGraph = isRootGraph;
+
+        if(isRootGraph){
+            setGraphListener();
+            updateAllSubgraphs();
+        }
     }
 
-    public AbstractWorkflow(DirectedAcyclicGraph<T, CustomEdge> dagToImport, Class<T> vertexClass) {
+    public AbstractWorkflow(ListenableDAG<V, CustomEdge> dagToImport, Class<V> vertexClass, Boolean isRootGraph) {
         this.vertexClass = vertexClass;
-        this.dag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
+        this.dag = dagToImport;
+        this.isRootGraph = isRootGraph;
 
-        // import all verteces
-        for (T vertex : dagToImport.vertexSet()) {
-            dag.addVertex(vertex);
-        }
-
-        // Add all the edges from the original DAG to the copy 
-        for (CustomEdge edge : dagToImport.edgeSet()) {
-            T source = dagToImport.getEdgeSource(edge);
-            T target = dagToImport.getEdgeTarget(edge);
-            dag.addEdge(source, target, edge);
+        if(isRootGraph){
+            setGraphListener();
+            updateAllSubgraphs();
         }
     }
 
     // TODO: Add metric to measure the paralellization/balance of the dag
 
     @Override
-    public DirectedAcyclicGraph<T, CustomEdge> getDag() {
+    public ListenableDAG<V, CustomEdge> getDag() {
         return dag;
     }
 
     @Override
-    public void setDag(DirectedAcyclicGraph<T, CustomEdge> dagToSet) {
+    public void setDag(ListenableDAG<V, CustomEdge> dagToSet) {
         dag = dagToSet;
+        setGraphListener();
+        updateAllSubgraphs();
     }
 
     @Override
-    public Class<T> getVertexClass() {
+    public Class<V> getVertexClass() {
         return this.vertexClass;
     }
 
-    public T getRootNode() {
-        for (T node : dag.vertexSet()) {
+    public V getRootNode() {
+        for (V node : dag.vertexSet()) {
             if (dag.outDegreeOf(node) == 0) {
                 return node;
             }
@@ -67,9 +75,9 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
 
     public String toString() {
         String dagInfo = "";
-        Iterator<T> iter = new DepthFirstIterator<T, CustomEdge>(dag);
+        Iterator<V> iter = new DepthFirstIterator<V, CustomEdge>(dag);
         while (iter.hasNext()) {
-            T vertex = iter.next();
+            V vertex = iter.next();
             dagInfo += vertex.toString() + " is connected to: \n";
             for (CustomEdge connectedEdge : dag.outgoingEdgesOf(vertex)) {
                 dagInfo += "\t" + connectedEdge.toString() + "\n";
@@ -79,7 +87,7 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
     }
 
     public boolean isDagConnected() {
-        ConnectivityInspector<T, CustomEdge> connInspector = new ConnectivityInspector<T, CustomEdge>(
+        ConnectivityInspector<V, CustomEdge> connInspector = new ConnectivityInspector<V, CustomEdge>(
                 dag);
         return connInspector.isConnected();
     }
@@ -96,18 +104,18 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
             return false;
         }
 
-        AbstractWorkflow<T> workflowToCompare = uncheckedCast(obj);
+        AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
         
-        List<T> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
-        List<T> vertexList = new ArrayList<>(dag.vertexSet());
+        List<V> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
+        List<V> vertexList = new ArrayList<>(dag.vertexSet());
 
         // Check if all element of a list are contained in the other and vice versa 
         // (very inneficent, need to implement custum hashcode if it will be developed further)
-        for (T vertex : vertexList) {
+        for (V vertex : vertexList) {
             Boolean isContained = false;
-            for (T vertexToCompare : vertexListToCompare) {
+            for (V vertexToCompare : vertexListToCompare) {
                 if(vertex.equals(vertexToCompare)){
                     isContained = true;
                     break;
@@ -118,9 +126,9 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
             }
         }
 
-        for (T vertexToCompare : vertexListToCompare) {
+        for (V vertexToCompare : vertexListToCompare) {
             Boolean isContained = false;
-            for (T vertex : vertexList) {
+            for (V vertex : vertexList) {
                 if(vertexToCompare.equals(vertex)){
                     isContained = true;
                     break;
@@ -164,14 +172,42 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
         return true;
     }
 
+    public <T extends AbstractProduct> boolean equalsNodesAttributes(AbstractWorkflow<T> workflowToCompare){
+        ArrayList<V> workflowNodes = new ArrayList<>();
+        ArrayList<T> workflowToCompareNodes = new ArrayList<>();
+
+        Iterator<V> iterWorkflow = new DepthFirstIterator<V, CustomEdge>(dag);
+        while (iterWorkflow.hasNext()) {
+            workflowNodes.add(iterWorkflow.next());
+        }
+
+        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.getDag());
+        while (iterWorkflowToCompare.hasNext()) {
+            workflowToCompareNodes.add(iterWorkflowToCompare.next());
+        }
+
+        Integer totalNodes = dag.vertexSet().size();
+        for (int nodeNumber = 0; nodeNumber < totalNodes; nodeNumber++) {
+            V node = workflowNodes.get(nodeNumber);
+            T nodeToCompare = workflowToCompareNodes.get(nodeNumber);
+            if(!node.equalsAttributes(nodeToCompare)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public void toUnshared() {
-        DAGSharedToUnsharedConverter<T> dagConverter = new DAGSharedToUnsharedConverter<T>(dag, getRootNode(), vertexClass);
+        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
         dag = dagConverter.makeConversion();
+        setGraphListener();
+        updateAllSubgraphs();
     } 
 
-    public Optional<T> findProduct(String productName){
-        for(T product : dag.vertexSet()){
-            if(product.getNameType().equals(productName)){
+    public Optional<V> findProduct(String productName){
+        for(V product : dag.vertexSet()){
+            if(product.getName().equals(productName)){
                 return Optional.of(product);
             }
         }
@@ -180,8 +216,83 @@ public abstract class AbstractWorkflow <T extends ProductType> implements DotFil
 
     // Jgrapht does the same
     @SuppressWarnings("unchecked")
-    private AbstractWorkflow<T> uncheckedCast(Object o)
+    private AbstractWorkflow<V> uncheckedCast(Object o)
     {
-        return (AbstractWorkflow<T>) o;
+        return (AbstractWorkflow<V>) o;
     }
+
+    protected void setGraphListener(){
+        if(graphListenerAdded || !isRootGraph){
+            return;
+        }
+        GraphListener<V, CustomEdge> graphListener = new GraphListener<V,CustomEdge>() {
+
+            @Override
+            public void vertexAdded(GraphVertexChangeEvent<V> e) {
+                updateChangedSubgraphs(e.getVertex(), null, null);
+            }
+
+            @Override
+            public void vertexRemoved(GraphVertexChangeEvent<V> e) {
+                updateChangedSubgraphs(e.getVertex(), null, null);
+            }
+
+            @Override
+            public void edgeAdded(GraphEdgeChangeEvent<V, CustomEdge> e) {
+                updateChangedSubgraphs(null, e.getEdgeSource(), e.getEdgeTarget());
+            }
+
+            @Override
+            public void edgeRemoved(GraphEdgeChangeEvent<V, CustomEdge> e) {
+                updateChangedSubgraphs(null, e.getEdgeSource(), e.getEdgeTarget());
+            }
+            
+        };
+
+        dag.addGraphListener(graphListener);
+        graphListenerAdded = true;
+    }
+
+    protected void updateAllSubgraphs(){
+        buildChangedSubGraphs(dag.vertexSet());
+    }
+
+    private void updateChangedSubgraphs(V vertexChanged, V edgeSource, V edgeTarget){
+        if(vertexChanged != null){
+            buildChangedSubGraphs(dag.getDescendants(vertexChanged));
+        }
+        else if(edgeSource != null && edgeTarget != null){
+            Set<V> vertexSet = dag.getDescendants(edgeSource);
+            vertexSet.addAll(dag.getDescendants(edgeTarget));
+            buildChangedSubGraphs(vertexSet);
+        }
+    }
+
+    protected abstract void buildChangedSubGraphs(Set<V> vertexSet);
+
+    protected  ListenableDAG<V, CustomEdge> createSubgraph(ListenableDAG<V, CustomEdge> originalDAG, V root) {
+        ListenableDAG<V, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
+
+        Set<V> subgraphVertices = originalDAG.getAncestors(root);
+        subgraphVertices.add(root);
+
+        // Add vertices and edges to the subgraph
+        for (V vertex : subgraphVertices) {
+            subgraphDAG.addVertex(vertex);
+        }
+
+        for (V vertex : subgraphVertices) {
+            Set<CustomEdge> edges = originalDAG.outgoingEdgesOf(vertex);
+            for (CustomEdge edge : edges) {
+                V target = originalDAG.getEdgeTarget(edge);
+                if (subgraphVertices.contains(target)) {
+                    CustomEdge subgraphEdge = new CustomEdge();
+                    subgraphEdge.setQuantityRequired(edge.getQuantityRequired());
+                    subgraphDAG.addEdge(vertex, target, subgraphEdge);
+                }
+            }
+        }
+
+        return subgraphDAG;
+    } 
 }

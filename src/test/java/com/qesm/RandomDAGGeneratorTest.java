@@ -8,14 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.RepeatedTest;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class RandomDAGGeneratorTest {
 
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    private ListenableDAG<ProductType, CustomEdge> dag;
     ProductType rootNode;
     HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
 
@@ -29,10 +28,8 @@ public class RandomDAGGeneratorTest {
         int maxBranchingDownFactor = random.nextInt(5) + 1;
         int branchingUpProbability = random.nextInt(1, 101);
 
-        dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
-
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, branchingUpProbability, PdfType.UNIFORM);
-        randDAGGenerator.generateGraph(dag);
+        dag = randDAGGenerator.generateGraph();
 
         // Test maxBranchingDownFactor and maxBranchingUpFactor
         for (ProductType vertex : dag.vertexSet()) {

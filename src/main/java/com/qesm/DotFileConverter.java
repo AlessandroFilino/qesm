@@ -16,7 +16,6 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
@@ -75,7 +74,7 @@ public interface DotFileConverter <T extends DotFileConvertible> {
 
         try {
             FileReader reader = new FileReader(filePath);
-            DirectedAcyclicGraph<T, CustomEdge> resultDag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
+            ListenableDAG<T, CustomEdge> resultDag = new ListenableDAG<T, CustomEdge>(CustomEdge.class);
             importer.importGraph(resultDag, reader);
             this.setDag(resultDag);
         } catch (IOException e) {
@@ -83,8 +82,8 @@ public interface DotFileConverter <T extends DotFileConvertible> {
         }
     }
 
-    public DirectedAcyclicGraph<T, CustomEdge> getDag();
-    public void setDag(DirectedAcyclicGraph<T, CustomEdge> dagToSet);
+    public ListenableDAG<T, CustomEdge> getDag();
+    public void setDag(ListenableDAG<T, CustomEdge> dagToSet);
     public Class<T> getVertexClass();
 
     default public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
