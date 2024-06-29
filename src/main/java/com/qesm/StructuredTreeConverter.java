@@ -68,7 +68,7 @@ public class StructuredTreeConverter {
 
         Activity activity = null;
         if(stpnBlock.getClass() == SimpleBlock.class){
-            activity = new Simple(stpnBlock.getSimpleElement().getNameType(), stpnBlock.getSimpleElement().getPdf());
+            activity = new Simple(stpnBlock.getSimpleElement().getName(), stpnBlock.getSimpleElement().getPdf());
         }
         else if (stpnBlock.getClass() == AndBlock.class){
             ArrayList<Activity> activityList = new ArrayList<>();

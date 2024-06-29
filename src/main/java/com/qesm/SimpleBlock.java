@@ -11,22 +11,22 @@ import org.jgrapht.nio.DefaultAttribute;
 
 public class SimpleBlock implements STPNBlock{
 
-    private ProductType simpleElement;
-    private ArrayList<ProductType> enablingTokens;
+    private AbstractProduct simpleElement;
+    private ArrayList<AbstractProduct> enablingTokens;
     private UUID uuid;
 
-    public SimpleBlock(ProductType basicElement) {
+    public SimpleBlock(AbstractProduct basicElement) {
         this.simpleElement = basicElement;
-        this.enablingTokens = new ArrayList<ProductType>();
+        this.enablingTokens = new ArrayList<AbstractProduct>();
         this.uuid = UUID.randomUUID();
     }
 
-    public ArrayList<ProductType> getEnablingTokens(){
+    public ArrayList<AbstractProduct> getEnablingTokens(){
         return enablingTokens;
     }
 
     @Override
-    public boolean addEnablingToken(ProductType enablingToken) {
+    public boolean addEnablingToken(AbstractProduct enablingToken) {
         enablingTokens.add(enablingToken);
         return true;
     }
@@ -35,12 +35,12 @@ public class SimpleBlock implements STPNBlock{
     @Override
     public void printBlockInfo(int indentNum) {
         printIndent(indentNum);
-        System.out.println(simpleElement.getNameType() + " tokens: ");
-        enablingTokens.forEach(token -> System.out.print(token.getNameType() + " "));
+        System.out.println(simpleElement.getName() + " tokens: ");
+        enablingTokens.forEach(token -> System.out.print(token.getName() + " "));
     }
 
     @Override
-    public ProductType getSimpleElement() {
+    public AbstractProduct getSimpleElement() {
         return simpleElement;
     }
 
@@ -90,13 +90,13 @@ public class SimpleBlock implements STPNBlock{
     public String getHTMLLabel(Class<?> callerClass) {
         String value = new String();
         if(callerClass == SeqBlock.class){
-            value = "<TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE>";
+            value = "<TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getName() + "</TD></TR></TABLE>";
         }
         else if (callerClass == AndBlock.class){
-            value = "<TD><TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE></TD>";
+            value = "<TD><TABLE color='black' CELLBORDER='0'><TR><TD>" + simpleElement.getName() + "</TD></TR></TABLE></TD>";
         }
         else{
-            value = "<TABLE color='black' border='0' CELLBORDER='0'><TR><TD>" + simpleElement.getNameType() + "</TD></TR></TABLE>";
+            value = "<TABLE color='black' border='0' CELLBORDER='0'><TR><TD>" + simpleElement.getName() + "</TD></TR></TABLE>";
         }
         return value;
     }

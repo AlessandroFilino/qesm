@@ -27,8 +27,8 @@ public class DAGSharedToUnsharedConverterTest {
         graphTest.toUnshared();
         Set<String> connectedNodesUnshared = new HashSet<>();
         for (CustomEdge edge : graphTest.getDag().edgeSet()) {
-            String source = graphTest.getDag().getEdgeSource(edge).getNameType();
-            String target = graphTest.getDag().getEdgeTarget(edge).getNameType();
+            String source = graphTest.getDag().getEdgeSource(edge).getName();
+            String target = graphTest.getDag().getEdgeTarget(edge).getName();
             String nodePair = source.replaceAll("_.*", "") + "," + target.replaceAll("_.*", "");
             connectedNodesUnshared.add(nodePair);
         }

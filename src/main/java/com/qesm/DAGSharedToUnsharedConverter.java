@@ -3,26 +3,25 @@ package com.qesm;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
+import com.qesm.AbstractProduct.ItemGroup;
 
-import com.qesm.ProductType.ItemType;
 
-public class DAGSharedToUnsharedConverter<V extends ProductType> {
+public class DAGSharedToUnsharedConverter<V extends AbstractProduct> {
     
-    private DirectedAcyclicGraph<V, CustomEdge> dag;
-    private DirectedAcyclicGraph<V, CustomEdge> unsharedDag;
+    private ListenableDAG<V, CustomEdge> dag;
+    private ListenableDAG<V, CustomEdge> unsharedDag;
     private HashMap<V, Integer> idCounter = new HashMap<V, Integer>();
     private V rootNode;
     private Class<V> vertexClass;
 
-    public DAGSharedToUnsharedConverter(DirectedAcyclicGraph<V, CustomEdge> dag, V rootNode, Class<V> vertexClass) {
+    public DAGSharedToUnsharedConverter(ListenableDAG<V, CustomEdge> dag, V rootNode, Class<V> vertexClass) {
         this.dag = dag;
         this.rootNode = rootNode;
-        this.unsharedDag = new DirectedAcyclicGraph<V, CustomEdge>(CustomEdge.class);
+        this.unsharedDag = new ListenableDAG<V, CustomEdge>(CustomEdge.class);
         this.vertexClass = vertexClass;
     }
 
-    public DirectedAcyclicGraph<V, CustomEdge> makeConversion(){
+    public ListenableDAG<V, CustomEdge> makeConversion(){
         recursiveConversion(rootNode);
 
         return unsharedDag;
@@ -39,24 +38,24 @@ public class DAGSharedToUnsharedConverter<V extends ProductType> {
             idCounter.put(node, id);
         }
         V newNode;
-        if (node.getItemType() == ItemType.PROCESSED) {
+        if (node.getItemGroup() == ItemGroup.PROCESSED) {
             if(id == 0){
-                newNode = generateNode(node.getNameType(), ItemType.PROCESSED);
+                newNode = generateNode(node.getName(), ItemGroup.PROCESSED);
                 newNode.setQuantityProduced(node.getQuantityProduced());
                 newNode.setPdf(node.getPdf());
             }
             else{
-                newNode = generateNode(node.getNameType()+"_"+id, ItemType.PROCESSED);
+                newNode = generateNode(node.getName()+"_"+id, ItemGroup.PROCESSED);
                 newNode.setQuantityProduced(node.getQuantityProduced());
                 newNode.setPdf(node.getPdf());
             }
         }
         else {
             if(id == 0){
-                newNode = generateNode(node.getNameType(), ItemType.RAW_MATERIAL);
+                newNode = generateNode(node.getName(), ItemGroup.RAW_MATERIAL);
             }
             else{
-                newNode = generateNode(node.getNameType()+"_"+id, ItemType.RAW_MATERIAL);
+                newNode = generateNode(node.getName()+"_"+id, ItemGroup.RAW_MATERIAL);
             }
         }
         unsharedDag.addVertex(newNode);
@@ -75,10 +74,10 @@ public class DAGSharedToUnsharedConverter<V extends ProductType> {
         return newNode;
     }
 
-    private V generateNode(String nameType, ItemType itemType){
+    private V generateNode(String name, ItemGroup itemGroup){
         try {
-            Constructor<V> constructor = vertexClass.getConstructor(String.class, ItemType.class);
-            V newNode = constructor.newInstance(nameType, itemType);
+            Constructor<V> constructor = vertexClass.getConstructor(String.class, ItemGroup.class);
+            V newNode = constructor.newInstance(name, itemGroup);
             return newNode;
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate the object", e);

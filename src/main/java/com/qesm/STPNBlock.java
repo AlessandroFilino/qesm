@@ -8,7 +8,7 @@ public interface STPNBlock extends DotFileConvertible, Serializable{
 
     public void printBlockInfo(int indentNum);
 
-    public default boolean addEnablingToken(ProductType enablingToken){
+    public default boolean addEnablingToken(AbstractProduct enablingToken){
         return false;
     }
 
@@ -18,7 +18,7 @@ public interface STPNBlock extends DotFileConvertible, Serializable{
         }
     }
     
-    public default ProductType getSimpleElement(){
+    public default AbstractProduct getSimpleElement(){
         return null;
     }
 

@@ -7,18 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
 
-import com.qesm.ProductType.ItemType;
 
 
-public class StructuredTree<V extends ProductType> implements DotFileConverter<STPNBlock>{
+public class StructuredTree<V extends AbstractProduct> implements DotFileConverter<STPNBlock>{
 
-    private final DirectedAcyclicGraph<V, CustomEdge> originalWorkflow;
-    private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
+    private final ListenableDAG<V, CustomEdge> originalWorkflow;
+    private ListenableDAG<STPNBlock, CustomEdge> structuredWorkflow;
     private STPNBlock structuredTreeRootBlock;
     private Class<V> dagVertexClass;
 
@@ -27,15 +25,15 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
         this.dagVertexClass = dagVertexClass;
     }
 
-    public StructuredTree(DirectedAcyclicGraph<V, CustomEdge> dag, Class<V> dagVertexClass) {
+    public StructuredTree(ListenableDAG<V, CustomEdge> dag, Class<V> dagVertexClass) {
         this.originalWorkflow = dag;
-        this.structuredWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
+        this.structuredWorkflow = new ListenableDAG<>(CustomEdge.class);
         this.dagVertexClass = dagVertexClass;
 
         // Add all processedType as simpleBlock to structuredWorkflow
         for (V node : originalWorkflow.vertexSet()) {
 
-            if (node.getItemType() == ItemType.PROCESSED) {
+            if (node.isProcessed()) {
 
                 STPNBlock newBlock = new SimpleBlock(node);
                 ArrayList<V> enablingTokens = new ArrayList<>();
@@ -43,7 +41,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     V sourceNode = originalWorkflow.getEdgeSource(inEdge);
 
-                    if (sourceNode.getItemType() == ItemType.RAW_MATERIAL) {
+                    if (! sourceNode.isProcessed()) {
                         enablingTokens.add(sourceNode);
                     }
                 }
@@ -53,12 +51,12 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
 
         // Mapping alla edges of originalWorkflow to structuredWorkflow
         for (V node : originalWorkflow.vertexSet()) {
-            if (node.getItemType() == ItemType.PROCESSED) {
+            if (node.isProcessed()) {
                 STPNBlock currBlock = findSimpleBlockFromProcessedType(node);
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     V sourceNode = originalWorkflow.getEdgeSource(inEdge);
-                    if (sourceNode.getItemType() == ItemType.PROCESSED) {
+                    if (sourceNode.isProcessed()) {
                         structuredWorkflow.addEdge(findSimpleBlockFromProcessedType(sourceNode),
                                 currBlock);
                     }
@@ -66,7 +64,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
 
                 for (CustomEdge outEdge : originalWorkflow.outgoingEdgesOf(node)) {
                     V targetNode = originalWorkflow.getEdgeTarget(outEdge);
-                    if (targetNode.getItemType() == ItemType.PROCESSED) {
+                    if (targetNode.isProcessed()) {
                         structuredWorkflow.addEdge(currBlock,
                                 findSimpleBlockFromProcessedType(targetNode));
                     }
@@ -85,7 +83,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
 
     }
 
-    public DirectedAcyclicGraph<STPNBlock, CustomEdge> getStructuredWorkflow() {
+    public ListenableDAG<STPNBlock, CustomEdge> getStructuredWorkflow() {
         return structuredWorkflow;
     }
 
@@ -353,7 +351,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
     }
 
     @Override
-    public DirectedAcyclicGraph<STPNBlock, CustomEdge> getDag() {
+    public ListenableDAG<STPNBlock, CustomEdge> getDag() {
         return structuredWorkflow;
     }
 
@@ -363,7 +361,7 @@ public class StructuredTree<V extends ProductType> implements DotFileConverter<S
     }
 
     @Override
-    public void setDag(DirectedAcyclicGraph<STPNBlock, CustomEdge> dagToSet) {
+    public void setDag(ListenableDAG<STPNBlock, CustomEdge> dagToSet) {
         structuredWorkflow = dagToSet;
     }
 

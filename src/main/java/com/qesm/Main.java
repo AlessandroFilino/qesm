@@ -34,7 +34,7 @@ public class Main {
         Optional<ProductIstance> optionalProduct = workflow.findProduct("v0");
         if(optionalProduct.isPresent()){
             ProductIstance product = optionalProduct.get();
-            System.out.println("Name: " + product.getNameType());
+            System.out.println("Name: " + product.getName());
         }
 
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
