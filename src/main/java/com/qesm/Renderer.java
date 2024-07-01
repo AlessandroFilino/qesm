@@ -11,13 +11,12 @@ import guru.nidi.graphviz.engine.Graphviz;
 
 public class Renderer {
 
-    public static void renderDotFile(String dotFilePath, String outputFilePath, double scale) {
+    public static void renderDotFile(String dotFilePath, String outputFilePath) {
 
         try {
             // Render DOT file to PNG
             Graphviz.fromFile(new File(dotFilePath))
-                    .scale(scale)
-                    .render(Format.PNG) // Render to PNG format
+                    .render(Format.SVG) // Render to PNG format
                     .toFile(new File(outputFilePath)); // Save the rendered graph to a file
             System.out.println("Graph rendered successfully.");
         } catch (IOException e) {
@@ -47,7 +46,7 @@ public class Renderer {
                 .forEach(path -> {
                     
                     String fileNameWithoutExtension = path.getFileName().toString().split("\\.")[0];
-                    renderDotFile(path.toString(), outputFolder.toAbsolutePath() + "/" + fileNameWithoutExtension + ".png", scale);
+                    renderDotFile(path.toString(), outputFolder.toAbsolutePath() + "/" + fileNameWithoutExtension + ".svg");
                     
                 });
         } catch (IOException e) {

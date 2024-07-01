@@ -25,8 +25,8 @@ public class DotFileConverterTest {
         workFlowType2.importDotFile("./output/workFlowType1.dot");
         workFlowType2.exportDotFile("./output/workFlowType2.dot");
 
-        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
-        // Renderer.renderDotFile("./output/workFlowType2.dot", "./media/workFlowType2.png", 3);
+        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.svg", 3);
+        // Renderer.renderDotFile("./output/workFlowType2.dot", "./media/workFlowType2.svg", 3);
 
         assertTrue(workFlowType1.equals(workFlowType2));
         
@@ -43,7 +43,7 @@ public class DotFileConverterTest {
 
         workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType);
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
-        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
+        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.svg", 3);
 
         StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.getDag(), ProductType.class);
         structuredTree1.buildStructuredTree();
@@ -55,8 +55,8 @@ public class DotFileConverterTest {
 
         assertTrue(structuredTree1.equals(structuredTree2));
 
-        // Renderer.renderDotFile("./output/structuredTree1.dot", "./media/structuredTree1.png", 3);
-        // Renderer.renderDotFile("./output/structuredTree2.dot", "./media/structuredTree2.png", 3);
+        // Renderer.renderDotFile("./output/structuredTree1.dot", "./media/structuredTree1.svg", 3);
+        // Renderer.renderDotFile("./output/structuredTree2.dot", "./media/structuredTree2.svg", 3);
 
         // rmDotFile("./output/workFlowType1.dot");
         rmDotFile("./output/structuredTree1.dot");
@@ -72,7 +72,7 @@ public class DotFileConverterTest {
 
         workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType);
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
-        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.png", 3);
+        // Renderer.renderDotFile("./output/workFlowType1.dot", "./media/workFlowType1.svg", 3);
 
         WorkflowIstance workFlowIstance1 = workFlowType1.makeIstance();
         workFlowIstance1.exportDotFile("./output/workFlowIstance1.dot");

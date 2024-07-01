@@ -32,7 +32,7 @@ public class RendererTest {
         workflowType.toUnshared();
         workflowType.exportDotFileNoSerialization("./output/workflowTypeUnsharedRendererTest.dot");
 
-        Renderer.renderDotFile("./output/workflowTypeUnsharedRendererTest.dot", "./media/workflowTypeUnsharedRendererTest.png", 3);
+        Renderer.renderDotFile("./output/workflowTypeUnsharedRendererTest.dot", "./media/workflowTypeUnsharedRendererTest.svg");
         rmDotFile("./output/workflowTypeUnsharedRendererTest.dot");
         
     }
@@ -44,11 +44,11 @@ public class RendererTest {
         WorkflowIstance workflowIstance = workflowType.makeIstance();
         
         workflowIstance.exportDotFileNoSerialization("./output/workflowIstanceRendererTest.dot");
-        Renderer.renderDotFile("./output/workflowIstanceRendererTest.dot", "./media/workflowIstanceRendererTest.png", 3);
+        Renderer.renderDotFile("./output/workflowIstanceRendererTest.dot", "./media/workflowIstanceRendererTest.svg");
 
         workflowIstance.toUnshared();
         workflowIstance.exportDotFileNoSerialization("./output/workflowIstanceUnsharedRendererTest.dot");
-        Renderer.renderDotFile("./output/workflowIstanceUnsharedRendererTest.dot", "./media/workflowIstanceUnsharedRendererTest.png", 3);
+        Renderer.renderDotFile("./output/workflowIstanceUnsharedRendererTest.dot", "./media/workflowIstanceUnsharedRendererTest.svg");
 
         rmDotFile("./output/workflowIstanceUnsharedRendererTest.dot");
         rmDotFile("./output/workflowIstanceRendererTest.dot");
@@ -64,7 +64,7 @@ public class RendererTest {
         structuredTree.buildStructuredTree();
 
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
-        Renderer.renderDotFile("./output/structuredTreeRenderTest.dot", "./media/structuredTreeRenderTest.png", 3);
+        Renderer.renderDotFile("./output/structuredTreeRenderTest.dot", "./media/structuredTreeRenderTest.svg");
         
 
         rmDotFile("./output/structuredTreeRenderTest.dot");
@@ -97,7 +97,7 @@ public class RendererTest {
         WorkflowIstance workflowIstance = workflowType.makeIstance();
 
         workflowIstance.exportDotFileNoSerialization("./output/workflowIstanceRendererTest.dot");
-        Renderer.renderDotFile("./output/workflowIstanceRendererTest.dot", "./media/workflowIstanceRendererTest.png", 3);
+        Renderer.renderDotFile("./output/workflowIstanceRendererTest.dot", "./media/workflowIstanceRendererTest.svg");
 
         rmDotFile("./output/workflowIstanceRendererTest.dot");
     }
@@ -125,7 +125,7 @@ public class RendererTest {
 
     private static void renderWorkflowType(WorkflowType workflowTypeToRender){
         workflowTypeToRender.exportDotFileNoSerialization("./output/workflowTypeRenderTest.dot");
-        Renderer.renderDotFile("./output/workflowTypeRenderTest.dot", "./media/workflowTypeRenderTest.png", 3);
+        Renderer.renderDotFile("./output/workflowTypeRenderTest.dot", "./media/workflowTypeRenderTest.svg");
         
         rmDotFile("./output/workflowTypeRenderTest.dot");
     }
@@ -172,7 +172,7 @@ public class RendererTest {
         File folder = new File(folderPath);
         if(folder.isDirectory()){
             for (File file : folder.listFiles()) {
-                if(file.getName().endsWith(".dot") || file.getName().endsWith(".png")){
+                if(file.getName().endsWith(".dot") || file.getName().endsWith(".svg")){
                     file.delete();
                 }
             }

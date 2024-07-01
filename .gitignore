@@ -3,4 +3,5 @@
 target/**
 output/**/*.dot
 media/**/*.png
+media/**/*.svg
 lib/*.jar

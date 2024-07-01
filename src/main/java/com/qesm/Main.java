@@ -25,11 +25,11 @@ public class Main {
         
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         graphTest.exportDotFile("./output/shared_WorkflowType.dot");
-        Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.png", 3);
+        Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.svg");
 
         WorkflowIstance workflow = graphTest.makeIstance();
         workflow.exportDotFile("./output/shared_Workflow.dot");
-        Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.png", 3);
+        Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.svg");
         
         Optional<ProductIstance> optionalProduct = workflow.findProduct("v0");
         if(optionalProduct.isPresent()){
@@ -40,25 +40,25 @@ public class Main {
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
         // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
-        // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.png", 3);
+        // Renderer.renderDotFile("./output/sharedDAG.dot", "./media/shared.svg", 3);
         // graphTest.toUnshared();
         
         
         // graphTest.exportDagToDotFile("./output/unsharedDAG.dot");
         // // graphTest.importDagFromDotFile("./output/unsharedDAG.dot");
-        // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.png", 3);
+        // Renderer.renderDotFile("./output/unsharedDAG.dot", "./media/unshared.svg", 3);
 
         
         // Workflow workflow = graphTest.makeIstance();
         // workflow.exportDagToDotFile("./output/istance.dot");
-        // Renderer.renderDotFile("./output/istance.dot", "./media/istance.png", 3);
+        // Renderer.renderDotFile("./output/istance.dot", "./media/istance.svg", 3);
         // int i = 2;
         // for (Product product : workflow.getDag().vertexSet()) {
         //     if(product.getItemType() == ItemType.PROCESSED){
         //         i--;
         //         if(i == 0){
         //             product.getProductWorkflow().exportDagToDotFile("./output/istanceSubgraph.dot");
-        //             Renderer.renderDotFile("./output/istanceSubgraph.dot", "./media/istanceSubgraph.png", 3);
+        //             Renderer.renderDotFile("./output/istanceSubgraph.dot", "./media/istanceSubgraph.svg", 3);
         //         } 
         //     }
             
@@ -126,7 +126,7 @@ public class Main {
         File folder = new File(folderPath);
         if(folder.isDirectory()){
             for (File file : folder.listFiles()) {
-                if(file.getName().endsWith(".dot") || file.getName().endsWith(".png")){
+                if(file.getName().endsWith(".dot") || file.getName().endsWith(".svg")){
                     file.delete();
                 }
             }

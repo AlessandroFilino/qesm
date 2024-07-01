@@ -121,7 +121,14 @@ public interface DotFileConverter <T extends DotFileConvertible> {
                     objectOutputStream.writeObject(v);
                     gzipOutputStream.finish();
                     String encodedVertex =  Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-                    map.put("vertex_data", new DefaultAttribute<String>(encodedVertex, AttributeType.STRING));
+                    // split string in chunk to avoid Graphviz limit on quoted string scanning (16384 char)
+                    Integer chunkSize = 16000;
+                    Integer chunkNum = 0;
+                    for(int chunkIdx = 0; chunkIdx < encodedVertex.length(); chunkIdx += chunkSize){
+                        String chunk = encodedVertex.substring(chunkIdx, Math.min(encodedVertex.length(), chunkIdx + chunkSize));
+                        map.put("serialization_data_" + chunkNum , new DefaultAttribute<String>(chunk, AttributeType.STRING));
+                        chunkNum++;
+                    }
             }catch (Exception exception) {
                 exception.printStackTrace();
             } 
@@ -151,7 +158,13 @@ public interface DotFileConverter <T extends DotFileConvertible> {
 
             // Deserialize vertex object with decompression
             try {
-                String encodedVertex = attributesMap.get("vertex_data").toString();
+                // Reassemble string from chunks
+                Integer chunkNum = 0;
+                String encodedVertex = "";
+                while(attributesMap.containsKey("serialization_data_" + chunkNum)){
+                    encodedVertex += attributesMap.get("serialization_data_" + chunkNum).toString();
+                    chunkNum++;
+                }
                 byte[] compressedData = Base64.getDecoder().decode(encodedVertex);
                 
                 try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedData);
