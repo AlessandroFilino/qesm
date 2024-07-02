@@ -2,10 +2,12 @@ package com.qesm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -52,17 +54,64 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
         DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
         ListenableDAG<V, CustomEdge> unsharedDag = dagConverter.makeConversion();
         
-        int A = 0, B = 0;
+        // Then compute metrics
+        int A = 0;
         // A paramater: sum all incoming edges of Processed node if they have more than 2 incoming edges 
         for(V node : unsharedDag.vertexSet()){
-            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.outDegreeOf(node) >= 2){
-                A += unsharedDag.outDegreeOf(node);
+            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.inDegreeOf(node) >= 2){
+                A += unsharedDag.inDegreeOf(node);
             }
         };
 
+        // B parameter: Load Balance Factor
+        float B = 0;
 
+        // TODO: improve this search and uniform with getRootNode maybe?
+        // Get root node of unshared dag, using getRootNode doesn't work because RootNode is not unsharedRootNode
+        V unsharedRootNode = null;
+        for (V node : unsharedDag.vertexSet()) {
+            if (unsharedDag.outDegreeOf(node) == 0) {
+                unsharedRootNode = node;
+                break;
+            }
+        }
 
-        return A + B;
+        Set<V> processedChildNodes = unsharedDag.incomingEdgesOf(unsharedRootNode).stream().map(unsharedDag::getEdgeSource).filter(v -> v.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED).collect(Collectors.toSet());
+        if (!processedChildNodes.isEmpty()){
+            processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
+            int[] numNodesInSubgraphs = new int[processedChildNodes.size()];
+            int index = 0;
+            for(V node : processedChildNodes){
+                numNodesInSubgraphs[index] = unsharedDag.getAncestors(node).size();
+                System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " + numNodesInSubgraphs[index]);
+                index++;
+            }
+
+            // for (int i = 0; i < numNodesInSubgraphs.length; i++){
+            //     System.out.println("[" + i +"] Val " + numNodesInSubgraphs[i]);
+            // }
+
+            float mean = (Arrays.stream(numNodesInSubgraphs).sum()) / processedChildNodes.size();
+            System.out.println("Mean: " + mean);
+            float sumOfSquares = 0;
+            for (int i = 0; i < processedChildNodes.size(); i++){
+                sumOfSquares += Math.pow((numNodesInSubgraphs[i] - mean), 2);
+            }
+            float loadBalanceFactor = 1.0f / (processedChildNodes.size()) * sumOfSquares;
+            B = loadBalanceFactor;
+        }
+ 
+        // for(V node : unsharedDag.vertexSet()){
+        //     // Select "leaf" Processed nodes (Processed nodes with only Raw Material nodes as ancestors)
+        //     if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.getAncestors(node).stream().allMatch(ancestor -> ancestor.getItemGroup() == AbstractProduct.ItemGroup.RAW_MATERIAL)){
+        //         System.out.println("Node: " + node.getName() + " - Item: " + node.getItemGroup());
+        //         unsharedDag.getDescendants(node).forEach(n -> System.out.println("          " + n.getName()));
+        //     }
+        // }
+
+        System.out.println("A value: " + A);
+        System.out.println("B value: " + B);
+        return -1;
     }
 
     @Override

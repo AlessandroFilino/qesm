@@ -22,20 +22,36 @@ public class Main {
         ensureFolderExists("output");
 
         WorkflowType graphTest = new WorkflowType();
-        
-        graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        graphTest.exportDotFile("./output/shared_WorkflowType.dot");
-        Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.svg");
 
-        WorkflowIstance workflow = graphTest.makeIstance();
-        workflow.exportDotFile("./output/shared_Workflow.dot");
-        Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.svg");
+        WorkflowType unsharedGraphTest = new WorkflowType();
+
+        graphTest.importDotFile("output/shared_WorkflowType.dot");
+        unsharedGraphTest.importDotFile("output/unshared_WorkflowType.dot");
         
-        Optional<ProductIstance> optionalProduct = workflow.findProduct("v0");
-        if(optionalProduct.isPresent()){
-            ProductIstance product = optionalProduct.get();
-            System.out.println("Name: " + product.getName());
-        }
+        // graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        // graphTest.exportDotFile("./output/shared_WorkflowType.dot");
+        // Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.svg");
+
+        graphTest.computeParallelismValue();
+
+        // unsharedGraphTest.computeParallelismValue();
+
+        
+
+        // graphTest.toUnshared();
+        // graphTest.exportDotFile("./output/unshared_WorkflowType.dot");
+        // Renderer.renderDotFile("./output/unshared_WorkflowType.dot", "./media/unshared_WorkflowType.svg");
+
+
+        // WorkflowIstance workflow = graphTest.makeIstance();
+        // workflow.exportDotFile("./output/shared_Workflow.dot");
+        // Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.svg");
+        
+        // Optional<ProductIstance> optionalProduct = workflow.findProduct("v0");
+        // if(optionalProduct.isPresent()){
+        //     ProductIstance product = optionalProduct.get();
+        //     System.out.println("Name: " + product.getName());
+        // }
 
         // graphTest.exportDagToDotFile("./output/sharedDAG.dot");
         // graphTest.importDagFromDotFile("./output/sharedDAG.dot");
