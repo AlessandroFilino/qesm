@@ -46,6 +46,25 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
 
     // TODO: Add metric to measure the paralellization/balance of the dag
 
+    public int computeParallelismValue(){
+
+        // First convert to unshared DAG 
+        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
+        ListenableDAG<V, CustomEdge> unsharedDag = dagConverter.makeConversion();
+        
+        int A = 0, B = 0;
+        // A paramater: sum all incoming edges of Processed node if they have more than 2 incoming edges 
+        for(V node : unsharedDag.vertexSet()){
+            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.outDegreeOf(node) >= 2){
+                A += unsharedDag.outDegreeOf(node);
+            }
+        };
+
+
+
+        return A + B;
+    }
+
     @Override
     public ListenableDAG<V, CustomEdge> getDag() {
         return dag;
