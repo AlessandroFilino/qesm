@@ -22,27 +22,15 @@ public class Main {
         ensureFolderExists("output");
 
         WorkflowType graphTest = new WorkflowType();
+        for (int i = 0; i < 20; i++){
+            graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        WorkflowType unsharedGraphTest = new WorkflowType();
+            String title = graphTest.computeParallelismValue();
 
-        graphTest.importDotFile("output/shared_WorkflowType.dot");
-        unsharedGraphTest.importDotFile("output/unshared_WorkflowType.dot");
-        
-        // graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        // graphTest.exportDotFile("./output/shared_WorkflowType.dot");
-        // Renderer.renderDotFile("./output/shared_WorkflowType.dot", "./media/shared_WorkflowType.svg");
-
-        graphTest.computeParallelismValue();
-
-        // unsharedGraphTest.computeParallelismValue();
-
-        
-
-        // graphTest.toUnshared();
-        // graphTest.exportDotFile("./output/unshared_WorkflowType.dot");
-        // Renderer.renderDotFile("./output/unshared_WorkflowType.dot", "./media/unshared_WorkflowType.svg");
-
-
+            graphTest.toUnshared();
+            graphTest.exportDotFile("./output/" + title + ".dot");
+            Renderer.renderDotFile("./output/" + title + ".dot", "./media/" + title + ".svg");
+        }
         // WorkflowIstance workflow = graphTest.makeIstance();
         // workflow.exportDotFile("./output/shared_Workflow.dot");
         // Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.svg");

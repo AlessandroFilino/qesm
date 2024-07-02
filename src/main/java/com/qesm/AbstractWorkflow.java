@@ -48,7 +48,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
 
     // TODO: Add metric to measure the paralellization/balance of the dag
 
-    public int computeParallelismValue(){
+    public String computeParallelismValue(){
 
         // First convert to unshared DAG 
         DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
@@ -77,7 +77,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
         }
 
         Set<V> processedChildNodes = unsharedDag.incomingEdgesOf(unsharedRootNode).stream().map(unsharedDag::getEdgeSource).filter(v -> v.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED).collect(Collectors.toSet());
-        if (!processedChildNodes.isEmpty()){
+        if (processedChildNodes.size() > 1){
             processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
             int[] numNodesInSubgraphs = new int[processedChildNodes.size()];
             int index = 0;
@@ -109,9 +109,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
         //     }
         // }
 
-        System.out.println("A value: " + A);
-        System.out.println("B value: " + B);
-        return -1;
+        return "Avalue" + A + "___Bvalue" + B;
     }
 
     @Override
