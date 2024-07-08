@@ -3,8 +3,8 @@ package com.qesm;
 import java.util.Set;
 
 
-public class WorkflowIstance extends AbstractWorkflow<ProductIstance>{
-
+public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIstance>{
+    
     protected WorkflowIstance(){
         super(ProductIstance.class, true);
     }
@@ -13,15 +13,15 @@ public class WorkflowIstance extends AbstractWorkflow<ProductIstance>{
         super(dagToImport, ProductIstance.class, true);
     }
 
-    private WorkflowIstance(ListenableDAG<ProductIstance, CustomEdge> dagToImport, Boolean isRootGraph) {
-        super(dagToImport, ProductIstance.class, isRootGraph);
+    private WorkflowIstance(ListenableDAG<ProductIstance, CustomEdge> dagToImport, Boolean isTopTierGraph) {
+        super(dagToImport, ProductIstance.class, isTopTierGraph);
     }
 
     @Override
     protected void buildChangedSubGraphs(Set<ProductIstance> vertexSet) {
         for (ProductIstance productIstance : vertexSet) {
             if(productIstance.isProcessed()){
-                productIstance.setProductWorkflow(new WorkflowIstance(createSubgraph(dag, productIstance), false));
+                productToSubWorkflowMap.put(productIstance, new WorkflowIstance(createSubgraph(dag, productIstance), false));
             }
         }
     }

@@ -35,7 +35,7 @@ public class WorkflowTypeTest {
             
             if(nodeIstance.isProcessed()){
                 WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagIstance, nodeIstance));
-                assertEquals(subgraphIstance, nodeIstance.getProductWorkflow());
+                assertEquals(subgraphIstance, workflowIstance.getProductWorkflow(nodeIstance));
                 // System.out.println(nodeIstance.getProductWorkflow().equals(subgraphIstance));
                 // System.out.println("Istance workflow");
                 // System.out.println(nodeIstance.getProductWorkflow());
@@ -152,9 +152,9 @@ public class WorkflowTypeTest {
         //  v3 v5
         //  v4
 
-        assertTrue(workflowType.findProduct("v2").get().getProductWorkflow().getDag().containsVertex(v5));
-        assertTrue(workflowType.findProduct("v1").get().getProductWorkflow().getDag().containsVertex(v5));
-        assertTrue(workflowType.findProduct("v0").get().getProductWorkflow().getDag().containsVertex(v5));
+        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).getDag().containsVertex(v5));
+        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).getDag().containsVertex(v5));
+        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).getDag().containsVertex(v5));
 
     }
 
@@ -186,7 +186,7 @@ public class WorkflowTypeTest {
         dag.addEdge(v1, v0);
 
         WorkflowType workflowType = new WorkflowType(dag);
-        WorkflowType workflowTypeV2 =  workflowType.findProduct("v2").get().getProductWorkflow();
+        WorkflowType workflowTypeV2 = workflowType.getProductWorkflow(workflowType.findProduct("v2").get());
         WorkflowIstance workflowIstanceV2 = workflowTypeV2.makeIstance();
 
         assertTrue(workflowTypeV2.equalsNodesAttributes(workflowIstanceV2));

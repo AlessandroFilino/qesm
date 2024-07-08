@@ -6,7 +6,7 @@ import java.util.Set;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 
-public class WorkflowType extends AbstractWorkflow<ProductType>{
+public class WorkflowType extends AbstractWorkflow<ProductType, WorkflowType>{
 
 
     public WorkflowType() {
@@ -17,8 +17,8 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
         super(dagToImport, ProductType.class, true);
     }
 
-    private WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport, Boolean isRootGraph) {
-        super(dagToImport, ProductType.class, isRootGraph);
+    private WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport, Boolean isTopTierGraph) {
+        super(dagToImport, ProductType.class, isTopTierGraph);
     }
 
     public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType) {
@@ -57,7 +57,7 @@ public class WorkflowType extends AbstractWorkflow<ProductType>{
     protected void buildChangedSubGraphs(Set<ProductType> vertexSet) {
         for (ProductType productType : vertexSet) {
             if(productType.isProcessed()){
-                productType.setProductWorkflow(new WorkflowType(createSubgraph(dag, productType), false));
+                productToSubWorkflowMap.put(productType, new WorkflowType(createSubgraph(dag, productType), false));
             }
         }
     }

@@ -3,6 +3,7 @@ package com.qesm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -17,31 +18,34 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 
 
-public abstract class AbstractWorkflow <V extends AbstractProduct> implements DotFileConverter<V>, Serializable{
+public abstract class AbstractWorkflow <V extends AbstractProduct, W extends AbstractWorkflow<V,W>> implements DotFileConverter<V>, Serializable{
 
     protected ListenableDAG<V, CustomEdge> dag;
+    protected HashMap<V, W> productToSubWorkflowMap;
     protected transient final Class<V> vertexClass;
     protected Boolean graphListenerAdded = false;
-    protected Boolean isRootGraph = false;
+    protected Boolean isTopTierGraph = false;
 
-    public AbstractWorkflow(Class<V> vertexClass, Boolean isRootGraph) {
+    public AbstractWorkflow(Class<V> vertexClass, Boolean isTopTierGraph) {
         this.vertexClass = vertexClass;
         this.dag = new ListenableDAG<V, CustomEdge>(CustomEdge.class);
-        this.isRootGraph = isRootGraph;
+        this.isTopTierGraph = isTopTierGraph;
 
-        if(isRootGraph){
+        if(isTopTierGraph){
             setGraphListener();
+            this.productToSubWorkflowMap = new HashMap<V, W>(); 
             updateAllSubgraphs();
         }
     }
 
-    public AbstractWorkflow(ListenableDAG<V, CustomEdge> dagToImport, Class<V> vertexClass, Boolean isRootGraph) {
+    public AbstractWorkflow(ListenableDAG<V, CustomEdge> dagToImport, Class<V> vertexClass, Boolean isTopTierGraph) {
         this.vertexClass = vertexClass;
         this.dag = dagToImport;
-        this.isRootGraph = isRootGraph;
+        this.isTopTierGraph = isTopTierGraph;
 
-        if(isRootGraph){
+        if(isTopTierGraph){
             setGraphListener();
+            this.productToSubWorkflowMap = new HashMap<V, W>();
             updateAllSubgraphs();
         }
     }
@@ -139,6 +143,10 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
         return null;
     }
 
+    public W getProductWorkflow(V node){
+        return productToSubWorkflowMap.get(node);
+    }
+
     public String toString() {
         String dagInfo = "";
         Iterator<V> iter = new DepthFirstIterator<V, CustomEdge>(dag);
@@ -170,7 +178,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
             return false;
         }
 
-        AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
+        AbstractWorkflow<V, W> workflowToCompare = uncheckedCast(obj);
 
         // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
         
@@ -238,7 +246,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
         return true;
     }
 
-    public <T extends AbstractProduct> boolean equalsNodesAttributes(AbstractWorkflow<T> workflowToCompare){
+    public <T extends AbstractProduct, P extends AbstractWorkflow<T,P>> boolean equalsNodesAttributes(AbstractWorkflow<T,P> workflowToCompare){
         ArrayList<V> workflowNodes = new ArrayList<>();
         ArrayList<T> workflowToCompareNodes = new ArrayList<>();
 
@@ -282,13 +290,13 @@ public abstract class AbstractWorkflow <V extends AbstractProduct> implements Do
 
     // Jgrapht does the same
     @SuppressWarnings("unchecked")
-    private AbstractWorkflow<V> uncheckedCast(Object o)
+    private AbstractWorkflow<V, W> uncheckedCast(Object o)
     {
-        return (AbstractWorkflow<V>) o;
+        return (AbstractWorkflow<V, W>) o;
     }
 
     protected void setGraphListener(){
-        if(graphListenerAdded || !isRootGraph){
+        if(graphListenerAdded || !isTopTierGraph){
             return;
         }
         GraphListener<V, CustomEdge> graphListener = new GraphListener<V,CustomEdge>() {

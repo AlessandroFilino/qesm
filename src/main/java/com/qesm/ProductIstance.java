@@ -7,8 +7,6 @@ import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ProductIstance extends AbstractProduct{
-   
-    private WorkflowIstance productWorkflow;
 
     protected ProductIstance(ProductType productType){
         super(new String(productType.getName()), productType.getItemGroup());
@@ -43,15 +41,4 @@ public class ProductIstance extends AbstractProduct{
         super(name, itemGroup);
     }
     
-    public WorkflowIstance getProductWorkflow() {
-        return returnWithItemGroupCheck(productWorkflow);
-    }
-
-    public Integer setProductWorkflow(WorkflowIstance productWorkflow) {
-        Integer returnValue = returnWithItemGroupCheck(0);
-        if(returnValue != null){
-            this.productWorkflow = productWorkflow;
-        }
-        return returnValue;
-    }
 }

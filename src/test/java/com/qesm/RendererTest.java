@@ -113,7 +113,7 @@ public class RendererTest {
 
         for (ProductIstance nodeIstance : workflowIstance.getDag().vertexSet()) {
             if(nodeIstance.isProcessed()){
-                nodeIstance.getProductWorkflow().exportDotFileNoSerialization(subgraphsDotFolder + "/subgraph" + nodeIstance.getName() + ".dot");
+                workflowIstance.getProductWorkflow(nodeIstance).exportDotFileNoSerialization(subgraphsDotFolder + "/subgraph" + nodeIstance.getName() + ".dot");
             }
         }
 
