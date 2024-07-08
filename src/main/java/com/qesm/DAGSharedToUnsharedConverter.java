@@ -38,16 +38,16 @@ public class DAGSharedToUnsharedConverter<V extends AbstractProduct> {
             idCounter.put(node, id);
         }
         V newNode;
-        if (node.getItemGroup() == ItemGroup.PROCESSED) {
+        if (node.isProcessed()) {
             if(id == 0){
                 newNode = generateNode(node.getName(), ItemGroup.PROCESSED);
-                newNode.setQuantityProduced(node.getQuantityProduced());
-                newNode.setPdf(node.getPdf());
+                newNode.setQuantityProduced(node.getQuantityProduced().get());
+                newNode.setPdf(node.getPdf().get());
             }
             else{
                 newNode = generateNode(node.getName()+"_"+id, ItemGroup.PROCESSED);
-                newNode.setQuantityProduced(node.getQuantityProduced());
-                newNode.setPdf(node.getPdf());
+                newNode.setQuantityProduced(node.getQuantityProduced().get());
+                newNode.setPdf(node.getPdf().get());
             }
         }
         else {

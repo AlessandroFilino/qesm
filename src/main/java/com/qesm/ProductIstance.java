@@ -11,10 +11,10 @@ public class ProductIstance extends AbstractProduct{
     protected ProductIstance(ProductType productType){
         super(new String(productType.getName()), productType.getItemGroup());
 
-        if(productType.getItemGroup() == ItemGroup.PROCESSED){
-            setQuantityProduced(productType.getQuantityProduced());
+        if(productType.isProcessed()){
+            setQuantityProduced(productType.getQuantityProduced().get());
 
-            StochasticTime pdfToCopy = productType.getPdf();
+            StochasticTime pdfToCopy = productType.getPdf().get();
             Class<? extends StochasticTime> pdfClass = pdfToCopy.getClass();
 
             if(pdfClass == UniformTime.class){

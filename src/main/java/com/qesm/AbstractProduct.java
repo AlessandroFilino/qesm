@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jgrapht.nio.Attribute;
@@ -54,28 +55,32 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         return itemGroup;
     }
 
-    public Integer getQuantityProduced() {
-        return returnWithItemGroupCheck(quantityProduced);
+    public Optional<Integer> getQuantityProduced() {
+        return getWithItemGroupCheck(quantityProduced);
     }
 
-    public Integer setQuantityProduced(int quantityProduced) {
-        Integer returnValue = returnWithItemGroupCheck(0);
-        if(returnValue != null){
+    public Boolean setQuantityProduced(int quantityProduced) {
+        if(itemGroup == ItemGroup.PROCESSED){
             this.quantityProduced = quantityProduced;
+            return true;
         }
-        return returnValue;
+        else{
+            return false;
+        }
     }
 
-    public StochasticTime getPdf() {
-        return returnWithItemGroupCheck(pdf);
+    public Optional<StochasticTime> getPdf() {
+        return getWithItemGroupCheck(pdf);
     }
     
-    public Integer setPdf(StochasticTime pdf) {
-        Integer returnValue = returnWithItemGroupCheck(0);
-        if(returnValue != null){
+    public Boolean setPdf(StochasticTime pdf) {
+        if(itemGroup == ItemGroup.PROCESSED){
             this.pdf = pdf;
+            return true;
         }
-        return returnValue;
+        else{
+            return false;
+        }
     }
 
     public UUID getUuid() {
@@ -95,12 +100,12 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         }
     }
 
-    protected <T> T returnWithItemGroupCheck(T valueToReturn){
+    protected <T> Optional<T> getWithItemGroupCheck(T valueToReturn){
         if(itemGroup == ItemGroup.PROCESSED){
-            return valueToReturn;
+            return Optional.of(valueToReturn);
         }
         else{
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -140,12 +145,12 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         
         if(this.isProcessed()){
 
-            if(! productToCompare.getQuantityProduced().equals(quantityProduced)){
+            if(! productToCompare.getQuantityProduced().get().equals(quantityProduced)){
                 return false;
             }
             else{
                 // Custum equals for pdf (StochasticTime doesn't implement it)
-                StochasticTime pdfToCompare = productToCompare.getPdf();
+                StochasticTime pdfToCompare = productToCompare.getPdf().get();
                 if(! pdfToCompare.getClass().isInstance(pdf)){
                     return false;
                 }
