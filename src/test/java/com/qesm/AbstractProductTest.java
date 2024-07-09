@@ -2,8 +2,10 @@ package com.qesm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,7 @@ import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
 import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
-import org.oristool.eulero.modeling.stochastictime.SIRIOType;
+import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import com.qesm.AbstractProduct.ItemGroup;
@@ -21,7 +23,6 @@ public class AbstractProductTest {
     private ProductType prodTypeRaw1;
     private ProductType prodTypeRaw2;
     private ProductType prodTypeProcessed1;
-    private ProductType prodTypeProcessed2;
     private ProductType prodTypeProcessed1DifferentQuantity;
     private ProductType prodTypeRaw1Reference;
     private ProductType nullProductType;
@@ -67,7 +68,6 @@ public class AbstractProductTest {
         prodTypeRaw1 = new ProductType("p1", ItemGroup.RAW_MATERIAL);
         prodTypeRaw2 = new ProductType("p2", ItemGroup.RAW_MATERIAL);
         prodTypeProcessed1 = new ProductType("p1", ItemGroup.PROCESSED);
-        prodTypeProcessed2 = new ProductType("p2", ItemGroup.PROCESSED);
         prodTypeProcessed1DifferentQuantity = new ProductType("p1", ItemGroup.PROCESSED);
         prodTypeProcessed1DifferentQuantity.setQuantityProduced(10);
         prodIstanceRaw1 = new ProductIstance(prodTypeRaw1);
@@ -123,7 +123,6 @@ public class AbstractProductTest {
 
     @Test
     void testEqualsAttributes() {
-        // TODO TEST: implement test
         assertNotEquals(prodTypeRaw1.getName(), prodTypeRaw2.getName());
         assertNotEquals(prodTypeRaw1.getItemGroup(), prodTypeProcessed1.getItemGroup());
         assertNotEquals(prodTypeProcessed1, prodTypeProcessed1DifferentQuantity);
@@ -147,66 +146,23 @@ public class AbstractProductTest {
 
         assertNotEquals(prodTypeProcessedUniform01, prodTypeProcessedExpolynomial01);
     }
-//     public <T extends AbstractProduct> boolean equalsAttributes(T productToCompare){
-//         if(! productToCompare.getName().equals(name) ||
-//            ! productToCompare.getItemGroup().equals(itemGroup)){
-//             return false;
-//         }
-        
-//         if(this.isProcessed()){
 
-//             if(! productToCompare.getQuantityProduced().get().equals(quantityProduced)){
-//                 return false;
-//             }
-//             else{
-//                 // Custum equals for pdf (StochasticTime doesn't implement it)
-//                 StochasticTime pdfToCompare = productToCompare.getPdf().get();
-//                 if(! pdfToCompare.getClass().isInstance(pdf)){
-//                     return false;
-//                 }
-//                 else{
-
-//                     if(pdfToCompare.getClass() == UniformTime.class){
-//                         if(! pdfToCompare.getEFT().equals(pdf.getEFT()) ||
-//                            ! pdfToCompare.getLFT().equals(pdf.getLFT())){
-//                             return false;
-//                         } 
-//                     }
-//                     else if(pdfToCompare.getClass() == ErlangTime.class){
-//                         ErlangTime erlangPdfToCompare = (ErlangTime) pdfToCompare;
-//                         ErlangTime erlangPdf = (ErlangTime) pdf;
-                        
-//                         if(erlangPdfToCompare.getK() != (erlangPdf.getK()) ||
-//                            erlangPdfToCompare.getRate() != (erlangPdf.getRate())){
-//                             return false;
-//                         } 
-//                     }
-//                     else if(pdfToCompare.getClass() == ExponentialTime.class){
-//                         ExponentialTime exponentialPdfToCompare = (ExponentialTime) pdfToCompare;
-//                         ExponentialTime exponentialPdf = (ExponentialTime) pdf;
-                        
-//                         if( ! exponentialPdfToCompare.getRate().equals(exponentialPdf.getRate())){
-//                             return false;
-//                         } 
-//                     }
-//                     else if(pdfToCompare.getClass() == DeterministicTime.class){
-//                         if(! pdfToCompare.getEFT().equals(pdf.getEFT()) ||
-//                            ! pdfToCompare.getLFT().equals(pdf.getLFT())){
-//                             return false;
-//                         } 
-//                     }
-//                     else{
-//                         return false;
-//                     }
-//                 }
-//             }
-//         }
-        
-//         return true;
-//     } 
     @Test
     void testGetWithItemGroupCheck() {
-        // TODO TEST: implement test
+        assertTrue(StochasticTime.class.isAssignableFrom(prodTypeProcessedUniform01.getPdf().get().getClass()));
+        assertEquals(prodTypeRaw1.getPdf(), Optional.empty());
     }
 }
+
+// public Optional<StochasticTime> getPdf() {
+//     return getWithItemGroupCheck(pdf);
+// }
+// protected <T> Optional<T> getWithItemGroupCheck(T valueToReturn){
+//     if(itemGroup == ItemGroup.PROCESSED){
+//         return Optional.of(valueToReturn);
+//     }
+//     else{
+//         return Optional.empty();
+//     }
+// }
 
