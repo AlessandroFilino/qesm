@@ -149,7 +149,7 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
                 return false;
             }
             else{
-                // Custum equals for pdf (StochasticTime doesn't implement it)
+                // Custom equals for pdf (StochasticTime doesn't implement it)
                 StochasticTime pdfToCompare = productToCompare.getPdf().get();
                 if(! pdfToCompare.getClass().isInstance(pdf)){
                     return false;
@@ -180,8 +180,8 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
                         } 
                     }
                     else if(pdfToCompare.getClass() == DeterministicTime.class){
-                        if(! pdfToCompare.getEFT().equals(pdf.getEFT()) ||
-                           ! pdfToCompare.getLFT().equals(pdf.getLFT())){
+                        // Don't need to add "|| pdfToCompare.getLFT() != pdf.getLFT()" because for Deterministic EFT == LFT
+                        if(pdfToCompare.getEFT()!= pdf.getEFT()){
                             return false;
                         } 
                     }

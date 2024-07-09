@@ -9,6 +9,8 @@ import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
+import org.oristool.petrinet.PetriNet;
+import org.oristool.petrinet.Place;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
@@ -21,15 +23,16 @@ public class Main {
         ensureFolderExists("output");
 
         WorkflowType graphTest = new WorkflowType();
-        for (int i = 0; i < 20; i++){
-            graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        // for (int i = 0; i < 20; i++){
+        //     graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-            String title = graphTest.computeParallelismValue();
+        //     String title = graphTest.computeParallelismValue();
 
-            graphTest.toUnshared();
-            graphTest.exportDotFile("./output/" + title + ".dot");
-            Renderer.renderDotFile("./output/" + title + ".dot", "./media/" + title + ".svg");
-        }
+        //     graphTest.toUnshared();
+        //     graphTest.exportDotFile("./output/" + title + ".dot");
+        //     Renderer.renderDotFile("./output/" + title + ".dot", "./media/" + title + ".svg");
+        // }
         // WorkflowIstance workflow = graphTest.makeIstance();
         // workflow.exportDotFile("./output/shared_Workflow.dot");
         // Renderer.renderDotFile("./output/shared_Workflow.dot", "./media/shared_Workflow.svg");
@@ -67,32 +70,32 @@ public class Main {
             
         // }
 
-        // StructuredTree structuredTree = new StructuredTree(graphTest.getDag(), graphTest.getRootNode());
+        StructuredTree<ProductType> structuredTree = new StructuredTree<ProductType>(graphTest.getDag(), ProductType.class);
 
-        // structuredTree.buildStructuredTree();
+        structuredTree.buildStructuredTree();
 
-        // String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
-        // String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTree");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
 
-        // structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder);
-        // Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
         
-        // StructuredTreeConverter structuredTreeConverter = new StructuredTreeConverter(structuredTree.getStructuredWorkflow());
-        // Activity rootActivity = structuredTreeConverter.convertToActivity();
-        // System.out.println(rootActivity);
+        StructuredTreeConverter structuredTreeConverter = new StructuredTreeConverter(structuredTree.getStructuredWorkflow());
+        Activity rootActivity = structuredTreeConverter.convertToActivity();
+        System.out.println(rootActivity);
 
 
-        // PetriNet net = new PetriNet();
-        // Place pOut = net.addPlace("FINAL_PLACE");
-        // Place pIn = net.addPlace("STARTING_PLACE");
-        // rootActivity.buildSTPN(net, pIn, pOut, 0);
+        PetriNet net = new PetriNet();
+        Place pOut = net.addPlace("FINAL_PLACE");
+        Place pIn = net.addPlace("STARTING_PLACE");
+        rootActivity.buildSTPN(net, pIn, pOut, 0);
 
         
         // System.out.println(net);
 
-        // DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
-        // dagAnalyzer.analyzeActivity(rootActivity);
-        // dagAnalyzer.analizePetriNet(net, pOut, pIn);
+        DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
+        dagAnalyzer.analyzeActivity(rootActivity);
+        dagAnalyzer.analizePetriNet(net, pOut, pIn);
 
         // dagAnalyzer.testPetriNet1();
         // dagAnalyzer.testPetriNet2();
