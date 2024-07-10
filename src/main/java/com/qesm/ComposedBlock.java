@@ -1,7 +1,6 @@
 package com.qesm;
 
 import java.util.ArrayList;
-
 import java.util.Map;
 import java.util.UUID;
 
@@ -64,11 +63,40 @@ public abstract class ComposedBlock implements STPNBlock {
         }
 
         ComposedBlock composedBlockToCompare = (ComposedBlock) obj;
-        if(! composedBlockToCompare.getComposedElements().equals(composedElements)){
-            return false;
+        ArrayList<STPNBlock> composedElementsToCompare = composedBlockToCompare.getComposedElements();
+        
+        for (STPNBlock composedElement : composedElements) {
+            Boolean isContained = false;
+            for (STPNBlock composedElementToCompare : composedElementsToCompare) {
+                if(composedElement.equals(composedElementToCompare)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
+        }
+
+        for (STPNBlock composedElementToCompare : composedElementsToCompare) {
+            Boolean isContained = false;
+            for (STPNBlock composedElement : composedElements) {
+                if(composedElementToCompare.equals(composedElement)){
+                    isContained = true;
+                    break;
+                } 
+            }
+            if(!isContained){
+                return false;
+            }
         }
 
         return true;
+    }
+
+    @Override 
+    public String toString(){
+        return composedElements.toString();
     }
 
     @Override

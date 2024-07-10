@@ -78,7 +78,7 @@ public class Main {
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTree");
 
         structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
-        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
         
         StructuredTreeConverter structuredTreeConverter = new StructuredTreeConverter(structuredTree.getStructuredWorkflow());
         Activity rootActivity = structuredTreeConverter.convertToActivity();

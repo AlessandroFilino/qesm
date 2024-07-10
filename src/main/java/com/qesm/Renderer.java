@@ -25,7 +25,7 @@ public class Renderer {
 
     }
 
-    public static void renderAllDotFile(String folderPath, String outputFolderPath, double scale) {
+    public static void renderAllDotFile(String folderPath, String outputFolderPath) {
 
         try {
             Path inputFolder = Paths.get(folderPath);

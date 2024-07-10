@@ -3,7 +3,6 @@ package com.qesm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -27,8 +26,12 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
 
     public StructuredTree(ListenableDAG<V, CustomEdge> dag, Class<V> dagVertexClass) {
         this.originalWorkflow = dag;
-        this.structuredWorkflow = new ListenableDAG<>(CustomEdge.class);
         this.dagVertexClass = dagVertexClass;
+        initializeStructuredWorkflow();
+    }
+
+    private void initializeStructuredWorkflow(){
+        this.structuredWorkflow = new ListenableDAG<>(CustomEdge.class);
 
         // Add all processedType as simpleBlock to structuredWorkflow
         for (V node : originalWorkflow.vertexSet()) {
@@ -36,13 +39,12 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
             if (node.isProcessed()) {
 
                 STPNBlock newBlock = new SimpleBlock(node);
-                ArrayList<V> enablingTokens = new ArrayList<>();
 
                 for (CustomEdge inEdge : originalWorkflow.incomingEdgesOf(node)) {
                     V sourceNode = originalWorkflow.getEdgeSource(inEdge);
 
                     if (! sourceNode.isProcessed()) {
-                        enablingTokens.add(sourceNode);
+                        newBlock.addEnablingToken(sourceNode);
                     }
                 }
                 structuredWorkflow.addVertex(newBlock);
@@ -80,7 +82,13 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
                 break;
             }
         }
+    }
 
+
+    public StructuredTree(ListenableDAG<V, CustomEdge> dag, ListenableDAG<STPNBlock, CustomEdge> structuredWorkflow, Class<V> dagVertexClass) {
+        this.originalWorkflow = dag;
+        this.structuredWorkflow = structuredWorkflow;
+        this.dagVertexClass = dagVertexClass;
     }
 
     public ListenableDAG<STPNBlock, CustomEdge> getStructuredWorkflow() {
@@ -109,6 +117,9 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
     }
 
     private void buildStructuredTree(boolean exportAllIteration, boolean serialization, String folderPath) {
+        // To catch possible changes to the originalDag
+        initializeStructuredWorkflow();
+
         int seqReplacedCount = 0;
         int andReplacedCount = 0;
         int stepCount = 0;
@@ -310,7 +321,6 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
         if (getClass() != obj.getClass()){
             return false;
         }
-
         
         // Check if generic types are different
         StructuredTree<?> genericStructuredTreeToCompare = (StructuredTree<?>) obj;
@@ -322,22 +332,16 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
 
         StructuredTree<V> structuredTreeToCompare = uncheckedCast(obj);
 
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only defined equals() for ProductType
-        List<STPNBlock> vertexListToCompare = new ArrayList<>(structuredTreeToCompare.getDag().vertexSet());
-        List<STPNBlock> vertexList = new ArrayList<>(structuredWorkflow.vertexSet());
-
-        if(! vertexList.equals(vertexListToCompare)){
-            return false;
-        }
-
-        List<CustomEdge> edgeListToCompare = new ArrayList<>(structuredTreeToCompare.getDag().edgeSet());
-        List<CustomEdge> edgeList = new ArrayList<>(structuredWorkflow.edgeSet());
-
-        if(! edgeList.equals(edgeListToCompare)){
+        if(!this.structuredWorkflow.equals(structuredTreeToCompare.getStructuredWorkflow())){
             return false;
         }
 
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "StructuredWorkflow:\n" + structuredWorkflow.toString();
     }
 
     protected Class<V> getDAGVertexClass(){

@@ -1,7 +1,6 @@
 package com.qesm;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
@@ -54,12 +53,8 @@ public class WorkflowType extends AbstractWorkflow<ProductType, WorkflowType>{
     }
 
     @Override
-    protected void buildChangedSubGraphs(Set<ProductType> vertexSet) {
-        for (ProductType productType : vertexSet) {
-            if(productType.isProcessed()){
-                productToSubWorkflowMap.put(productType, new WorkflowType(createSubgraph(dag, productType), false));
-            }
-        }
+    protected WorkflowType buildWorkflow(ListenableDAG<ProductType, CustomEdge> dag) {
+        return new WorkflowType(dag, false);
     }
 
 }

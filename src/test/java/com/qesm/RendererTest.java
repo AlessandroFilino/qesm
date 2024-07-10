@@ -82,7 +82,7 @@ public class RendererTest {
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderTest");
 
         structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
-        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder, 3);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
 
         rmDotFileFolder(structuredTreeDotFolder);
     }
@@ -117,7 +117,7 @@ public class RendererTest {
             }
         }
 
-        Renderer.renderAllDotFile(subgraphsDotFolder, subgraphsMediaFolder, 3);
+        Renderer.renderAllDotFile(subgraphsDotFolder, subgraphsMediaFolder);
 
         rmDotFile("./output/workflowIstanceRendererTest.dot");
         rmDotFileFolder("./output/subgraphsRenderTest");

@@ -23,4 +23,9 @@ public class SeqBlock extends ComposedBlock{
 
             return map;
     }
+
+    @Override
+    public String toString(){
+        return "SeqBlock: [" + super.toString() + "]";
+    }
 }

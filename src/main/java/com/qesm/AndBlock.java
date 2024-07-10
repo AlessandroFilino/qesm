@@ -24,4 +24,9 @@ public class AndBlock extends ComposedBlock{
             return map;
     }
 
+    @Override
+    public String toString(){
+        return "AndBlock: [" + super.toString() + "]";
+    }
+
 }

@@ -1,7 +1,5 @@
 package com.qesm;
 
-import java.util.Set;
-
 
 public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIstance>{
     
@@ -18,12 +16,8 @@ public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIs
     }
 
     @Override
-    protected void buildChangedSubGraphs(Set<ProductIstance> vertexSet) {
-        for (ProductIstance productIstance : vertexSet) {
-            if(productIstance.isProcessed()){
-                productToSubWorkflowMap.put(productIstance, new WorkflowIstance(createSubgraph(dag, productIstance), false));
-            }
-        }
+    protected WorkflowIstance buildWorkflow(ListenableDAG<ProductIstance, CustomEdge> dag) {
+        return new WorkflowIstance(dag, false);
     }
 
 }

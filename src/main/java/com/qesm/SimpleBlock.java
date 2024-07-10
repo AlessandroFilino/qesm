@@ -101,4 +101,19 @@ public class SimpleBlock implements STPNBlock{
         return value;
     }
 
+    @Override
+    public String toString() {
+        String stringToReturn = simpleElement.getName();
+        if(enablingTokens.size() > 0){
+            stringToReturn += " enablingTokens: [";
+            for (AbstractProduct enablingToken : enablingTokens) {
+                stringToReturn += " " + enablingToken.getName(); 
+            }
+            stringToReturn += " ] ";
+        }
+        return stringToReturn; 
+        
+    }
+
+    
 }

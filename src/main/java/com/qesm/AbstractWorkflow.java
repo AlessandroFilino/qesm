@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -147,17 +146,9 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         return productToSubWorkflowMap.get(node);
     }
 
+    @Override
     public String toString() {
-        String dagInfo = "";
-        Iterator<V> iter = new DepthFirstIterator<V, CustomEdge>(dag);
-        while (iter.hasNext()) {
-            V vertex = iter.next();
-            dagInfo += vertex.toString() + " is connected to: \n";
-            for (CustomEdge connectedEdge : dag.outgoingEdgesOf(vertex)) {
-                dagInfo += "\t" + connectedEdge.toString() + "\n";
-            }
-        }
-        return dagInfo;
+        return dag.toString();
     }
 
     public boolean isDagConnected() {
@@ -180,69 +171,9 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
 
         AbstractWorkflow<V, W> workflowToCompare = uncheckedCast(obj);
 
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
-        
-        List<V> vertexListToCompare = new ArrayList<>(workflowToCompare.getDag().vertexSet());
-        List<V> vertexList = new ArrayList<>(dag.vertexSet());
-
-        // Check if all element of a list are contained in the other and vice versa 
-        // (very inneficent, need to implement custum hashcode if it will be developed further)
-        for (V vertex : vertexList) {
-            Boolean isContained = false;
-            for (V vertexToCompare : vertexListToCompare) {
-                if(vertex.equals(vertexToCompare)){
-                    isContained = true;
-                    break;
-                } 
-            }
-            if(!isContained){
-                return false;
-            }
+        if(!this.dag.equals(workflowToCompare.getDag())){
+            return false;
         }
-
-        for (V vertexToCompare : vertexListToCompare) {
-            Boolean isContained = false;
-            for (V vertex : vertexList) {
-                if(vertexToCompare.equals(vertex)){
-                    isContained = true;
-                    break;
-                } 
-            }
-            if(!isContained){
-                return false;
-            }
-        }
-
-        List<CustomEdge> edgeListToCompare = new ArrayList<>(workflowToCompare.getDag().edgeSet());
-        List<CustomEdge> edgeList = new ArrayList<>(dag.edgeSet());
-
-        
-        for (CustomEdge customEdge : edgeList) {
-            Boolean isContained = false;
-            for (CustomEdge customEdgeToCompare : edgeListToCompare) {
-                if(customEdge.equals(customEdgeToCompare)){
-                    isContained = true;
-                    break;
-                } 
-            }
-            if(!isContained){
-                return false;
-            }
-        }
-
-        for (CustomEdge customEdgeToCompare : edgeListToCompare) {
-            Boolean isContained = false;
-            for (CustomEdge customEdge : edgeList) {
-                if(customEdgeToCompare.equals(customEdge)){
-                    isContained = true;
-                    break;
-                } 
-            }
-            if(!isContained){
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -342,8 +273,16 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         }
     }
 
-    protected abstract void buildChangedSubGraphs(Set<V> vertexSet);
+    protected abstract W buildWorkflow(ListenableDAG<V, CustomEdge> dag);
 
+    protected void buildChangedSubGraphs(Set<V> vertexSet){
+        for (V product : vertexSet) {
+            if(product.isProcessed()){
+                productToSubWorkflowMap.put(product, buildWorkflow(createSubgraph(dag, product)));
+            }
+        }
+    }
+    
     protected  ListenableDAG<V, CustomEdge> createSubgraph(ListenableDAG<V, CustomEdge> originalDAG, V root) {
         ListenableDAG<V, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
 
