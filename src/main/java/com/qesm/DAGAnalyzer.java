@@ -30,6 +30,8 @@ public class DAGAnalyzer {
     public DAGAnalyzer() {
     }
 
+    // TODO: is this class really needed ? (maybe we can refactor it to be a simple wrapper)
+
     public void analyzeActivity(Activity rootActivity){
         
         AnalysisHeuristicsVisitor visitor = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());

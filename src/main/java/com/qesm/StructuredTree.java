@@ -117,9 +117,6 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
     }
 
     private void buildStructuredTree(boolean exportAllIteration, boolean serialization, String folderPath) {
-        // To catch possible changes to the originalDag
-        initializeStructuredWorkflow();
-
         int seqReplacedCount = 0;
         int andReplacedCount = 0;
         int stepCount = 0;

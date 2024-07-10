@@ -31,10 +31,13 @@ public class StructuredTreeTest {
 
         // DAG structure:
         //  v0
+        //  |
         //  v1
-        //  v2  v4
-        //  v3  v5
-        //  v6
+        //  |  \  \
+        //  v2 v3 v4
+        //  |  |
+        //  v5 v6
+        
         
         dag = new ListenableDAG<>(CustomEdge.class);
         v0 = new ProductType("v0", 1, new UniformTime(0,2));
@@ -135,11 +138,5 @@ public class StructuredTreeTest {
         structuredTree3.buildStructuredTree();
 
         assertNotEquals(structuredTree1, structuredTree3);
-
-        // update structuredTree1 with the new changes in the dag
-        structuredTree1.buildStructuredTree();
-
-        assertEquals(structuredTree1, structuredTree3);
-
     }
 }
