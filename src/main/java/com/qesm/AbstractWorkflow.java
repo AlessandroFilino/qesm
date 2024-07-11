@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -77,12 +78,12 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
 
         Set<V> processedChildNodes = dag.incomingEdgesOf(unsharedRootNode).stream().map(dag::getEdgeSource).filter(v -> v.isProcessed()).collect(Collectors.toSet());
         if (processedChildNodes.size() > 1){
-            processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
+            // processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
             int[] numNodesInSubgraphs = new int[processedChildNodes.size()];
             int index = 0;
             for(V node : processedChildNodes){
                 numNodesInSubgraphs[index] = dag.getAncestors(node).size();
-                System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " + numNodesInSubgraphs[index]);
+                // System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " + numNodesInSubgraphs[index]);
                 index++;
             }
 
@@ -91,7 +92,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
             // }
 
             float mean = (Arrays.stream(numNodesInSubgraphs).sum()) / processedChildNodes.size();
-            System.out.println("Mean: " + mean);
+            // System.out.println("Mean: " + mean);
             float sumOfSquares = 0;
             for (int i = 0; i < processedChildNodes.size(); i++){
                 sumOfSquares += Math.pow((numNodesInSubgraphs[i] - mean), 2);
@@ -100,10 +101,34 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
             B = loadBalanceFactor;
         }
 
+        double C = 0;
+
+        Set<V> totalProcessedNodes = dag.getAncestors(unsharedRootNode).stream().filter(v -> v.isProcessed()).collect(Collectors.toSet());
+        Set<V> processedLeavesNodes = totalProcessedNodes.stream().filter(v -> dag.incomingEdgesOf(v).stream().allMatch(e -> !dag.getEdgeSource(e).isProcessed())).collect(Collectors.toSet());
+        List<Integer> distancesToRoot = processedLeavesNodes.stream().map(v -> dag.getDescendants(v).size()).collect(Collectors.toList());
+
+        double averageDistance = distancesToRoot.stream()
+                     .mapToInt(Integer::intValue)
+                     .average()
+                     .orElse(0.0);
+        C = distancesToRoot.stream().map(distance -> Math.pow(distance - averageDistance, 2)).reduce(0.0, (a, b) -> a + b);
+        C /= processedLeavesNodes.size();
+        
+        // 1 - 9            : (16 + 16)/2 = 16  
+        // 1 - 1 -8         : (5,43 +5,43 + 21.8)/3 = 10.88 
+        // 1 - 8 - 8        : (21.71 + 5.44 + 5.44)/3 = 10.86
+
+        Integer totalProcessedNodesNum = totalProcessedNodes.size();
+        Double maxUnbalance = Math.pow(totalProcessedNodesNum / 2.0 - 1, 2) + Math.pow(totalProcessedNodesNum / 2.0 - totalProcessedNodesNum - 1, 2);
+        // C /= maxUnbalance * 100;
+        C = C == 0 ? 0 : 100 * (Math.log(C + 1) / Math.log(maxUnbalance + 1));
+        System.out.println(C);
+
+
         // Restore originalDag
         this.dag = originalDag;
 
-        return "A: " + A + "    LoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0;
+        return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0 + "    NewLoadUnbalanceFactor: " +  Math.round(C * 100.0) / 100.0 + "%";
     }
 
     @Override
