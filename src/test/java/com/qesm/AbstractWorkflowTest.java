@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
@@ -13,28 +13,28 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class AbstractWorkflowTest {
     
-    private static WorkflowType wf1;
-    private static WorkflowType wf2;
-    private static WorkflowType wf2_copy;
-    private static WorkflowType wf3;
-    private static WorkflowType wf1Reference;
-    private static WorkflowType wfNull;
-    private static WorkflowIstance wi1;
+    private WorkflowType wf1;
+    private WorkflowType wf2;
+    private WorkflowType wf2_copy;
+    private WorkflowType wf3;
+    private WorkflowType wf1Reference;
+    private WorkflowType wfNull;
+    private WorkflowIstance wi1;
 
     // Nodes of wf2 and wf3
-    private static ProductType v0;
-    private static ProductType v1;
-    private static ProductType v2;
-    private static ProductType v3;
+    private ProductType v0;
+    private ProductType v1;
+    private ProductType v2;
+    private ProductType v3;
 
     // Nodes of wf2 copy
-    private static ProductType v0_copy;
-    private static ProductType v1_copy;
-    private static ProductType v2_copy;
+    private ProductType v0_copy;
+    private ProductType v1_copy;
+    private ProductType v2_copy;
 
 
-    @BeforeAll
-    public static void setup(){
+    @BeforeEach
+    public void setup(){
         wf1 = new WorkflowType();
         wf1.generateRandomDAG(5, 5, 2, 2, 60, PdfType.UNIFORM);
         wf1Reference = wf1;
@@ -88,10 +88,10 @@ public class AbstractWorkflowTest {
 
     @Test
     void testGetRootNode(){
-        assertNotEquals(wf1.getRootNode(), null);
-        assertEquals(wf2.getRootNode(), v0);
-        assertEquals(wf2_copy.getRootNode(), v0_copy);
-        assertEquals(wf3.getRootNode(), v0);
+        assertNotEquals(wf1.computeRootNode(), null);
+        assertEquals(wf2.computeRootNode(), v0);
+        assertEquals(wf2_copy.computeRootNode(), v0_copy);
+        assertEquals(wf3.computeRootNode(), v0);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class AbstractWorkflowTest {
     @Test
     void testComputeParallelismValue() {
         // TODO TEST: Implement test
-        
+        wf1.computeParallelismValue();
     }
     
 }

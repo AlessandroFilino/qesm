@@ -31,7 +31,7 @@ public class StructuredTreeConverter {
             if(structuredWorkflow.outDegreeOf(stpnBlock) == 0){
                 Activity rootActivity = recursiveExploration(stpnBlock);
                 if(rootActivity.pre().isEmpty()){
-                    return rootActivity;
+                    return ModelFactory.DAG(rootActivity);
                 }
                 else{
                     return ModelFactory.DAG(notWellNestedActivities.toArray(new Activity[0]));

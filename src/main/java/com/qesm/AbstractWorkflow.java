@@ -5,14 +5,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.event.GraphEdgeChangeEvent;
 import org.jgrapht.event.GraphListener;
 import org.jgrapht.event.GraphVertexChangeEvent;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.AttributeType;
+import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 
@@ -49,43 +55,33 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         }
     }
 
-    // TODO: Add metric to measure the paralellization/balance of the dag
-
     public String computeParallelismValue(){
 
-        // First convert to unshared DAG 
-        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
-        ListenableDAG<V, CustomEdge> unsharedDag = dagConverter.makeConversion();
+        // First convert to Unshared (saving a reference to originalDag to restore at the end) 
+        ListenableDAG<V, CustomEdge> originalDag = dag;
+        toUnshared();
         
         // Then compute metrics
         int A = 0;
         // A paramater: sum all incoming edges of Processed node if they have more than 2 incoming edges 
-        for(V node : unsharedDag.vertexSet()){
-            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.inDegreeOf(node) >= 2){
-                A += unsharedDag.inDegreeOf(node);
+        for(V node : dag.vertexSet()){
+            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && dag.inDegreeOf(node) >= 2){
+                A += dag.inDegreeOf(node);
             }
         };
 
         // B parameter: Load Balance Factor
         float B = 0;
 
-        // TODO: improve this search and uniform with getRootNode maybe?
-        // Get root node of unshared dag, using getRootNode doesn't work because RootNode is not unsharedRootNode
-        V unsharedRootNode = null;
-        for (V node : unsharedDag.vertexSet()) {
-            if (unsharedDag.outDegreeOf(node) == 0) {
-                unsharedRootNode = node;
-                break;
-            }
-        }
+        V unsharedRootNode = computeRootNode();
 
-        Set<V> processedChildNodes = unsharedDag.incomingEdgesOf(unsharedRootNode).stream().map(unsharedDag::getEdgeSource).filter(v -> v.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED).collect(Collectors.toSet());
+        Set<V> processedChildNodes = dag.incomingEdgesOf(unsharedRootNode).stream().map(dag::getEdgeSource).filter(v -> v.isProcessed()).collect(Collectors.toSet());
         if (processedChildNodes.size() > 1){
             processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
             int[] numNodesInSubgraphs = new int[processedChildNodes.size()];
             int index = 0;
             for(V node : processedChildNodes){
-                numNodesInSubgraphs[index] = unsharedDag.getAncestors(node).size();
+                numNodesInSubgraphs[index] = dag.getAncestors(node).size();
                 System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " + numNodesInSubgraphs[index]);
                 index++;
             }
@@ -103,16 +99,11 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
             float loadBalanceFactor = 1.0f / (processedChildNodes.size()) * sumOfSquares;
             B = loadBalanceFactor;
         }
- 
-        // for(V node : unsharedDag.vertexSet()){
-        //     // Select "leaf" Processed nodes (Processed nodes with only Raw Material nodes as ancestors)
-        //     if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && unsharedDag.getAncestors(node).stream().allMatch(ancestor -> ancestor.getItemGroup() == AbstractProduct.ItemGroup.RAW_MATERIAL)){
-        //         System.out.println("Node: " + node.getName() + " - Item: " + node.getItemGroup());
-        //         unsharedDag.getDescendants(node).forEach(n -> System.out.println("          " + n.getName()));
-        //     }
-        // }
 
-        return "Avalue" + A + "___Bvalue" + B;
+        // Restore originalDag
+        this.dag = originalDag;
+
+        return "A: " + A + "    LoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0;
     }
 
     @Override
@@ -123,8 +114,10 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
     @Override
     public void setDag(ListenableDAG<V, CustomEdge> dagToSet) {
         dag = dagToSet;
-        setGraphListener();
-        updateAllSubgraphs();
+        if(isTopTierGraph){
+            setGraphListener();
+            updateAllSubgraphs();
+        }
     }
 
     @Override
@@ -132,7 +125,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         return this.vertexClass;
     }
 
-    public V getRootNode() {
+    public V computeRootNode() {
         for (V node : dag.vertexSet()) {
             if (dag.outDegreeOf(node) == 0) {
                 return node;
@@ -204,10 +197,12 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
     }
 
     public void toUnshared() {
-        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, getRootNode(), vertexClass);
+        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, computeRootNode(), vertexClass);
         dag = dagConverter.makeConversion();
-        setGraphListener();
-        updateAllSubgraphs();
+        if(isTopTierGraph){
+            setGraphListener();
+            updateAllSubgraphs();
+        }
     } 
 
     public Optional<V> findProduct(String productName){
@@ -308,4 +303,19 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
 
         return subgraphDAG;
     } 
+
+    @Override
+    public Supplier<Map<String, Attribute>> getGraphAttributeProvider() {
+        Supplier<Map<String, Attribute>> graphAttributeProvider = () -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
+            map.put("label", new DefaultAttribute<String>("\"" + computeParallelismValue() + "\"", AttributeType.STRING));
+            map.put("labelloc", new DefaultAttribute<String>("\"t\"", AttributeType.STRING));
+            map.put("labeljust", new DefaultAttribute<String>("\"l\"", AttributeType.STRING));
+            map.put("fontsize", new DefaultAttribute<Integer>(30, AttributeType.INT));
+            return map;
+        };
+
+        return graphAttributeProvider;
+    }
 }

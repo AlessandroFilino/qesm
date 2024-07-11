@@ -60,10 +60,11 @@ public class StructuredTreeConverterTest {
 
         Activity joinActivity = ModelFactory.forkJoin(t2, t3);
         Activity seqActivity = ModelFactory.sequence(t0, t1, joinActivity);
+        Activity dagActivity = ModelFactory.DAG(seqActivity);
 
 
         // Activity doesn't implement equals()
-        assertEquals(resultActivity.yaml(), seqActivity.yaml());
+        assertEquals(resultActivity.yaml(), dagActivity.yaml());
 
     }
 

@@ -2,14 +2,6 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.AttributeType;
-import org.jgrapht.nio.DefaultAttribute;
-
 
 
 public class StructuredTree<V extends AbstractProduct> implements DotFileConverter<STPNBlock>{
@@ -364,18 +356,6 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
     @Override
     public void setDag(ListenableDAG<STPNBlock, CustomEdge> dagToSet) {
         structuredWorkflow = dagToSet;
-    }
-
-    // Override of attribute provider for edges (structured tree doesn't utilize any of the attribute of edges)
-    @Override
-    public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
-        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
-            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
-            map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired(), AttributeType.INT));
-            return map;
-        };
-
-        return edgeAttributeProvider;
     }
 
 }

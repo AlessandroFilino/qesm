@@ -2,13 +2,26 @@ package com.qesm;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
 
+import org.oristool.eulero.evaluation.approximator.TruncatedExponentialMixtureApproximation;
+import org.oristool.eulero.evaluation.heuristics.AnalysisHeuristicsVisitor;
+import org.oristool.eulero.evaluation.heuristics.EvaluationResult;
+import org.oristool.eulero.evaluation.heuristics.RBFHeuristicsVisitor;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
+import org.oristool.eulero.ui.ActivityViewer;
+import org.oristool.models.stpn.RewardRate;
+import org.oristool.models.stpn.TransientSolution;
+import org.oristool.models.stpn.TransientSolutionViewer;
+import org.oristool.models.stpn.trans.RegTransient;
+import org.oristool.models.stpn.trees.DeterministicEnablingState;
+import org.oristool.petrinet.Marking;
 import org.oristool.petrinet.PetriNet;
 import org.oristool.petrinet.Place;
 
@@ -17,7 +30,7 @@ import com.qesm.RandomDAGGenerator.PdfType;
 public class Main {
     public static void main(String[] args) {
 
-        System.setProperty("java.awt.headless", "false");
+        
 
         ensureFolderExists("media");
         ensureFolderExists("output");
@@ -93,12 +106,9 @@ public class Main {
         
         // System.out.println(net);
 
-        DAGAnalyzer dagAnalyzer = new DAGAnalyzer();
-        dagAnalyzer.analyzeActivity(rootActivity);
-        dagAnalyzer.analizePetriNet(net, pOut, pIn);
-
-        // dagAnalyzer.testPetriNet1();
-        // dagAnalyzer.testPetriNet2();
+        
+        analyzeActivity(rootActivity);
+        analizePetriNet(net, pOut, pIn);
         
 
     }
@@ -126,6 +136,36 @@ public class Main {
         t3.addPrecondition(s0);
         t5.addPrecondition(t3);
         return ModelFactory.DAG(t3, s0, t5);
+    }
+
+    public static void analyzeActivity(Activity rootActivity){
+        System.setProperty("java.awt.headless", "false");
+        
+        AnalysisHeuristicsVisitor visitor = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
+
+        double[] cdf = rootActivity.analyze(rootActivity.max().add(BigDecimal.ONE), rootActivity.getFairTimeTick(), visitor);
+
+        ActivityViewer.CompareResults("", List.of("A", "test"), List.of(
+                new EvaluationResult("A", cdf, 0, cdf.length, 0.01, 0)
+        ));
+
+        // System.out.println("Timestep used: " + rootActivity.getFairTimeTick().toString());
+
+    }
+
+    public static void analizePetriNet(PetriNet net, Place pReward, Place pStart){
+
+        RegTransient analysis = RegTransient.builder()
+            .greedyPolicy(new BigDecimal("6"), new BigDecimal("0.005"))
+            .timeStep(new BigDecimal("0.01"))
+            .build();
+
+        Marking marking = new Marking();
+        marking.setTokens(pStart, 1);
+        TransientSolution<DeterministicEnablingState, RewardRate> solution = TransientSolution.computeRewards(false, analysis.compute(net, marking), pReward.getName());
+
+        // Display transient probabilities
+        new TransientSolutionViewer(solution);
     }
 
     public static String mkEmptyDir(String folderPath){

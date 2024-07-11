@@ -226,6 +226,9 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
                     dagInfo += "\t" + connectedEdge.toString() + "\n";
                 }
             }
+            else{
+                dagInfo += "\n";
+            }
         }
         return dagInfo;
     }
