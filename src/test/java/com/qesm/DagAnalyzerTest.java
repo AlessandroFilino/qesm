@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.oristool.eulero.evaluation.approximator.TruncatedExponentialMixtureAp
 import org.oristool.eulero.evaluation.heuristics.AnalysisHeuristicsVisitor;
 import org.oristool.eulero.evaluation.heuristics.EvaluationResult;
 import org.oristool.eulero.evaluation.heuristics.RBFHeuristicsVisitor;
+import org.oristool.eulero.evaluation.heuristics.SDFHeuristicsVisitor;
 import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
@@ -75,8 +77,11 @@ public class DagAnalyzerTest {
         StructuredTreeConverter structuredTreeConverter = new StructuredTreeConverter(structuredTree.getStructuredWorkflow());
         Activity resultActivity = structuredTreeConverter.convertToActivity();
 
-        AnalysisHeuristicsVisitor start = new RBFHeuristicsVisitor(BigInteger.valueOf(10), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
-        double[] cdf = resultActivity.analyze(BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), start);
+        AnalysisHeuristicsVisitor strat = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
+
+        // double[] cdf = resultActivity.analyze(BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        double[] cdf = resultActivity.analyze(BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), new SDFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation()));
+
         ArrayList<Double> solEulero = new ArrayList<Double>();
         for (double value : cdf) {
             solEulero.add(value);
@@ -183,6 +188,62 @@ public class DagAnalyzerTest {
         assertEquals(solEulero, solSirio);
 
     }  
+
+    @Test
+    public void testOris(){
+        // Workflow generation and analysis
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
+        ProductType v1 = new ProductType("v1", 2, new UniformTime(2,4));
+        // ProductType v2 = new ProductType("v2", 3, new UniformTime(4,6));
+        // ProductType v3 = new ProductType("v3", 4, new UniformTime(6,8));
+        // ProductType v4 = new ProductType("v4");
+        // ProductType v5 = new ProductType("v5");
+        // ProductType v6 = new ProductType("v6");
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        // dag.addVertex(v2);
+        // dag.addVertex(v3);
+        // dag.addVertex(v4);
+        // dag.addVertex(v5);
+        // dag.addVertex(v6);
+        // dag.addEdge(v3, v1);
+        // dag.addEdge(v2, v1);
+        dag.addEdge(v1, v0);
+        // dag.addEdge(v4, v1);
+        // dag.addEdge(v5, v2);
+        // dag.addEdge(v6, v3);
+        WorkflowType wf1 = new WorkflowType(dag);
+
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(wf1.getDag(), ProductType.class);
+        structuredTree.buildStructuredTree();
+        StructuredTreeConverter structuredTreeConverter = new StructuredTreeConverter(structuredTree.getStructuredWorkflow());
+        Activity resultActivity = structuredTreeConverter.convertToActivity();
+
+        AnalysisHeuristicsVisitor strat = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN, new TruncatedExponentialMixtureApproximation());
+
+
+        Activity activity1 = new Simple("v1", new UniformTime(0, 2));
+        Activity activity2 = new Simple("v2", new UniformTime(2, 4));
+        Activity resultActivityAnd = ModelFactory.forkJoin(activity1, activity2);
+        Activity activity3 = new Simple("v3", new UniformTime(4, 6));
+        Activity resultActivitySeq = ModelFactory.sequence(resultActivityAnd, activity3);
+        Activity activity4 = new Simple("v4", new UniformTime(4, 6));
+        Activity resultActivitySeq2 = ModelFactory.sequence(resultActivitySeq, activity4);
+
+
+        // double[] cdf = resultActivity.analyze(BigDecimal.valueOf(5), BigDecimal.valueOf(1), strat);
+        double[] cdf = resultActivitySeq2.analyze(BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        
+        ArrayList<Double> solEulero = new ArrayList<Double>();
+        for (double value : cdf) {
+            BigDecimal bd = BigDecimal.valueOf(value);
+            bd = bd.setScale(5, RoundingMode.HALF_UP);
+            solEulero.add(bd.doubleValue());
+        }
+        
+        System.out.println(solEulero);
+    }
 
     public void testPetriNet1_(){
         // // time limit : 15, time step : 0.1
