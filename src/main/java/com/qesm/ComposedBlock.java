@@ -18,15 +18,21 @@ public abstract class ComposedBlock implements STPNBlock {
     };
 
     public ComposedBlock(ArrayList<STPNBlock> composedElements) {
+        if(composedElements == null){
+            throw new RuntimeException();
+        }
         this.composedElements = composedElements;
         this.uuid = UUID.randomUUID();
     }
 
     @Override
-    public void printBlockInfo(int indentNum) {
-        printIndent(indentNum);
-        System.out.println("BlockType: " + this.getClass().getSimpleName());
-        composedElements.forEach(element -> element.printBlockInfo(indentNum + 1));
+    public String getBlockInfo(int indentNum) {
+        String blockInfo = addIndent(indentNum);
+        blockInfo += "BlockType: " + this.getClass().getSimpleName();
+        for(STPNBlock element : composedElements){
+            blockInfo +=  element.getBlockInfo(indentNum + 1);
+        }
+        return blockInfo;
     }
 
     @Override

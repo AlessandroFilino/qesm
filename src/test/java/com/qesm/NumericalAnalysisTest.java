@@ -24,10 +24,11 @@ import org.oristool.petrinet.Place;
 import org.oristool.petrinet.Transition;
 
 public class NumericalAnalysisTest {
-    private Activity activityV0;
-    private Activity activityV1;
-    private Activity activityV2;
-    private Activity activityV3;
+    private Activity activityWellNestedV0;
+    private Activity activityWellNestedV1;
+    private Activity activityWellNestedV2;
+    private Activity activityWellNestedV3;
+    private Activity activityNotWellNestedV0;
 
     @Test
     void testWorkflowWellNested() {
@@ -39,10 +40,10 @@ public class NumericalAnalysisTest {
         // Eulero
         AnalysisHeuristicsVisitor strat = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN,
                 new TruncatedExponentialMixtureApproximation());
-        ArrayList<Double> solEuleroV3 = extractSolValueEulero(activityV3, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
-        ArrayList<Double> solEuleroV2 = extractSolValueEulero(activityV2, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
-        ArrayList<Double> solEuleroV1 = extractSolValueEulero(activityV1, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
-        ArrayList<Double> solEuleroV0 = extractSolValueEulero(activityV0, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        ArrayList<Double> solEuleroV3 = extractSolValueEulero(activityWellNestedV3, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        ArrayList<Double> solEuleroV2 = extractSolValueEulero(activityWellNestedV2, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        ArrayList<Double> solEuleroV1 = extractSolValueEulero(activityWellNestedV1, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+        ArrayList<Double> solEuleroV0 = extractSolValueEulero(activityWellNestedV0, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
 
         // Sirio
         TreeTransient treeTransientAnalysis = TreeTransient.builder()
@@ -81,7 +82,26 @@ public class NumericalAnalysisTest {
 
     @Test
     void testWorkflowNotWellNested() {
-        //TODO TEST: implement test
+        setupNotWellNested();
+
+        // Eulero
+        AnalysisHeuristicsVisitor strat = new RBFHeuristicsVisitor(BigInteger.valueOf(4), BigInteger.TEN,
+                new TruncatedExponentialMixtureApproximation());
+        ArrayList<Double> solEuleroV0 = extractSolValueEulero(activityNotWellNestedV0, BigDecimal.valueOf(20), BigDecimal.valueOf(0.1), strat);
+
+        // Sirio
+        TreeTransient treeTransientAnalysis = TreeTransient.builder()
+                .greedyPolicy(new BigDecimal("20"), new BigDecimal("0"))
+                .timeStep(new BigDecimal("0.1"))
+                .build();
+        PetriNet net = new PetriNet();
+        Marking marking = new Marking();
+        generateNotWellNestedSirioPetriNetV0(net, marking);
+        ArrayList<Double> solSirioV0 = extractSolValueSirio(net, marking, treeTransientAnalysis, "v0");
+        for (int i = 0; i < solEuleroV0.size(); i++){
+            System.out.println(solEuleroV0.get(i) + "  " + solSirioV0.get(i) + "     " + (Double.compare(solEuleroV0.get(i), solSirioV0.get(i)) == 0));
+        }
+        assertEquals(solSirioV0, solEuleroV0);
 
     }
 
@@ -214,6 +234,83 @@ public class NumericalAnalysisTest {
         tImm2.addFeature(new Priority(0));
     }
 
+    private void generateNotWellNestedSirioPetriNetV0(PetriNet net, Marking marking){
+        //Generating Nodes
+        Place p_in = net.addPlace("p_in");
+        Place pv0_in = net.addPlace("pv0_in");
+        Place pv1_in = net.addPlace("pv1_in");
+        Place pv1_out = net.addPlace("pv1_out");
+        Place pv2_in = net.addPlace("pv2_in");
+        Place pv2_out = net.addPlace("pv2_out");
+        Place pv2_v1 = net.addPlace("pv2_v1");
+        Place pv3_in = net.addPlace("pv3_in");
+        Place pv3_out = net.addPlace("pv3_out");
+        Place pv7_in = net.addPlace("pv7_in");
+        Place pv7_out = net.addPlace("pv7_out");
+        Place v0 = net.addPlace("v0");
+        Transition DAG_v7_v0_v3_v1_v2_BEGIN_POST = net.addTransition("DAG_v7_v0_v3_v1_v2_BEGIN_POST");
+        Transition t0 = net.addTransition("t0");
+        Transition t1 = net.addTransition("t1");
+        Transition t2 = net.addTransition("t2");
+        Transition t3 = net.addTransition("t3");
+        Transition t7 = net.addTransition("t7");
+        Transition v0_PRE = net.addTransition("v0_PRE");
+        Transition v1_PRE = net.addTransition("v1_PRE");
+        Transition v2_POST = net.addTransition("v2_POST");
+
+        //Generating Connectors
+        net.addPrecondition(pv3_in, t3);
+        net.addPrecondition(pv7_in, t7);
+        net.addPostcondition(v2_POST, pv7_in);
+        net.addPostcondition(v2_POST, pv2_v1);
+        net.addPrecondition(pv2_v1, v1_PRE);
+        net.addPostcondition(t1, pv1_out);
+        net.addPrecondition(pv2_in, t2);
+        net.addPostcondition(t2, pv2_out);
+        net.addPostcondition(DAG_v7_v0_v3_v1_v2_BEGIN_POST, pv3_in);
+        net.addPostcondition(v1_PRE, pv1_in);
+        net.addPostcondition(v0_PRE, pv0_in);
+        net.addPostcondition(DAG_v7_v0_v3_v1_v2_BEGIN_POST, pv2_in);
+        net.addPrecondition(pv2_out, v2_POST);
+        net.addPrecondition(pv1_out, v0_PRE);
+        net.addPostcondition(t0, v0);
+        net.addPrecondition(pv1_in, t1);
+        net.addPrecondition(pv7_out, v0_PRE);
+        net.addPrecondition(pv3_out, v1_PRE);
+        net.addPostcondition(t7, pv7_out);
+        net.addPrecondition(p_in, DAG_v7_v0_v3_v1_v2_BEGIN_POST);
+        net.addPrecondition(pv0_in, t0);
+        net.addPostcondition(t3, pv3_out);
+
+        //Generating Properties
+        marking.setTokens(p_in, 1);
+        marking.setTokens(pv0_in, 0);
+        marking.setTokens(pv1_in, 0);
+        marking.setTokens(pv1_out, 0);
+        marking.setTokens(pv2_in, 0);
+        marking.setTokens(pv2_out, 0);
+        marking.setTokens(pv2_v1, 0);
+        marking.setTokens(pv3_in, 0);
+        marking.setTokens(pv3_out, 0);
+        marking.setTokens(pv7_in, 0);
+        marking.setTokens(pv7_out, 0);
+        marking.setTokens(v0, 0);
+        DAG_v7_v0_v3_v1_v2_BEGIN_POST.addFeature(StochasticTransitionFeature.newDeterministicInstance(new BigDecimal("0"), MarkingExpr.from("1", net)));
+        DAG_v7_v0_v3_v1_v2_BEGIN_POST.addFeature(new Priority(0));
+        t0.addFeature(StochasticTransitionFeature.newUniformInstance(new BigDecimal("0"), new BigDecimal("2")));
+        t1.addFeature(StochasticTransitionFeature.newUniformInstance(new BigDecimal("2"), new BigDecimal("4")));
+        t2.addFeature(StochasticTransitionFeature.newUniformInstance(new BigDecimal("4"), new BigDecimal("6")));
+        t3.addFeature(StochasticTransitionFeature.newUniformInstance(new BigDecimal("6"), new BigDecimal("8")));
+        t7.addFeature(StochasticTransitionFeature.newUniformInstance(new BigDecimal("8"), new BigDecimal("10")));
+        v0_PRE.addFeature(StochasticTransitionFeature.newDeterministicInstance(new BigDecimal("0"), MarkingExpr.from("1", net)));
+        v0_PRE.addFeature(new Priority(0));
+        v1_PRE.addFeature(StochasticTransitionFeature.newDeterministicInstance(new BigDecimal("0"), MarkingExpr.from("1", net)));
+        v1_PRE.addFeature(new Priority(0));
+        v2_POST.addFeature(StochasticTransitionFeature.newDeterministicInstance(new BigDecimal("0"), MarkingExpr.from("1", net)));
+        v2_POST.addFeature(new Priority(0));
+    }
+
+
     private ArrayList<Double> extractSolValueSirio(PetriNet net, Marking marking, TreeTransient treeTransientAnalysis, String rewardRate){
         TransientSolution<Marking, RewardRate> sirioAnalysis = TransientSolution.computeRewards(false,
                 treeTransientAnalysis.compute(net, marking), rewardRate);
@@ -238,10 +335,10 @@ public class NumericalAnalysisTest {
 
     private void setupWellNested(){
         // DAG structure:
-        //  v0
-        //  |
-        //  v1
-        //  |  \  \
+        //     v0
+        //     |
+        //     v1
+        //  /  |  \
         //  v2 v3 v4
         //  |  |
         //  v5 v6
@@ -274,25 +371,71 @@ public class NumericalAnalysisTest {
         StructuredTree<ProductType> structuredTreev0 = new StructuredTree<>(wf1.getProductWorkflow(v0).getDag(), ProductType.class);
         structuredTreev0.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv0 = new StructuredTreeConverter(structuredTreev0.getStructuredWorkflow());
-        activityV0 = structuredTreeConverterv0.convertToActivity();
+        activityWellNestedV0 = structuredTreeConverterv0.convertToActivity();
 
         StructuredTree<ProductType> structuredTreev1 = new StructuredTree<>(wf1.getProductWorkflow(v1).getDag(), ProductType.class);
         structuredTreev1.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv1 = new StructuredTreeConverter(structuredTreev1.getStructuredWorkflow());
-        activityV1 = structuredTreeConverterv1.convertToActivity();
+        activityWellNestedV1 = structuredTreeConverterv1.convertToActivity();
 
         StructuredTree<ProductType> structuredTreev2 = new StructuredTree<>(wf1.getProductWorkflow(v2).getDag(), ProductType.class);
         structuredTreev2.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv2 = new StructuredTreeConverter(structuredTreev2.getStructuredWorkflow());
-        activityV2 = structuredTreeConverterv2.convertToActivity();
+        activityWellNestedV2 = structuredTreeConverterv2.convertToActivity();
 
         StructuredTree<ProductType> structuredTreev3 = new StructuredTree<>(wf1.getProductWorkflow(v3).getDag(), ProductType.class);
         structuredTreev3.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv3 = new StructuredTreeConverter(structuredTreev3.getStructuredWorkflow());
-        activityV3 = structuredTreeConverterv3.convertToActivity();
+        activityWellNestedV3 = structuredTreeConverterv3.convertToActivity();
     }
 
     private void setupNotWellNested(){
+        // DAG structure:
+        //     v0
+        //  /   |  
+        // v7   v1        
+        //  \ / |  \ 
+        //   v2 v3 v4  
+        //   |  |      
+        //   v5 v6
+        //     
+        // Workflow generation
+        
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
+        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
+        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
+        ProductType v7 = new ProductType("v7", 5, new UniformTime(8, 10));
+        ProductType v4 = new ProductType("v4");
+        ProductType v5 = new ProductType("v5");
+        ProductType v6 = new ProductType("v6");
+
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+        dag.addVertex(v5);
+        dag.addVertex(v6);
+        dag.addVertex(v7);
+        dag.addEdge(v3, v1);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v1, v0);
+        dag.addEdge(v4, v1);
+        dag.addEdge(v5, v2);
+        dag.addEdge(v6, v3);
+        dag.addEdge(v2, v7);
+        dag.addEdge(v7, v0);
+
+        WorkflowType wf1 = new WorkflowType(dag);
+
+        StructuredTree<ProductType> structuredTreev0 = new StructuredTree<>(wf1.getProductWorkflow(v0).getDag(), ProductType.class);
+        structuredTreev0.buildStructuredTree();
+        StructuredTreeConverter structuredTreeConverterv0 = new StructuredTreeConverter(structuredTreev0.getStructuredWorkflow());
+        activityNotWellNestedV0 = structuredTreeConverterv0.convertToActivity();
+
+        System.out.println(activityNotWellNestedV0);
 
     }
 }

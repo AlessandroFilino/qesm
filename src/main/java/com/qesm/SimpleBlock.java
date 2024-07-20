@@ -16,6 +16,9 @@ public class SimpleBlock implements STPNBlock{
     private UUID uuid;
 
     public SimpleBlock(AbstractProduct basicElement) {
+        if(!basicElement.isProcessed()){
+            throw new RuntimeException();
+        }
         this.simpleElement = basicElement;
         this.enablingTokens = new ArrayList<AbstractProduct>();
         this.uuid = UUID.randomUUID();
@@ -33,10 +36,13 @@ public class SimpleBlock implements STPNBlock{
 
 
     @Override
-    public void printBlockInfo(int indentNum) {
-        printIndent(indentNum);
-        System.out.println(simpleElement.getName() + " tokens: ");
-        enablingTokens.forEach(token -> System.out.print(token.getName() + " "));
+    public String getBlockInfo(int indentNum) {
+        String blockInfo = addIndent(indentNum);
+        blockInfo += simpleElement.getName() + " tokens: ";
+        for(AbstractProduct token : enablingTokens){
+            blockInfo +=  token.getName() + " ";
+        }
+        return blockInfo;
     }
 
     @Override

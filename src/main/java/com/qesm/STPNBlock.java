@@ -6,16 +6,14 @@ import java.util.UUID;
 
 public interface STPNBlock extends DotFileConvertible, Serializable{
 
-    public void printBlockInfo(int indentNum);
+    public String getBlockInfo(int indentNum);
 
     public default boolean addEnablingToken(AbstractProduct enablingToken){
         return false;
     }
 
-    default void printIndent(int indentNum){
-        for (int index = 0; index < indentNum; index++) {
-            System.out.print("  ");
-        }
+    default String addIndent(int indentNum){
+        return "  ".repeat(indentNum);
     }
     
     public default AbstractProduct getSimpleElement(){
