@@ -1,11 +1,12 @@
 package com.qesm;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.File;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
-import org.oristool.eulero.modeling.Activity;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
@@ -158,6 +159,21 @@ public class RendererTest {
         // rmDotFile("./output/workflowIstanceRendererTest.dot");
         // rmDotFileFolder("./output/subgraphsRenderTest");
     }
+
+    @Test
+    public void testFileError(){
+        assertThrows(RuntimeException.class, () -> {
+            Renderer.renderDotFile("test", "test");
+        });
+
+        assertThrows(RuntimeException.class, () -> {
+            Renderer.renderAllDotFile("testtest", "testtest");
+        });
+        assertThrows(RuntimeException.class, () -> {
+            Renderer.renderAllDotFile("test", "pom.xml");
+        });
+    }
+
 
     private static void renderWorkflowType(WorkflowType workflowTypeToRender){
         workflowTypeToRender.exportDotFileNoSerialization("./output/workflowTypeRenderTest.dot");

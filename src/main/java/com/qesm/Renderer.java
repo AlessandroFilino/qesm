@@ -20,7 +20,7 @@ public class Renderer {
                     .toFile(new File(outputFilePath)); // Save the rendered graph to a file
             System.out.println("Graph rendered successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error while rendering DOT file");
         }
 
     }
@@ -32,13 +32,11 @@ public class Renderer {
             Path outputFolder = Paths.get(outputFolderPath);
 
             if(!Files.exists(outputFolder)){
-                System.err.println("Output folder path does not exist: " + outputFolderPath);
-                return;
+                throw new RuntimeException("Output folder path does not exist: " + outputFolderPath);
             }
 
             if(!Files.isDirectory(outputFolder)){
-                System.err.println("Output folder path is not a directory: " + outputFolderPath);
-                return;
+                throw new RuntimeException("Output folder path is not a directory: " + outputFolderPath);
             }
 
             Files.walk(inputFolder, 1)
@@ -50,7 +48,7 @@ public class Renderer {
                     
                 });
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Generic error while rendering DOT file");
         }
 
     }
