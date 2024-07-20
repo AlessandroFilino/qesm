@@ -30,8 +30,7 @@ public class ProductIstance extends AbstractProduct{
                 setPdf(new DeterministicTime(((DeterministicTime)pdfToCopy).getEFT()));
             }
             else{
-                System.err.println("Error copyCostructor: pdfClass " + pdfClass + " not supported");
-                setPdf(null);   
+                throw new RuntimeException("Error copyCostructor: pdfClass " + pdfClass + " not supported");   
             }
         }
         
