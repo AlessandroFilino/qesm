@@ -25,7 +25,7 @@ public class STPNBlockTest {
         SimpleBlock simpleBlock1 = new SimpleBlock(p0);
         SimpleBlock simpleBlock2 = new SimpleBlock(p0);
         
-
+        assertNull(simpleBlock1.getComposedElements());
         assertEquals(simpleBlock1, simpleBlock1);
         assertNotEquals(simpleBlock1, null);
         assertNotEquals(simpleBlock1, "");
