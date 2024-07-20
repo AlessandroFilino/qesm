@@ -4,6 +4,8 @@ import java.io.File;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.oristool.eulero.modeling.stochastictime.UniformTime;
+import org.oristool.eulero.modeling.Activity;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
@@ -56,7 +58,7 @@ public class RendererTest {
     }
 
     @Test
-    public void testRenderStructureTree(){
+    public void testRenderRandomStructureTree(){
         WorkflowType workflowType = new WorkflowType();
         workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         
@@ -68,6 +70,40 @@ public class RendererTest {
         
 
         // rmDotFile("./output/structuredTreeRenderTest.dot");
+    }
+
+    @Test
+    public void testRenderFixedStructureTree(){
+
+        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
+        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
+        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
+        ProductType v4 = new ProductType("v4");
+        ProductType v5 = new ProductType("v5");
+        ProductType v6 = new ProductType("v6");
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+        dag.addVertex(v5);
+        dag.addVertex(v6);
+        dag.addEdge(v3, v1);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v1, v0);
+        dag.addEdge(v4, v1);
+        dag.addEdge(v5, v2);
+        dag.addEdge(v6, v3);
+        WorkflowType wf1 = new WorkflowType(dag);
+
+
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).getDag(), ProductType.class);
+        structuredTree.buildStructuredTree();
+        structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
+        Renderer.renderDotFile("./output/structuredTreeRenderTest.dot", "./media/structuredTreeRenderTest.svg");
+
     }
 
     @Test
