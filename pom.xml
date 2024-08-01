@@ -72,7 +72,7 @@
     </properties>
 
     <build>
-        <finalName>maven-unit-test</finalName>
+        <finalName>qesm-workflow-engine</finalName>
         <plugins>
 
             <plugin>
