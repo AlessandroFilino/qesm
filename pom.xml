@@ -72,7 +72,6 @@
     </properties>
 
     <build>
-        <finalName>qesm-workflow-engine</finalName>
         <plugins>
 
             <plugin>
