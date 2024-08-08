@@ -8,7 +8,7 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ProductIstance extends AbstractProduct{
 
-    protected ProductIstance(ProductType productType){
+    public ProductIstance(ProductType productType){
         super(new String(productType.getName()), productType.getItemGroup());
 
         if(productType.isProcessed()){
