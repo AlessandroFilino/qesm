@@ -44,9 +44,23 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         this.itemGroup = ItemGroup.RAW_MATERIAL;
     }
 
+    public AbstractProduct(String name, UUID uuid) {
+        this.name = name;
+        this.uuid = uuid;
+        this.itemGroup = ItemGroup.RAW_MATERIAL;
+    }
+
     public AbstractProduct(String name, int quantityProduced, StochasticTime pdf) {
         this.name = name;
         this.uuid = UUID.randomUUID();
+        this.itemGroup = ItemGroup.PROCESSED;
+        this.quantityProduced = quantityProduced;
+        this.pdf = pdf;
+    }
+
+    public AbstractProduct(String name, UUID uuid, int quantityProduced, StochasticTime pdf) {
+        this.name = name;
+        this.uuid = uuid;
         this.itemGroup = ItemGroup.PROCESSED;
         this.quantityProduced = quantityProduced;
         this.pdf = pdf;
