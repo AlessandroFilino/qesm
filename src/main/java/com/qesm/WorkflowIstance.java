@@ -1,13 +1,12 @@
 package com.qesm;
 
+public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIstance> {
 
-public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIstance>{
-    
-    protected WorkflowIstance(){
+    protected WorkflowIstance() {
         super(ProductIstance.class, true);
     }
 
-    protected WorkflowIstance(ListenableDAG<ProductIstance, CustomEdge> dagToImport) {
+    public WorkflowIstance(ListenableDAG<ProductIstance, CustomEdge> dagToImport) {
         super(dagToImport, ProductIstance.class, true);
     }
 
@@ -16,7 +15,7 @@ public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIs
     }
 
     @Override
-    protected WorkflowIstance buildWorkflow(ListenableDAG<ProductIstance, CustomEdge> dag) {
+    public WorkflowIstance buildWorkflow(ListenableDAG<ProductIstance, CustomEdge> dag) {
         return new WorkflowIstance(dag, false);
     }
 

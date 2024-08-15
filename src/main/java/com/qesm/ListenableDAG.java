@@ -12,7 +12,7 @@ import org.jgrapht.event.VertexSetListener;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements ListenableGraph<V, E>{
+public class ListenableDAG<V, E> extends DirectedAcyclicGraph<V, E> implements ListenableGraph<V, E> {
     private ArrayList<GraphListener<V, E>> graphListeners = new ArrayList<GraphListener<V, E>>();
     private ArrayList<VertexSetListener<V>> vertexSetListeners = new ArrayList<>();
 
@@ -33,7 +33,7 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
     @Override
     public void addVertexSetListener(VertexSetListener<V> l) {
         vertexSetListeners.add(l);
-        
+
     }
 
     @Override
@@ -43,9 +43,9 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
 
     @Override
     public boolean addVertex(V v) {
-        if(!checkDuplicateNames(v)){
-            System.out.println("Error: a product with the same name of " + v.toString() + " is already present in the dag");
-            return false;
+        if (!checkDuplicateNames(v)) {
+            throw new RuntimeException(
+                    "Error: a product with the same name of " + v.toString() + " is already present in the dag");
         }
         boolean added = super.addVertex(v);
         if (added && graphListeners.size() > 0) {
@@ -96,66 +96,70 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
     }
 
     private void notifyEdgeAdded(E e) {
-        GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V,E>(this, GraphEdgeChangeEvent.EDGE_ADDED, e, getEdgeSource(e), getEdgeTarget(e));
+        GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V, E>(this, GraphEdgeChangeEvent.EDGE_ADDED, e,
+                getEdgeSource(e), getEdgeTarget(e));
         for (GraphListener<V, E> listener : graphListeners) {
             listener.edgeAdded(event);
         }
     }
 
     private void notifyEdgeRemoved(E e) {
-        GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V,E>(this, GraphEdgeChangeEvent.EDGE_REMOVED, e, getEdgeSource(e), getEdgeTarget(e));
+        GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V, E>(this, GraphEdgeChangeEvent.EDGE_REMOVED, e,
+                getEdgeSource(e), getEdgeTarget(e));
         for (GraphListener<V, E> listener : graphListeners) {
             listener.edgeRemoved(event);
         }
     }
 
-    private Boolean checkDuplicateNames(V vertexToCheck){
-        if (vertexToCheck instanceof AbstractProduct){
-            AbstractProduct castedVertexToCheck = (AbstractProduct)vertexToCheck;
+    private Boolean checkDuplicateNames(V vertexToCheck) {
+        if (vertexToCheck instanceof AbstractProduct) {
+            AbstractProduct castedVertexToCheck = (AbstractProduct) vertexToCheck;
             String nameToCheck = castedVertexToCheck.getName();
-            for(V vertex : vertexSet()){
-                AbstractProduct castedVertex = (AbstractProduct)vertex;
-                if(castedVertex.getName().equals(nameToCheck)){
+            for (V vertex : vertexSet()) {
+                AbstractProduct castedVertex = (AbstractProduct) vertex;
+                if (castedVertex.getName().equals(nameToCheck)) {
                     return false;
                 }
             }
             return true;
-        }
-        else{
+        } else {
             return true;
         }
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj){
+        if (this == obj) {
             return true;
         }
-        if (obj == null){
+        if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()){
+        if (getClass() != obj.getClass()) {
             return false;
         }
 
         ListenableDAG<V, E> dagToCompare = uncheckedCast(obj);
 
-        // Convert HashSets to ArrayLists because hashset.equals() is based on hashCode() and we have only overloaded equals() (In all our classes) not hashCode()
-        
+        // Convert HashSets to ArrayLists because hashset.equals() is based on
+        // hashCode() and we have only overloaded equals() (In all our classes) not
+        // hashCode()
+
         List<V> vertexListToCompare = new ArrayList<>(dagToCompare.vertexSet());
         List<V> vertexList = new ArrayList<>(this.vertexSet());
 
-        // Check if all element of a list are contained in the other and vice versa 
-        // (very inneficent, need to implement custum hashcode if it will be developed further)
+        // Check if all element of a list are contained in the other and vice versa
+        // (very inneficent, need to implement custum hashcode if it will be developed
+        // further)
         for (V vertex : vertexList) {
             Boolean isContained = false;
             for (V vertexToCompare : vertexListToCompare) {
-                if(vertex.equals(vertexToCompare)){
+                if (vertex.equals(vertexToCompare)) {
                     isContained = true;
                     break;
-                } 
+                }
             }
-            if(!isContained){
+            if (!isContained) {
                 return false;
             }
         }
@@ -163,12 +167,12 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
         for (V vertexToCompare : vertexListToCompare) {
             Boolean isContained = false;
             for (V vertex : vertexList) {
-                if(vertexToCompare.equals(vertex)){
+                if (vertexToCompare.equals(vertex)) {
                     isContained = true;
                     break;
-                } 
+                }
             }
-            if(!isContained){
+            if (!isContained) {
                 return false;
             }
         }
@@ -176,16 +180,15 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
         List<E> edgeListToCompare = new ArrayList<>(dagToCompare.edgeSet());
         List<E> edgeList = new ArrayList<>(this.edgeSet());
 
-        
         for (E customEdge : edgeList) {
             Boolean isContained = false;
             for (E customEdgeToCompare : edgeListToCompare) {
-                if(customEdge.equals(customEdgeToCompare)){
+                if (customEdge.equals(customEdgeToCompare)) {
                     isContained = true;
                     break;
-                } 
+                }
             }
-            if(!isContained){
+            if (!isContained) {
                 return false;
             }
         }
@@ -193,12 +196,12 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
         for (E customEdgeToCompare : edgeListToCompare) {
             Boolean isContained = false;
             for (E customEdge : edgeList) {
-                if(customEdgeToCompare.equals(customEdge)){
+                if (customEdgeToCompare.equals(customEdge)) {
                     isContained = true;
                     break;
-                } 
+                }
             }
-            if(!isContained){
+            if (!isContained) {
                 return false;
             }
         }
@@ -208,9 +211,8 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
 
     // Jgrapht does the same
     @SuppressWarnings("unchecked")
-    private ListenableDAG<V,E> uncheckedCast(Object o)
-    {
-        return (ListenableDAG<V,E>) o;
+    private ListenableDAG<V, E> uncheckedCast(Object o) {
+        return (ListenableDAG<V, E>) o;
     }
 
     @Override
@@ -220,13 +222,12 @@ public class ListenableDAG<V,E> extends DirectedAcyclicGraph<V,E> implements Lis
         while (iter.hasNext()) {
             V vertex = iter.next();
             dagInfo += vertex.toString();
-            if(this.outDegreeOf(vertex) > 0){
+            if (this.outDegreeOf(vertex) > 0) {
                 dagInfo += " is connected to: \n";
                 for (E connectedEdge : this.outgoingEdgesOf(vertex)) {
                     dagInfo += "\t" + connectedEdge.toString() + "\n";
                 }
-            }
-            else{
+            } else {
                 dagInfo += "\n";
             }
         }
