@@ -19,18 +19,24 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
+import lombok.Setter;
+
+@Setter
 public abstract class AbstractProduct implements Serializable, DotFileConvertible {
     private String name;
     private UUID uuid;
     private int quantityProduced;
     private transient StochasticTime pdf;
 
-    enum ItemGroup {
+    public enum ItemGroup {
         RAW_MATERIAL,
         PROCESSED
     }
 
     private ItemGroup itemGroup;
+
+    public AbstractProduct() {
+    }
 
     public AbstractProduct(String name, ItemGroup itemGroup) {
         this.name = name;
