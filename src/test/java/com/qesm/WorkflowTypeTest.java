@@ -26,14 +26,14 @@ public class WorkflowTypeTest {
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());
         assertEquals(dagType.edgeSet().size(), dagIstance.edgeSet().size());
-        
-        // Checks if all nodes matches (same attributes) 
+
+        // Checks if all nodes matches (same attributes)
         assertTrue(workflowType.equalsNodesAttributes(workflowIstance));
 
-        // Check in workflowIstance if all ProcessedTypes have their subgraph specified 
+        // Check in workflowIstance if all ProcessedTypes have their subgraph specified
         for (ProductIstance nodeIstance : dagIstance.vertexSet()) {
-            
-            if(nodeIstance.isProcessed()){
+
+            if (nodeIstance.isProcessed()) {
                 WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagIstance, nodeIstance));
                 assertEquals(subgraphIstance, workflowIstance.getProductWorkflow(nodeIstance));
                 // System.out.println(nodeIstance.getProductWorkflow().equals(subgraphIstance));
@@ -46,7 +46,8 @@ public class WorkflowTypeTest {
 
     }
 
-    private  ListenableDAG<ProductIstance, CustomEdge> createSubgraph(ListenableDAG<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
+    private ListenableDAG<ProductIstance, CustomEdge> createSubgraph(
+            ListenableDAG<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
         ListenableDAG<ProductIstance, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
 
         Set<ProductIstance> subgraphVertices = originalDAG.getAncestors(root);
@@ -72,18 +73,18 @@ public class WorkflowTypeTest {
         return subgraphDAG;
     }
 
-
     @Test
-    void testReflection(){
-        // Create a workflowtype, make an istance, modify the dag of WorkflowType and make another istance.
+    void testReflection() {
+        // Create a workflowtype, make an istance, modify the dag of WorkflowType and
+        // make another istance.
         // Verify that the two istances are not equals
         ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0,2));
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
+        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
         ProductType v4 = new ProductType("v4");
-        
+
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -104,7 +105,7 @@ public class WorkflowTypeTest {
 
         ProductType v5 = new ProductType("v5");
         workflowType.getDag().addVertex(v5);
-        workflowType.getDag().addEdge(v5, v3);    
+        workflowType.getDag().addEdge(v5, v3);
 
         WorkflowIstance workflowIstance3 = workflowType.makeIstance();
 
@@ -113,22 +114,22 @@ public class WorkflowTypeTest {
     }
 
     @Test
-    public void testDAGUpdating(){
-        //  DAG:
-        //  v0 
-        //  v1
-        //  v2
-        //  v3
-        //  v4
+    public void testDAGUpdating() {
+        // DAG:
+        // v0
+        // v1
+        // v2
+        // v3
+        // v4
 
         ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0,2));
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
+        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
         ProductType v4 = new ProductType("v4");
         ProductType v5 = new ProductType("v5");
-        
+
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -145,12 +146,12 @@ public class WorkflowTypeTest {
         dag.addVertex(v5);
         dag.addEdge(v5, v2);
 
-        //  DAG:
-        //  v0 
-        //  v1
-        //  v2
-        //  v3 v5
-        //  v4
+        // DAG:
+        // v0
+        // v1
+        // v2
+        // v3 v5
+        // v4
 
         assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).getDag().containsVertex(v5));
         assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).getDag().containsVertex(v5));
@@ -158,22 +159,22 @@ public class WorkflowTypeTest {
 
     }
 
-    @Test 
-    public void testMakeIstanceOfSubGraph(){
-        //  DAG:
-        //  v0 
-        //  v1
-        //  v2
-        //  v3
-        //  v4
+    @Test
+    public void testMakeIstanceOfSubGraph() {
+        // DAG:
+        // v0
+        // v1
+        // v2
+        // v3
+        // v4
 
         ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0,2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0,2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0,2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0,2));
+        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
+        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
         ProductType v4 = new ProductType("v4");
-        
+
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -186,11 +187,11 @@ public class WorkflowTypeTest {
         dag.addEdge(v1, v0);
 
         WorkflowType workflowType = new WorkflowType(dag);
-        WorkflowType workflowTypeV2 = workflowType.getProductWorkflow(workflowType.findProduct("v2").get());
+        WorkflowType workflowTypeV2 = (WorkflowType) workflowType
+                .getProductWorkflow(workflowType.findProduct("v2").get());
         WorkflowIstance workflowIstanceV2 = workflowTypeV2.makeIstance();
 
         assertTrue(workflowTypeV2.equalsNodesAttributes(workflowIstanceV2));
-
 
     }
 

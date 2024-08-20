@@ -1,6 +1,6 @@
 package com.qesm;
 
-public class WorkflowIstance extends AbstractWorkflow<ProductIstance, WorkflowIstance> {
+public class WorkflowIstance extends AbstractWorkflow<ProductIstance> {
 
     protected WorkflowIstance() {
         super(ProductIstance.class, true);

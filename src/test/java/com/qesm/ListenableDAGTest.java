@@ -5,16 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ListenableDAGTest {
 
-
     @Test
-    void testDuplicateProductName(){
+    void testDuplicateProductName() {
         ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
 
         ProductType v0 = new ProductType("v0");
@@ -26,7 +23,7 @@ public class ListenableDAGTest {
     }
 
     @Test
-    void testEquals(){
+    void testEquals() {
         ListenableDAG<ProductType, CustomEdge> dagProductTypeCustomEdge = new ListenableDAG<>(CustomEdge.class);
         ListenableDAG<ProductType, CustomEdge> dagProductTypeCustomEdgeReference = dagProductTypeCustomEdge;
         ListenableDAG<ProductIstance, CustomEdge> dagNull = null;
@@ -38,7 +35,7 @@ public class ListenableDAGTest {
     }
 
     @Test
-    void testToString(){
+    void testToString() {
         ListenableDAG<ProductType, CustomEdge> dagProductTypeCustomEdge = new ListenableDAG<>(CustomEdge.class);
         ProductType rm1 = new ProductType("rm1");
         ProductType rm2 = new ProductType("rm2");
@@ -55,7 +52,7 @@ public class ListenableDAGTest {
         dagProductTypeCustomEdge.addEdge(rm2, p1);
         dagProductTypeCustomEdge.addEdge(p1, p2);
         dagProductTypeCustomEdge.addEdge(rm3, p2);
-        
+
         dagProductTypeCustomEdge.toString();
 
     }

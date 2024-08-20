@@ -4,9 +4,7 @@ import java.util.HashMap;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
-
-public class WorkflowType extends AbstractWorkflow<ProductType, WorkflowType>{
-
+public class WorkflowType extends AbstractWorkflow<ProductType> {
 
     public WorkflowType() {
         super(ProductType.class, true);
@@ -20,7 +18,8 @@ public class WorkflowType extends AbstractWorkflow<ProductType, WorkflowType>{
         super(dagToImport, ProductType.class, isTopTierGraph);
     }
 
-    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType) {
+    public void generateRandomDAG(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor,
+            int branchingUpProbability, PdfType pdfType) {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
                 maxBranchingDownFactor, branchingUpProbability, pdfType);
         dag = randDAGGenerator.generateGraph();
@@ -40,11 +39,12 @@ public class WorkflowType extends AbstractWorkflow<ProductType, WorkflowType>{
             productTypeToProductMap.put(vertex, product);
         }
 
-        // Add all the edges from the original DAG to the copy 
+        // Add all the edges from the original DAG to the copy
         for (CustomEdge edge : dag.edgeSet()) {
             ProductType sourceType = dag.getEdgeSource(edge);
             ProductType targetType = dag.getEdgeTarget(edge);
-            dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType), new CustomEdge(edge));
+            dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType),
+                    new CustomEdge(edge));
         }
 
         WorkflowIstance workflowIstance = new WorkflowIstance(dagIstance);

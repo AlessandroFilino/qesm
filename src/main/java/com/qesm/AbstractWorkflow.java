@@ -22,12 +22,10 @@ import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-
-
-public abstract class AbstractWorkflow <V extends AbstractProduct, W extends AbstractWorkflow<V,W>> implements DotFileConverter<V>, Serializable{
+public abstract class AbstractWorkflow<V extends AbstractProduct> implements DotFileConverter<V>, Serializable {
 
     protected ListenableDAG<V, CustomEdge> dag;
-    protected HashMap<V, W> productToSubWorkflowMap;
+    protected HashMap<V, AbstractWorkflow<V>> productToSubWorkflowMap;
     protected transient final Class<V> vertexClass;
     protected Boolean graphListenerAdded = false;
     protected Boolean isTopTierGraph = false;
@@ -37,9 +35,9 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         this.dag = new ListenableDAG<V, CustomEdge>(CustomEdge.class);
         this.isTopTierGraph = isTopTierGraph;
 
-        if(isTopTierGraph){
+        if (isTopTierGraph) {
             setGraphListener();
-            this.productToSubWorkflowMap = new HashMap<V, W>(); 
+            this.productToSubWorkflowMap = new HashMap<V, AbstractWorkflow<V>>();
             updateAllSubgraphs();
         }
     }
@@ -49,52 +47,58 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         this.dag = dagToImport;
         this.isTopTierGraph = isTopTierGraph;
 
-        if(isTopTierGraph){
+        if (isTopTierGraph) {
             setGraphListener();
-            this.productToSubWorkflowMap = new HashMap<V, W>();
+            this.productToSubWorkflowMap = new HashMap<V, AbstractWorkflow<V>>();
             updateAllSubgraphs();
         }
     }
 
-    public String computeParallelismValue(){
+    public String computeParallelismValue() {
 
-        // First convert to Unshared (saving a reference to originalDag to restore at the end) 
+        // First convert to Unshared (saving a reference to originalDag to restore at
+        // the end)
         ListenableDAG<V, CustomEdge> originalDag = dag;
         toUnshared();
-        
+
         // Then compute metrics
         int A = 0;
-        // A paramater: sum all incoming edges of Processed node if they have more than 2 incoming edges 
-        for(V node : dag.vertexSet()){
-            if(node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && dag.inDegreeOf(node) >= 2){
+        // A paramater: sum all incoming edges of Processed node if they have more than
+        // 2 incoming edges
+        for (V node : dag.vertexSet()) {
+            if (node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && dag.inDegreeOf(node) >= 2) {
                 A += dag.inDegreeOf(node);
             }
-        };
+        }
+        ;
 
         // B parameter: Load Balance Factor
         float B = 0;
 
         V unsharedRootNode = computeRootNode();
 
-        Set<V> processedChildNodes = dag.incomingEdgesOf(unsharedRootNode).stream().map(dag::getEdgeSource).filter(v -> v.isProcessed()).collect(Collectors.toSet());
-        if (processedChildNodes.size() > 1){
-            // processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() + " - Item: " + n.getItemGroup()));
+        Set<V> processedChildNodes = dag.incomingEdgesOf(unsharedRootNode).stream().map(dag::getEdgeSource)
+                .filter(v -> v.isProcessed()).collect(Collectors.toSet());
+        if (processedChildNodes.size() > 1) {
+            // processedChildNodes.forEach(n -> System.out.println("Node: " + n.getName() +
+            // " - Item: " + n.getItemGroup()));
             int[] numNodesInSubgraphs = new int[processedChildNodes.size()];
             int index = 0;
-            for(V node : processedChildNodes){
+            for (V node : processedChildNodes) {
                 numNodesInSubgraphs[index] = dag.getAncestors(node).size();
-                // System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " + numNodesInSubgraphs[index]);
+                // System.out.println("Index: " + index + ", Node: " + node.getName() + " -> " +
+                // numNodesInSubgraphs[index]);
                 index++;
             }
 
             // for (int i = 0; i < numNodesInSubgraphs.length; i++){
-            //     System.out.println("[" + i +"] Val " + numNodesInSubgraphs[i]);
+            // System.out.println("[" + i +"] Val " + numNodesInSubgraphs[i]);
             // }
 
             float mean = (Arrays.stream(numNodesInSubgraphs).sum()) / processedChildNodes.size();
             // System.out.println("Mean: " + mean);
             float sumOfSquares = 0;
-            for (int i = 0; i < processedChildNodes.size(); i++){
+            for (int i = 0; i < processedChildNodes.size(); i++) {
                 sumOfSquares += Math.pow((numNodesInSubgraphs[i] - mean), 2);
             }
             float loadBalanceFactor = 1.0f / (processedChildNodes.size()) * sumOfSquares;
@@ -103,32 +107,38 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
 
         double C = 0;
 
-        Set<V> totalProcessedNodes = dag.getAncestors(unsharedRootNode).stream().filter(v -> v.isProcessed()).collect(Collectors.toSet());
-        Set<V> processedLeavesNodes = totalProcessedNodes.stream().filter(v -> dag.incomingEdgesOf(v).stream().allMatch(e -> !dag.getEdgeSource(e).isProcessed())).collect(Collectors.toSet());
-        List<Integer> distancesToRoot = processedLeavesNodes.stream().map(v -> dag.getDescendants(v).size()).collect(Collectors.toList());
+        Set<V> totalProcessedNodes = dag.getAncestors(unsharedRootNode).stream().filter(v -> v.isProcessed())
+                .collect(Collectors.toSet());
+        Set<V> processedLeavesNodes = totalProcessedNodes.stream()
+                .filter(v -> dag.incomingEdgesOf(v).stream().allMatch(e -> !dag.getEdgeSource(e).isProcessed()))
+                .collect(Collectors.toSet());
+        List<Integer> distancesToRoot = processedLeavesNodes.stream().map(v -> dag.getDescendants(v).size())
+                .collect(Collectors.toList());
 
         double averageDistance = distancesToRoot.stream()
-                     .mapToInt(Integer::intValue)
-                     .average()
-                     .orElse(0.0);
-        C = distancesToRoot.stream().map(distance -> Math.pow(distance - averageDistance, 2)).reduce(0.0, (a, b) -> a + b);
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+        C = distancesToRoot.stream().map(distance -> Math.pow(distance - averageDistance, 2)).reduce(0.0,
+                (a, b) -> a + b);
         C /= processedLeavesNodes.size();
-        
-        // 1 - 9            : (16 + 16)/2 = 16  
-        // 1 - 1 -8         : (5,43 +5,43 + 21.8)/3 = 10.88 
-        // 1 - 8 - 8        : (21.71 + 5.44 + 5.44)/3 = 10.86
+
+        // 1 - 9 : (16 + 16)/2 = 16
+        // 1 - 1 -8 : (5,43 +5,43 + 21.8)/3 = 10.88
+        // 1 - 8 - 8 : (21.71 + 5.44 + 5.44)/3 = 10.86
 
         Integer totalProcessedNodesNum = totalProcessedNodes.size();
-        Double maxUnbalance = Math.pow(totalProcessedNodesNum / 2.0 - 1, 2) + Math.pow(totalProcessedNodesNum / 2.0 - totalProcessedNodesNum - 1, 2);
+        Double maxUnbalance = Math.pow(totalProcessedNodesNum / 2.0 - 1, 2)
+                + Math.pow(totalProcessedNodesNum / 2.0 - totalProcessedNodesNum - 1, 2);
         // C /= maxUnbalance * 100;
         C = C == 0 ? 0 : 100 * (Math.log(C + 1) / Math.log(maxUnbalance + 1));
         System.out.println(C);
 
-
         // Restore originalDag
         this.dag = originalDag;
 
-        return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0 + "    NewLoadUnbalanceFactor: " +  Math.round(C * 100.0) / 100.0 + "%";
+        return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0
+                + "    NewLoadUnbalanceFactor: " + Math.round(C * 100.0) / 100.0 + "%";
     }
 
     @Override
@@ -139,7 +149,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
     @Override
     public void setDag(ListenableDAG<V, CustomEdge> dagToSet) {
         dag = dagToSet;
-        if(isTopTierGraph){
+        if (isTopTierGraph) {
             setGraphListener();
             updateAllSubgraphs();
         }
@@ -160,7 +170,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         return null;
     }
 
-    public W getProductWorkflow(V node){
+    public AbstractWorkflow<V> getProductWorkflow(V node) {
         return productToSubWorkflowMap.get(node);
     }
 
@@ -177,25 +187,26 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj){
+        if (this == obj) {
             return true;
         }
-        if (obj == null){
+        if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()){
+        if (getClass() != obj.getClass()) {
             return false;
         }
 
-        AbstractWorkflow<V, W> workflowToCompare = uncheckedCast(obj);
+        AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
 
-        if(!this.dag.equals(workflowToCompare.getDag())){
+        if (!this.dag.equals(workflowToCompare.getDag())) {
             return false;
         }
         return true;
     }
 
-    public <T extends AbstractProduct, P extends AbstractWorkflow<T,P>> boolean equalsNodesAttributes(AbstractWorkflow<T,P> workflowToCompare){
+    public <T extends AbstractProduct, P extends AbstractWorkflow<T>> boolean equalsNodesAttributes(
+            AbstractWorkflow<T> workflowToCompare) {
         ArrayList<V> workflowNodes = new ArrayList<>();
         ArrayList<T> workflowToCompareNodes = new ArrayList<>();
 
@@ -213,7 +224,7 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         for (int nodeNumber = 0; nodeNumber < totalNodes; nodeNumber++) {
             V node = workflowNodes.get(nodeNumber);
             T nodeToCompare = workflowToCompareNodes.get(nodeNumber);
-            if(!node.equalsAttributes(nodeToCompare)){
+            if (!node.equalsAttributes(nodeToCompare)) {
                 return false;
             }
         }
@@ -222,35 +233,35 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
     }
 
     public void toUnshared() {
-        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, computeRootNode(), vertexClass);
+        DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, computeRootNode(),
+                vertexClass);
         dag = dagConverter.makeConversion();
-        if(isTopTierGraph){
+        if (isTopTierGraph) {
             setGraphListener();
             updateAllSubgraphs();
         }
-    } 
+    }
 
-    public Optional<V> findProduct(String productName){
-        for(V product : dag.vertexSet()){
-            if(product.getName().equals(productName)){
+    public Optional<V> findProduct(String productName) {
+        for (V product : dag.vertexSet()) {
+            if (product.getName().equals(productName)) {
                 return Optional.of(product);
             }
         }
         return Optional.empty();
-    } 
+    }
 
     // Jgrapht does the same
     @SuppressWarnings("unchecked")
-    private AbstractWorkflow<V, W> uncheckedCast(Object o)
-    {
-        return (AbstractWorkflow<V, W>) o;
+    private AbstractWorkflow<V> uncheckedCast(Object o) {
+        return (AbstractWorkflow<V>) o;
     }
 
-    protected void setGraphListener(){
-        if(graphListenerAdded || !isTopTierGraph){
+    protected void setGraphListener() {
+        if (graphListenerAdded || !isTopTierGraph) {
             return;
         }
-        GraphListener<V, CustomEdge> graphListener = new GraphListener<V,CustomEdge>() {
+        GraphListener<V, CustomEdge> graphListener = new GraphListener<V, CustomEdge>() {
 
             @Override
             public void vertexAdded(GraphVertexChangeEvent<V> e) {
@@ -271,39 +282,38 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
             public void edgeRemoved(GraphEdgeChangeEvent<V, CustomEdge> e) {
                 updateChangedSubgraphs(null, e.getEdgeSource(), e.getEdgeTarget());
             }
-            
+
         };
 
         dag.addGraphListener(graphListener);
         graphListenerAdded = true;
     }
 
-    protected void updateAllSubgraphs(){
+    protected void updateAllSubgraphs() {
         buildChangedSubGraphs(dag.vertexSet());
     }
 
-    private void updateChangedSubgraphs(V vertexChanged, V edgeSource, V edgeTarget){
-        if(vertexChanged != null){
+    private void updateChangedSubgraphs(V vertexChanged, V edgeSource, V edgeTarget) {
+        if (vertexChanged != null) {
             buildChangedSubGraphs(dag.getDescendants(vertexChanged));
-        }
-        else if(edgeSource != null && edgeTarget != null){
+        } else if (edgeSource != null && edgeTarget != null) {
             Set<V> vertexSet = dag.getDescendants(edgeSource);
             vertexSet.addAll(dag.getDescendants(edgeTarget));
             buildChangedSubGraphs(vertexSet);
         }
     }
 
-    protected abstract W buildWorkflow(ListenableDAG<V, CustomEdge> dag);
+    protected abstract AbstractWorkflow<V> buildWorkflow(ListenableDAG<V, CustomEdge> dag);
 
-    protected void buildChangedSubGraphs(Set<V> vertexSet){
+    protected void buildChangedSubGraphs(Set<V> vertexSet) {
         for (V product : vertexSet) {
-            if(product.isProcessed()){
+            if (product.isProcessed()) {
                 productToSubWorkflowMap.put(product, buildWorkflow(createSubgraph(dag, product)));
             }
         }
     }
-    
-    protected  ListenableDAG<V, CustomEdge> createSubgraph(ListenableDAG<V, CustomEdge> originalDAG, V root) {
+
+    protected ListenableDAG<V, CustomEdge> createSubgraph(ListenableDAG<V, CustomEdge> originalDAG, V root) {
         ListenableDAG<V, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
 
         Set<V> subgraphVertices = originalDAG.getAncestors(root);
@@ -327,14 +337,15 @@ public abstract class AbstractWorkflow <V extends AbstractProduct, W extends Abs
         }
 
         return subgraphDAG;
-    } 
+    }
 
     @Override
     public Supplier<Map<String, Attribute>> getGraphAttributeProvider() {
         Supplier<Map<String, Attribute>> graphAttributeProvider = () -> {
             Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
             map.put("rankdir", new DefaultAttribute<String>("BT", AttributeType.STRING));
-            map.put("label", new DefaultAttribute<String>("\"" + computeParallelismValue() + "\"", AttributeType.STRING));
+            map.put("label",
+                    new DefaultAttribute<String>("\"" + computeParallelismValue() + "\"", AttributeType.STRING));
             map.put("labelloc", new DefaultAttribute<String>("\"t\"", AttributeType.STRING));
             map.put("labeljust", new DefaultAttribute<String>("\"l\"", AttributeType.STRING));
             map.put("fontsize", new DefaultAttribute<Integer>(30, AttributeType.INT));
