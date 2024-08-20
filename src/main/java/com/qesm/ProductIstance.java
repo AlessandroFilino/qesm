@@ -10,6 +10,10 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ProductIstance extends AbstractProduct {
 
+    public ProductIstance(UUID uuid) {
+        super(uuid);
+    }
+
     public ProductIstance(ProductType productType) {
         super(new String(productType.getName()), productType.getItemGroup());
 

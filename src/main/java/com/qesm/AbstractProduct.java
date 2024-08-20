@@ -35,7 +35,8 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
 
     private ItemGroup itemGroup;
 
-    public AbstractProduct() {
+    public AbstractProduct(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public AbstractProduct(String name, ItemGroup itemGroup) {

@@ -6,6 +6,10 @@ import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 
 public class ProductType extends AbstractProduct {
 
+    public ProductType(UUID uuid) {
+        super(uuid);
+    }
+
     public ProductType(String nameType) {
         super(nameType);
     }
