@@ -174,6 +174,14 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return productToSubWorkflowMap.get(node);
     }
 
+    public HashMap<V, AbstractWorkflow<V>> getProductToSubWorkflowMap() {
+        return this.productToSubWorkflowMap;
+    }
+
+    public Boolean isTopTier() {
+        return isTopTierGraph;
+    }
+
     @Override
     public String toString() {
         return dag.toString();
