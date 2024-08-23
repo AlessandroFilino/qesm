@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class ProductType extends AbstractProduct {
 
     public ProductType(UUID uuid) {
