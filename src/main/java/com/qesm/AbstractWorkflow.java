@@ -170,6 +170,17 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return null;
     }
 
+    public Boolean checkRootNode() {
+        // Check if root node exists and is unique
+        Integer rootNodeCounter = 0;
+        for (V node : dag.vertexSet()) {
+            if (dag.outDegreeOf(node) == 0) {
+                rootNodeCounter++;
+            }
+        }
+        return rootNodeCounter == 1 ? true : false;
+    }
+
     public AbstractWorkflow<V> getProductWorkflow(V node) {
         return productToSubWorkflowMap.get(node);
     }
