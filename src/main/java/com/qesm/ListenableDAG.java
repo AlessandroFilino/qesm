@@ -3,6 +3,7 @@ package com.qesm;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jgrapht.ListenableGraph;
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -13,21 +14,58 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 public class ListenableDAG<V, E> extends DirectedAcyclicGraph<V, E> implements ListenableGraph<V, E> {
-    private ArrayList<GraphListener<V, E>> graphListeners = new ArrayList<GraphListener<V, E>>();
+    private ArrayList<GraphListener<V, E>> graphListenersForInsertion = new ArrayList<GraphListener<V, E>>();
+    private ArrayList<GraphListener<Set<V>, E>> graphListenersForRemoval = new ArrayList<GraphListener<Set<V>, E>>();
     private ArrayList<VertexSetListener<V>> vertexSetListeners = new ArrayList<>();
 
     public ListenableDAG(Class<? extends E> edgeClass) {
         super(edgeClass);
     }
 
+    public V computeRootNode() {
+        for (V node : vertexSet()) {
+            if (outDegreeOf(node) == 0) {
+                return node;
+            }
+        }
+        System.err.println("ERROR: there isn't a root node");
+        return null;
+    }
+
+    // TODO: use this directly in AbstractWorkflow not here
+    public void checkRootNode() {
+        // Check if root node exists and is unique
+        Integer rootNodeCounter = 0;
+        for (V node : vertexSet()) {
+            if (outDegreeOf(node) == 0) {
+                rootNodeCounter++;
+            }
+        }
+
+        System.out.println(this);
+        System.out.println(rootNodeCounter);
+
+        if (rootNodeCounter != 1) {
+            throw new RuntimeException("Error: Dag's root node not exists or it's not unique");
+        }
+    }
+
     @Override
     public void addGraphListener(GraphListener<V, E> l) {
-        graphListeners.add(l);
+        graphListenersForInsertion.add(l);
+    }
+
+    public void addGraphListenerForRemoval(GraphListener<Set<V>, E> l) {
+        graphListenersForRemoval.add(l);
     }
 
     @Override
     public void removeGraphListener(GraphListener<V, E> l) {
-        graphListeners.remove(l);
+        graphListenersForInsertion.remove(l);
+    }
+
+    public void removeGraphListenerForRemoval(GraphListener<Set<V>, E> l) {
+        graphListenersForRemoval.remove(l);
     }
 
     @Override
@@ -48,49 +86,72 @@ public class ListenableDAG<V, E> extends DirectedAcyclicGraph<V, E> implements L
                     "Error: a product with the same name of " + v.toString() + " is already present in the dag");
         }
         boolean added = super.addVertex(v);
-        if (added && graphListeners.size() > 0) {
+        if (added && graphListenersForInsertion.size() > 0) {
+            checkRootNode();
             notifyVertexAdded(v);
+
         }
+
         return added;
     }
 
     @Override
     public boolean removeVertex(V v) {
+        Set<V> ancestors = getAncestors(v);
+        Set<V> descendants = getDescendants(v);
         boolean removed = super.removeVertex(v);
-        if (removed && graphListeners.size() > 0) {
-            notifyVertexRemoved(v);
+        if (removed && graphListenersForRemoval.size() > 0) {
+            checkRootNode();
+            V rootNode = computeRootNode();
+            List<V> nodesToBeRemoved = new ArrayList<>();
+            for (V ancestor : ancestors) {
+                if (!getDescendants(ancestor).contains(rootNode)) {
+                    nodesToBeRemoved.add(ancestor);
+                }
+            }
+            super.removeAllVertices(nodesToBeRemoved);
+
+            notifyVertexRemoved(descendants);
+
         }
+
         return removed;
     }
 
     @Override
     public E addEdge(V sourceVertex, V targetVertex) {
+
         E edge = super.addEdge(sourceVertex, targetVertex);
-        if (edge != null && graphListeners.size() > 0) {
+        if (edge != null && graphListenersForInsertion.size() > 0) {
+            checkRootNode();
             notifyEdgeAdded(edge);
         }
+
         return edge;
     }
 
     @Override
     public boolean removeEdge(E e) {
         boolean removed = super.removeEdge(e);
-        if (removed && graphListeners.size() > 0) {
+        if (removed && graphListenersForRemoval.size() > 0) {
+            checkRootNode();
             notifyEdgeRemoved(e);
         }
+
         return removed;
     }
 
     private void notifyVertexAdded(V v) {
         GraphVertexChangeEvent<V> event = new GraphVertexChangeEvent<V>(this, GraphVertexChangeEvent.VERTEX_ADDED, v);
-        for (GraphListener<V, E> listener : graphListeners) {
+        for (GraphListener<V, E> listener : graphListenersForInsertion) {
             listener.vertexAdded(event);
         }
     }
 
-    private void notifyVertexRemoved(V v) {
-        GraphVertexChangeEvent<V> event = new GraphVertexChangeEvent<V>(this, GraphVertexChangeEvent.VERTEX_REMOVED, v);
-        for (GraphListener<V, E> listener : graphListeners) {
+    private void notifyVertexRemoved(Set<V> descendants) {
+        GraphVertexChangeEvent<Set<V>> event = new GraphVertexChangeEvent<Set<V>>(this,
+                GraphVertexChangeEvent.VERTEX_REMOVED, descendants);
+        for (GraphListener<Set<V>, E> listener : graphListenersForRemoval) {
             listener.vertexRemoved(event);
         }
     }
@@ -98,15 +159,16 @@ public class ListenableDAG<V, E> extends DirectedAcyclicGraph<V, E> implements L
     private void notifyEdgeAdded(E e) {
         GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V, E>(this, GraphEdgeChangeEvent.EDGE_ADDED, e,
                 getEdgeSource(e), getEdgeTarget(e));
-        for (GraphListener<V, E> listener : graphListeners) {
+        for (GraphListener<V, E> listener : graphListenersForInsertion) {
             listener.edgeAdded(event);
         }
     }
 
     private void notifyEdgeRemoved(E e) {
-        GraphEdgeChangeEvent<V, E> event = new GraphEdgeChangeEvent<V, E>(this, GraphEdgeChangeEvent.EDGE_REMOVED, e,
-                getEdgeSource(e), getEdgeTarget(e));
-        for (GraphListener<V, E> listener : graphListeners) {
+        GraphEdgeChangeEvent<Set<V>, E> event = new GraphEdgeChangeEvent<Set<V>, E>(this,
+                GraphEdgeChangeEvent.EDGE_REMOVED, e,
+                Set.of(getEdgeSource(e)), Set.of(getEdgeTarget(e)));
+        for (GraphListener<Set<V>, E> listener : graphListenersForRemoval) {
             listener.edgeRemoved(event);
         }
     }

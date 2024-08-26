@@ -280,31 +280,59 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         if (graphListenerAdded || !isTopTierGraph) {
             return;
         }
-        GraphListener<V, CustomEdge> graphListener = new GraphListener<V, CustomEdge>() {
+        GraphListener<V, CustomEdge> graphListenerForInsertion = new GraphListener<V, CustomEdge>() {
 
             @Override
             public void vertexAdded(GraphVertexChangeEvent<V> e) {
-                updateChangedSubgraphs(e.getVertex(), null, null);
+                updateChangedSubgraphsAfterInsertion(e.getVertex(), null, null);
             }
 
             @Override
             public void vertexRemoved(GraphVertexChangeEvent<V> e) {
-                updateChangedSubgraphs(e.getVertex(), null, null);
+                return;
             }
 
             @Override
             public void edgeAdded(GraphEdgeChangeEvent<V, CustomEdge> e) {
-                updateChangedSubgraphs(null, e.getEdgeSource(), e.getEdgeTarget());
+                updateChangedSubgraphsAfterInsertion(null, e.getEdgeSource(), e.getEdgeTarget());
             }
 
             @Override
             public void edgeRemoved(GraphEdgeChangeEvent<V, CustomEdge> e) {
-                updateChangedSubgraphs(null, e.getEdgeSource(), e.getEdgeTarget());
+                return;
             }
 
         };
 
-        dag.addGraphListener(graphListener);
+        dag.addGraphListener(graphListenerForInsertion);
+
+        GraphListener<Set<V>, CustomEdge> graphListenerForRemoval = new GraphListener<Set<V>, CustomEdge>() {
+
+            @Override
+            public void vertexAdded(GraphVertexChangeEvent<Set<V>> e) {
+                return;
+            }
+
+            @Override
+            public void vertexRemoved(GraphVertexChangeEvent<Set<V>> e) {
+                updateChangedSubgraphsAfterRemoval(e.getVertex(), null, null);
+            }
+
+            @Override
+            public void edgeAdded(GraphEdgeChangeEvent<Set<V>, CustomEdge> e) {
+                return;
+            }
+
+            // TODO: handle it in a more efficient way
+            @Override
+            public void edgeRemoved(GraphEdgeChangeEvent<Set<V>, CustomEdge> e) {
+                updateAllSubgraphs();
+            }
+
+        };
+
+        dag.addGraphListenerForRemoval(graphListenerForRemoval);
+
         graphListenerAdded = true;
     }
 
@@ -312,9 +340,19 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         buildChangedSubGraphs(dag.vertexSet());
     }
 
-    private void updateChangedSubgraphs(V vertexChanged, V edgeSource, V edgeTarget) {
+    private void updateChangedSubgraphsAfterInsertion(V vertexChanged, V edgeSource, V edgeTarget) {
         if (vertexChanged != null) {
             buildChangedSubGraphs(dag.getDescendants(vertexChanged));
+        } else if (edgeSource != null && edgeTarget != null) {
+            Set<V> vertexSet = dag.getDescendants(edgeSource);
+            vertexSet.addAll(dag.getDescendants(edgeTarget));
+            buildChangedSubGraphs(vertexSet);
+        }
+    }
+
+    private void updateChangedSubgraphsAfterRemoval(Set<V> vertexChangedList, V edgeSource, V edgeTarget) {
+        if (vertexChangedList != null) {
+            buildChangedSubGraphs(vertexChangedList);
         } else if (edgeSource != null && edgeTarget != null) {
             Set<V> vertexSet = dag.getDescendants(edgeSource);
             vertexSet.addAll(dag.getDescendants(edgeTarget));
