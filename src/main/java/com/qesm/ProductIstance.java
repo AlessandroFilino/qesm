@@ -1,7 +1,5 @@
 package com.qesm;
 
-import java.util.UUID;
-
 import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
@@ -13,17 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductIstance extends AbstractProduct {
 
-    public ProductIstance(UUID uuid) {
-        super(uuid);
-    }
-
     public ProductIstance(ProductType productType) {
         super(new String(productType.getName()), productType.getItemGroup());
 
         if (productType.isProcessed()) {
-            setQuantityProduced(productType.getQuantityProduced().get());
+            setQuantityProduced(productType.getQuantityProduced());
 
-            StochasticTime pdfToCopy = productType.getPdf().get();
+            StochasticTime pdfToCopy = productType.getPdf();
             Class<? extends StochasticTime> pdfClass = pdfToCopy.getClass();
 
             if (pdfClass == UniformTime.class) {
@@ -45,12 +39,12 @@ public class ProductIstance extends AbstractProduct {
         super(name, itemGroup);
     }
 
-    public ProductIstance(String name, UUID uuid) {
-        super(name, uuid);
+    public ProductIstance(String name) {
+        super(name);
     }
 
-    public ProductIstance(String nameType, UUID uuid, Integer quantityProduced, StochasticTime pdf) {
-        super(nameType, uuid, quantityProduced, pdf);
+    public ProductIstance(String nameType, Integer quantityProduced, StochasticTime pdf) {
+        super(nameType, quantityProduced, pdf);
     }
 
 }

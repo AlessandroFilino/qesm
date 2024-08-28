@@ -41,12 +41,12 @@ public class DAGSharedToUnsharedConverter<V extends AbstractProduct> {
         if (node.isProcessed()) {
             if (id == 0) {
                 newNode = generateNode(node.getName(), ItemGroup.PROCESSED);
-                newNode.setQuantityProduced(node.getQuantityProduced().get());
-                newNode.setPdf(node.getPdf().get());
+                newNode.setQuantityProduced(node.getQuantityProduced());
+                newNode.setPdf(node.getPdf());
             } else {
                 newNode = generateNode(node.getName() + "_" + id, ItemGroup.PROCESSED);
-                newNode.setQuantityProduced(node.getQuantityProduced().get());
-                newNode.setPdf(node.getPdf().get());
+                newNode.setQuantityProduced(node.getQuantityProduced());
+                newNode.setPdf(node.getPdf());
             }
         } else {
             if (id == 0) {
