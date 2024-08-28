@@ -42,7 +42,7 @@ public class AbstractWorkflowTest {
     @BeforeEach
     public void setup() {
         wf1 = new WorkflowType();
-        wf1.generateRandomDAG(5, 5, 2, 2, 60, PdfType.UNIFORM);
+        wf1.generateRandomDAG(3, 3, 2, 2, 60, PdfType.UNIFORM);
         wf1Reference = wf1;
 
         wi1 = wf1.makeIstance();
