@@ -150,7 +150,16 @@ public class AbstractWorkflowTest {
 
     @Test
     void testRemoveEdge() {
-
+        // TODO: finish test
+        CustomEdge edgeToBeRemoved = null;
+        for (CustomEdge edge : wf2.dag.incomingEdgesOf(v0)) {
+            if (edge.getSource().equals(v1)) {
+                edgeToBeRemoved = edge;
+            }
+        }
+        wf2.removeEdge(edgeToBeRemoved);
+        assertEquals(1, wf2.dag.vertexSet().size());
+        assertEquals(0, wf2.dag.edgeSet().size());
     }
 
     @Test
