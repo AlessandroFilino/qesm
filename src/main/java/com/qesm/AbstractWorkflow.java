@@ -3,6 +3,7 @@ package com.qesm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -375,10 +377,47 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return true;
     }
 
-    private Boolean validateWorkflow(Validation... args) {
+    private Boolean validateWorkflow(V vertexToCheck, Validation... args) {
+        Boolean valid = true;
         for (Validation validation : args) {
+            // Apply a single validation
+            switch (validation) {
+                case ROOT_NODE:
+                    if (!checkRootNode()) {
+                        System.out.println("Invalid root node (duplicate or none)");
+                        valid = false;
+                    }
+                case CONNECTIVITY:
+                    if (!isDagConnected()) {
+                        System.out.println("Invalid, DAG not connected");
+                        valid = false;
+                    }
+                case LEAF_NODES:
+                    if (!checkLeafNodes()) {
+                        System.out.println("Invalid leaves nodes");
+                        valid = false;
+                    }
+                case DUPLICATE_NAME:
+                    if (vertexToCheck == null) {
+                        throw new RuntimeException("Missing vertex to check in Duplicate Name Validation");
+                    } else {
+                        if (!checkDuplicateNames(vertexToCheck)) {
+                            System.out.println("Invalid vertex name (duplicate)");
+                            valid = false;
+                        }
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unknown validation enum value");
 
+            }
+            // Check if we need to break the validation cicle because already one validation
+            // is broken
+            if (!valid) {
+                break;
+            }
         }
+        return valid;
     }
 
     protected void updateAllSubgraphs() {
