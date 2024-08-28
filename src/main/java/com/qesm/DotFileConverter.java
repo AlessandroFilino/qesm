@@ -16,25 +16,24 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.dot.DOTImporter;
 
+public interface DotFileConverter<T extends DotFileConvertible> {
 
-public interface DotFileConverter <T extends DotFileConvertible> {
-
-    private DOTExporter<T, CustomEdge> setExporterProviders(boolean serialization){
+    private DOTExporter<T, CustomEdge> setExporterProviders(boolean serialization) {
         DOTExporter<T, CustomEdge> exporter = new DOTExporter<>(this.getVertexIdProvider());
 
-        if(serialization){
+        if (serialization) {
             exporter.setVertexAttributeProvider(this.getVertexAttributeProvider());
-        }
-        else{
+        } else {
             exporter.setVertexAttributeProvider(this.getVertexAttributeProviderNoSerialization());
         }
-        
+
         exporter.setEdgeAttributeProvider(this.getEdgeAttributeProvider());
         exporter.setGraphAttributeProvider(this.getGraphAttributeProvider());
 
@@ -48,33 +47,34 @@ public interface DotFileConverter <T extends DotFileConvertible> {
         // export graph to dotFile
         try {
             FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(this.getDag(), writer);
+            exporter.exportGraph(this.getDagCopy(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     default public void exportDotFileNoSerialization(String filePath) {
-        // NOTE: (serializing big object (ex workflow) can leads to massive attribute string, dot renderer has a limit of (2^14 chars))  
+        // NOTE: (serializing big object (ex workflow) can leads to massive attribute
+        // string, dot renderer has a limit of (2^14 chars))
         DOTExporter<T, CustomEdge> exporter = setExporterProviders(false);
-        
+
         // export graph to dotFile
         try {
             FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(this.getDag(), writer);
+            exporter.exportGraph(this.getDagCopy(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    default public void importDotFile(String filePath){
+    default public void importDotFile(String filePath) {
         DOTImporter<T, CustomEdge> importer = new DOTImporter<T, CustomEdge>();
         importer.setVertexWithAttributesFactory(getVertexFactoryFunction());
         importer.setEdgeWithAttributesFactory(getEdgeWithAttributesFactory());
 
         try {
             FileReader reader = new FileReader(filePath);
-            ListenableDAG<T, CustomEdge> resultDag = new ListenableDAG<T, CustomEdge>(CustomEdge.class);
+            DirectedAcyclicGraph<T, CustomEdge> resultDag = new DirectedAcyclicGraph<T, CustomEdge>(CustomEdge.class);
             importer.importGraph(resultDag, reader);
             this.setDag(resultDag);
         } catch (IOException e) {
@@ -82,8 +82,10 @@ public interface DotFileConverter <T extends DotFileConvertible> {
         }
     }
 
-    public ListenableDAG<T, CustomEdge> getDag();
-    public void setDag(ListenableDAG<T, CustomEdge> dagToSet);
+    public DirectedAcyclicGraph<T, CustomEdge> getDagCopy();
+
+    public void setDag(DirectedAcyclicGraph<T, CustomEdge> dagToSet);
+
     public Class<T> getVertexClass();
 
     default public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
@@ -94,7 +96,7 @@ public interface DotFileConverter <T extends DotFileConvertible> {
                     new DefaultAttribute<String>("quantityNeeded: " + e.getQuantityRequired(), AttributeType.STRING));
 
             map.put("quantity_required", new DefaultAttribute<Integer>(e.getQuantityRequired(), AttributeType.INT));
-            
+
             return map;
         };
 
@@ -116,22 +118,25 @@ public interface DotFileConverter <T extends DotFileConvertible> {
             Map<String, Attribute> map = v.getExporterAttributes();
             // Serialize vertex object with compression
             try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream)) {
-                    objectOutputStream.writeObject(v);
-                    gzipOutputStream.finish();
-                    String encodedVertex =  Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-                    // split string in chunk to avoid Graphviz limit on quoted string scanning (16384 char)
-                    Integer chunkSize = 16000;
-                    Integer chunkNum = 0;
-                    for(int chunkIdx = 0; chunkIdx < encodedVertex.length(); chunkIdx += chunkSize){
-                        String chunk = encodedVertex.substring(chunkIdx, Math.min(encodedVertex.length(), chunkIdx + chunkSize));
-                        map.put("serialization_data_" + chunkNum , new DefaultAttribute<String>(chunk, AttributeType.STRING));
-                        chunkNum++;
-                    }
-            }catch (Exception exception) {
+                    GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream)) {
+                objectOutputStream.writeObject(v);
+                gzipOutputStream.finish();
+                String encodedVertex = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+                // split string in chunk to avoid Graphviz limit on quoted string scanning
+                // (16384 char)
+                Integer chunkSize = 16000;
+                Integer chunkNum = 0;
+                for (int chunkIdx = 0; chunkIdx < encodedVertex.length(); chunkIdx += chunkSize) {
+                    String chunk = encodedVertex.substring(chunkIdx,
+                            Math.min(encodedVertex.length(), chunkIdx + chunkSize));
+                    map.put("serialization_data_" + chunkNum,
+                            new DefaultAttribute<String>(chunk, AttributeType.STRING));
+                    chunkNum++;
+                }
+            } catch (Exception exception) {
                 exception.printStackTrace();
-            } 
+            }
 
             return map;
         };
@@ -141,7 +146,7 @@ public interface DotFileConverter <T extends DotFileConvertible> {
 
     default public Function<T, Map<String, Attribute>> getVertexAttributeProviderNoSerialization() {
         Function<T, Map<String, Attribute>> vertexAttributeProvider = v -> {
-            return v.getExporterAttributes(); 
+            return v.getExporterAttributes();
         };
 
         return vertexAttributeProvider;
@@ -161,15 +166,15 @@ public interface DotFileConverter <T extends DotFileConvertible> {
                 // Reassemble string from chunks
                 Integer chunkNum = 0;
                 String encodedVertex = "";
-                while(attributesMap.containsKey("serialization_data_" + chunkNum)){
+                while (attributesMap.containsKey("serialization_data_" + chunkNum)) {
                     encodedVertex += attributesMap.get("serialization_data_" + chunkNum).toString();
                     chunkNum++;
                 }
                 byte[] compressedData = Base64.getDecoder().decode(encodedVertex);
-                
+
                 try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedData);
-                    GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-                    ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
+                        GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+                        ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
                     T vertex = castDeserializedObject(objectInputStream.readObject(), this.getVertexClass());
                     return vertex;
                 }
@@ -181,7 +186,7 @@ public interface DotFileConverter <T extends DotFileConvertible> {
         return vertexFactoryFunction;
     }
 
-    private T castDeserializedObject(Object object, Class<T> classType){
+    private T castDeserializedObject(Object object, Class<T> classType) {
         if (classType.isInstance(object)) {
             return classType.cast(object);
         } else {

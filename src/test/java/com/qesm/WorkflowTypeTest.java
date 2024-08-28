@@ -21,8 +21,8 @@ public class WorkflowTypeTest {
         workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
         WorkflowIstance workflowIstance = workflowType.makeIstance();
 
-        ListenableDAG<ProductType, CustomEdge> dagType = workflowType.getDag();
-        ListenableDAG<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDag();
+        ListenableDAG<ProductType, CustomEdge> dagType = workflowType.getDagCopy();
+        ListenableDAG<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDagCopy();
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());
         assertEquals(dagType.edgeSet().size(), dagIstance.edgeSet().size());
@@ -104,8 +104,8 @@ public class WorkflowTypeTest {
         assertEquals(workflowIstance1, workflowIstance2);
 
         ProductType v5 = new ProductType("v5");
-        workflowType.getDag().addVertex(v5);
-        workflowType.getDag().addEdge(v5, v3);
+        workflowType.getDagCopy().addVertex(v5);
+        workflowType.getDagCopy().addEdge(v5, v3);
 
         WorkflowIstance workflowIstance3 = workflowType.makeIstance();
 
@@ -153,9 +153,12 @@ public class WorkflowTypeTest {
         // v3 v5
         // v4
 
-        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).getDag().containsVertex(v5));
-        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).getDag().containsVertex(v5));
-        assertTrue(workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).getDag().containsVertex(v5));
+        assertTrue(
+                workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).getDagCopy().containsVertex(v5));
+        assertTrue(
+                workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).getDagCopy().containsVertex(v5));
+        assertTrue(
+                workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).getDagCopy().containsVertex(v5));
 
     }
 

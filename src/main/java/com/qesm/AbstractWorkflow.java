@@ -14,9 +14,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
-import org.jgrapht.event.GraphEdgeChangeEvent;
-import org.jgrapht.event.GraphListener;
-import org.jgrapht.event.GraphVertexChangeEvent;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
 import org.jgrapht.nio.DefaultAttribute;
@@ -24,31 +22,29 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 public abstract class AbstractWorkflow<V extends AbstractProduct> implements DotFileConverter<V>, Serializable {
 
-    protected ListenableDAG<V, CustomEdge> dag;
+    protected DirectedAcyclicGraph<V, CustomEdge> dag;
     protected HashMap<V, AbstractWorkflow<V>> productToSubWorkflowMap;
     protected transient final Class<V> vertexClass;
-    protected Boolean graphListenerAdded = false;
     protected Boolean isTopTierGraph = false;
 
     public AbstractWorkflow(Class<V> vertexClass, Boolean isTopTierGraph) {
         this.vertexClass = vertexClass;
-        this.dag = new ListenableDAG<V, CustomEdge>(CustomEdge.class);
+        this.dag = new DirectedAcyclicGraph<V, CustomEdge>(CustomEdge.class);
         this.isTopTierGraph = isTopTierGraph;
 
         if (isTopTierGraph) {
-            setGraphListener();
             this.productToSubWorkflowMap = new HashMap<V, AbstractWorkflow<V>>();
             updateAllSubgraphs();
         }
     }
 
-    public AbstractWorkflow(ListenableDAG<V, CustomEdge> dagToImport, Class<V> vertexClass, Boolean isTopTierGraph) {
+    public AbstractWorkflow(DirectedAcyclicGraph<V, CustomEdge> dagToImport, Class<V> vertexClass,
+            Boolean isTopTierGraph) {
         this.vertexClass = vertexClass;
         this.dag = dagToImport;
         this.isTopTierGraph = isTopTierGraph;
 
         if (isTopTierGraph) {
-            setGraphListener();
             this.productToSubWorkflowMap = new HashMap<V, AbstractWorkflow<V>>();
             updateAllSubgraphs();
         }
@@ -58,7 +54,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
         // First convert to Unshared (saving a reference to originalDag to restore at
         // the end)
-        ListenableDAG<V, CustomEdge> originalDag = dag;
+        DirectedAcyclicGraph<V, CustomEdge> originalDag = dag;
         toUnshared();
 
         // Then compute metrics
@@ -142,15 +138,16 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     @Override
-    public ListenableDAG<V, CustomEdge> getDag() {
+    public DirectedAcyclicGraph<V, CustomEdge> getDagCopy() {
+        // TODO: generate dag copy (deepcopy ?)
         return dag;
     }
 
     @Override
-    public void setDag(ListenableDAG<V, CustomEdge> dagToSet) {
+    public void setDag(DirectedAcyclicGraph<V, CustomEdge> dagToSet) {
         dag = dagToSet;
         if (isTopTierGraph) {
-            setGraphListener();
+
             updateAllSubgraphs();
         }
     }
@@ -166,19 +163,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
                 return node;
             }
         }
-        System.err.println("ERROR: there isn't a root node");
-        return null;
-    }
-
-    public Boolean checkRootNode() {
-        // Check if root node exists and is unique
-        Integer rootNodeCounter = 0;
-        for (V node : dag.vertexSet()) {
-            if (dag.outDegreeOf(node) == 0) {
-                rootNodeCounter++;
-            }
-        }
-        return rootNodeCounter == 1 ? true : false;
+        throw new RuntimeException("ERROR: there isn't a root node");
     }
 
     public AbstractWorkflow<V> getProductWorkflow(V node) {
@@ -198,12 +183,6 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return dag.toString();
     }
 
-    public boolean isDagConnected() {
-        ConnectivityInspector<V, CustomEdge> connInspector = new ConnectivityInspector<V, CustomEdge>(
-                dag);
-        return connInspector.isConnected();
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -218,7 +197,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
         AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
 
-        if (!this.dag.equals(workflowToCompare.getDag())) {
+        if (!this.dag.equals(workflowToCompare.getDagCopy())) {
             return false;
         }
         return true;
@@ -234,7 +213,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
             workflowNodes.add(iterWorkflow.next());
         }
 
-        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.getDag());
+        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.getDagCopy());
         while (iterWorkflowToCompare.hasNext()) {
             workflowToCompareNodes.add(iterWorkflowToCompare.next());
         }
@@ -256,7 +235,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
                 vertexClass);
         dag = dagConverter.makeConversion();
         if (isTopTierGraph) {
-            setGraphListener();
+
             updateAllSubgraphs();
         }
     }
@@ -276,64 +255,130 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return (AbstractWorkflow<V>) o;
     }
 
-    protected void setGraphListener() {
-        if (graphListenerAdded || !isTopTierGraph) {
-            return;
+    // Exposing CRUD methods of dag
+
+    public CustomEdge connectVertex(V newVertex, V targetVertex) {
+        if (!checkDuplicateNames(newVertex)) {
+            throw new RuntimeException(
+                    "Error: a product with the same name of " + newVertex.toString()
+                            + " is already present in the dag");
         }
-        GraphListener<V, CustomEdge> graphListenerForInsertion = new GraphListener<V, CustomEdge>() {
+        boolean added = dag.addVertex(newVertex);
+        if (added) {
+            CustomEdge e = dag.addEdge(newVertex, targetVertex);
 
-            @Override
-            public void vertexAdded(GraphVertexChangeEvent<V> e) {
-                updateChangedSubgraphsAfterInsertion(e.getVertex(), null, null);
+            return e;
+        }
+
+        return null;
+    }
+
+    public boolean removeVertex(V v) {
+        Set<V> ancestors = getAncestors(v);
+        Set<V> descendants = getDescendants(v);
+        boolean removed = super.removeVertex(v);
+        if (removed && graphListenersForRemoval.size() > 0) {
+            checkRootNode();
+            V rootNode = computeRootNode();
+            List<V> nodesToBeRemoved = new ArrayList<>();
+            for (V ancestor : ancestors) {
+                if (!getDescendants(ancestor).contains(rootNode)) {
+                    nodesToBeRemoved.add(ancestor);
+                }
             }
+            super.removeAllVertices(nodesToBeRemoved);
 
-            @Override
-            public void vertexRemoved(GraphVertexChangeEvent<V> e) {
-                return;
+            notifyVertexRemoved(descendants);
+
+        }
+
+        return removed;
+    }
+
+    public CustomEdge addEdge(V sourceVertex, V targetVertex) {
+
+        CustomEdge edge = dag.addEdge(sourceVertex, targetVertex);
+        if (edge != null && graphListenersForInsertion.size() > 0) {
+            checkRootNode();
+            notifyEdgeAdded(edge);
+        }
+
+        return edge;
+    }
+
+    public boolean removeEdge(CustomEdge e) {
+        boolean removed = super.removeEdge(e);
+        if (removed && graphListenersForRemoval.size() > 0) {
+            checkRootNode();
+            notifyEdgeRemoved(e);
+        }
+
+        return removed;
+    }
+
+    // Validation methods
+    public enum Validation {
+        DUPLICATE_NAME,
+        ROOT_NODE,
+        CONNECTIVITY,
+        LEAF_NODES
+    }
+
+    private Boolean checkDuplicateNames(V vertexToCheck) {
+        AbstractProduct castedVertexToCheck = (AbstractProduct) vertexToCheck;
+        String nameToCheck = castedVertexToCheck.getName();
+        for (V vertex : dag.vertexSet()) {
+            AbstractProduct castedVertex = (AbstractProduct) vertex;
+            if (castedVertex.getName().equals(nameToCheck)) {
+                return false;
             }
+        }
+        return true;
+    }
 
-            @Override
-            public void edgeAdded(GraphEdgeChangeEvent<V, CustomEdge> e) {
-                updateChangedSubgraphsAfterInsertion(null, e.getEdgeSource(), e.getEdgeTarget());
+    private Boolean checkRootNode() {
+        // Check if root node exists and is unique
+        Integer rootNodeCounter = 0;
+        for (V node : dag.vertexSet()) {
+            if (dag.outDegreeOf(node) == 0) {
+                rootNodeCounter++;
             }
+        }
 
-            @Override
-            public void edgeRemoved(GraphEdgeChangeEvent<V, CustomEdge> e) {
-                return;
+        if (rootNodeCounter != 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean isDagConnected() {
+        ConnectivityInspector<V, CustomEdge> connInspector = new ConnectivityInspector<V, CustomEdge>(
+                dag);
+        return connInspector.isConnected();
+    }
+
+    private Boolean checkLeafNodes() {
+        // All leaf nodes should be raw materials and all raw_materials should be leaf
+        // nodes
+        for (V node : dag.vertexSet()) {
+
+            Boolean isLeafNode = dag.inDegreeOf(node) == 0 ? true : false;
+            Boolean isRawMaterial = !node.isProcessed();
+
+            if (isRawMaterial && !isLeafNode) {
+                return false;
+            } else if (isLeafNode && !isRawMaterial) {
+                return false;
             }
+        }
+        return true;
+    }
 
-        };
+    private Boolean validateWorkflow(Validation... args) {
+        for (Validation validation : args) {
 
-        dag.addGraphListener(graphListenerForInsertion);
-
-        GraphListener<Set<V>, CustomEdge> graphListenerForRemoval = new GraphListener<Set<V>, CustomEdge>() {
-
-            @Override
-            public void vertexAdded(GraphVertexChangeEvent<Set<V>> e) {
-                return;
-            }
-
-            @Override
-            public void vertexRemoved(GraphVertexChangeEvent<Set<V>> e) {
-                updateChangedSubgraphsAfterRemoval(e.getVertex(), null, null);
-            }
-
-            @Override
-            public void edgeAdded(GraphEdgeChangeEvent<Set<V>, CustomEdge> e) {
-                return;
-            }
-
-            // TODO: handle it in a more efficient way
-            @Override
-            public void edgeRemoved(GraphEdgeChangeEvent<Set<V>, CustomEdge> e) {
-                updateAllSubgraphs();
-            }
-
-        };
-
-        dag.addGraphListenerForRemoval(graphListenerForRemoval);
-
-        graphListenerAdded = true;
+        }
     }
 
     protected void updateAllSubgraphs() {
@@ -350,17 +395,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         }
     }
 
-    private void updateChangedSubgraphsAfterRemoval(Set<V> vertexChangedList, V edgeSource, V edgeTarget) {
-        if (vertexChangedList != null) {
-            buildChangedSubGraphs(vertexChangedList);
-        } else if (edgeSource != null && edgeTarget != null) {
-            Set<V> vertexSet = dag.getDescendants(edgeSource);
-            vertexSet.addAll(dag.getDescendants(edgeTarget));
-            buildChangedSubGraphs(vertexSet);
-        }
-    }
-
-    protected abstract AbstractWorkflow<V> buildWorkflow(ListenableDAG<V, CustomEdge> dag);
+    protected abstract AbstractWorkflow<V> buildWorkflow(DirectedAcyclicGraph<V, CustomEdge> dag);
 
     protected void buildChangedSubGraphs(Set<V> vertexSet) {
         for (V product : vertexSet) {
@@ -370,8 +405,9 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         }
     }
 
-    protected ListenableDAG<V, CustomEdge> createSubgraph(ListenableDAG<V, CustomEdge> originalDAG, V root) {
-        ListenableDAG<V, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
+    protected DirectedAcyclicGraph<V, CustomEdge> createSubgraph(DirectedAcyclicGraph<V, CustomEdge> originalDAG,
+            V root) {
+        DirectedAcyclicGraph<V, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
 
         Set<V> subgraphVertices = originalDAG.getAncestors(root);
         subgraphVertices.add(root);
