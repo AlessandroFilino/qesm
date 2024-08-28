@@ -2,8 +2,10 @@ package com.qesm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 public class StructuredTree<V extends AbstractProduct> implements DotFileConverter<STPNBlock> {
 
@@ -319,8 +321,31 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
 
         StructuredTree<V> structuredTreeToCompare = uncheckedCast(obj);
 
-        if (!this.structuredWorkflow.equals(structuredTreeToCompare.getStructuredWorkflow())) {
+        if (structuredWorkflow.vertexSet().size() != structuredTreeToCompare.structuredWorkflow.vertexSet().size()) {
             return false;
+        }
+
+        ArrayList<STPNBlock> structuredWorkflowNodes = new ArrayList<>();
+        ArrayList<STPNBlock> structuredTreeToCompareNodes = new ArrayList<>();
+
+        Iterator<STPNBlock> iterStructuredWorkflow = new DepthFirstIterator<STPNBlock, CustomEdge>(structuredWorkflow);
+        while (iterStructuredWorkflow.hasNext()) {
+            structuredWorkflowNodes.add(iterStructuredWorkflow.next());
+        }
+
+        Iterator<STPNBlock> iterWorkflowToCompare = new DepthFirstIterator<STPNBlock, CustomEdge>(
+                structuredTreeToCompare.structuredWorkflow);
+        while (iterWorkflowToCompare.hasNext()) {
+            structuredTreeToCompareNodes.add(iterWorkflowToCompare.next());
+        }
+
+        Integer totalNodes = structuredWorkflow.vertexSet().size();
+        for (int nodeNumber = 0; nodeNumber < totalNodes; nodeNumber++) {
+            STPNBlock node = structuredWorkflowNodes.get(nodeNumber);
+            STPNBlock nodeToCompare = structuredTreeToCompareNodes.get(nodeNumber);
+            if (!node.equals(nodeToCompare)) {
+                return false;
+            }
         }
 
         return true;

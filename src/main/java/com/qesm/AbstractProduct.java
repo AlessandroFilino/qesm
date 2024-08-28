@@ -87,7 +87,12 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         String productString = name + " " + itemGroup;
 
         if (this.isProcessed()) {
-            productString += " quantityProduced: " + quantityProduced + " pdf: " + pdf;
+            productString += " quantityProduced: " + quantityProduced + " pdf: ";
+            if (pdf instanceof ExponentialTime pdfExponetial) {
+                productString += "[exp rate: " + pdfExponetial.getRate() + " ]";
+            } else {
+                productString += pdf;
+            }
         }
         return productString;
     }

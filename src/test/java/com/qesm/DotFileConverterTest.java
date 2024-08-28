@@ -30,7 +30,7 @@ public class DotFileConverterTest {
         // Renderer.renderDotFile("./output/workFlowType2.dot",
         // "./media/workFlowType2.svg", 3);
 
-        assertTrue(workFlowType1.equals(workFlowType2));
+        assertTrue(workFlowType1.equalsNodesAttributes(workFlowType2));
 
         rmDotFile("./output/workFlowType1.dot");
         rmDotFile("./output/workFlowType2.dot");
@@ -86,7 +86,7 @@ public class DotFileConverterTest {
         WorkflowIstance workFlowIstance2 = new WorkflowIstance();
         workFlowIstance2.importDotFile("./output/workFlowIstance1.dot");
 
-        assertTrue(workFlowIstance1.equals(workFlowIstance2));
+        assertTrue(workFlowIstance1.equalsNodesAttributes(workFlowIstance2));
 
         rmDotFile("./output/workFlowIstance1.dot");
 
