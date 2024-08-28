@@ -1,7 +1,9 @@
 package com.qesm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
@@ -77,12 +79,12 @@ public class AbstractWorkflowTest {
     }
 
     @Test
-    void testEquals() {
-        assertEquals(wf1, wf1Reference);
-        assertNotEquals(wf1, wfNull);
-        assertNotEquals(wf1, wi1);
-        assertEquals(wf2, wf2_copy);
-        assertNotEquals(wf2, wf3);
+    void testCustomEquals() {
+        assertTrue(wf1.equalsNodesAttributes(wf1Reference));
+        assertFalse(wf1.equalsNodesAttributes(wfNull));
+        assertTrue(wf1.equalsNodesAttributes(wi1));
+        assertTrue(wf2.equalsNodesAttributes(wf2_copy));
+        assertFalse(wf2.equalsNodesAttributes(wf3));
     }
 
     @Test

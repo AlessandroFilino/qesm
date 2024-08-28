@@ -204,6 +204,17 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
     public <T extends AbstractProduct, P extends AbstractWorkflow<T>> boolean equalsNodesAttributes(
             AbstractWorkflow<T> workflowToCompare) {
+        if (this == workflowToCompare) {
+            return true;
+        }
+        if (workflowToCompare == null) {
+            return false;
+        }
+
+        if (dag.vertexSet().size() != workflowToCompare.dag.vertexSet().size()) {
+            return false;
+        }
+
         ArrayList<V> workflowNodes = new ArrayList<>();
         ArrayList<T> workflowToCompareNodes = new ArrayList<>();
 
@@ -212,7 +223,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
             workflowNodes.add(iterWorkflow.next());
         }
 
-        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.CloneDag());
+        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.dag);
         while (iterWorkflowToCompare.hasNext()) {
             workflowToCompareNodes.add(iterWorkflowToCompare.next());
         }

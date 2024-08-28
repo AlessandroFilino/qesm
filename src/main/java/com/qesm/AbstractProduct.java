@@ -116,6 +116,14 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
     }
 
     public <T extends AbstractProduct> boolean equalsAttributes(T productToCompare) {
+
+        if (this == productToCompare) {
+            return true;
+        }
+        if (productToCompare == null) {
+            return false;
+        }
+
         if (!productToCompare.getName().equals(name) ||
                 !productToCompare.getItemGroup().equals(itemGroup)) {
             return false;
