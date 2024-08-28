@@ -7,8 +7,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
@@ -19,15 +17,16 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
 @Setter
+@Getter
 public abstract class AbstractProduct implements Serializable, DotFileConvertible {
     private String name;
-    private UUID uuid;
-    private int quantityProduced;
+    private Integer quantityProduced;
     private transient StochasticTime pdf;
 
     public enum ItemGroup {
@@ -37,50 +36,21 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
 
     private ItemGroup itemGroup;
 
-    public AbstractProduct(UUID uuid) {
-        this.uuid = uuid;
-    }
-
     public AbstractProduct(String name, ItemGroup itemGroup) {
         this.name = name;
-        this.uuid = UUID.randomUUID();
         this.itemGroup = itemGroup;
     }
 
     public AbstractProduct(String name) {
         this.name = name;
-        this.uuid = UUID.randomUUID();
-        this.itemGroup = ItemGroup.RAW_MATERIAL;
-    }
-
-    public AbstractProduct(String name, UUID uuid) {
-        this.name = name;
-        this.uuid = uuid;
         this.itemGroup = ItemGroup.RAW_MATERIAL;
     }
 
     public AbstractProduct(String name, int quantityProduced, StochasticTime pdf) {
         this.name = name;
-        this.uuid = UUID.randomUUID();
         this.itemGroup = ItemGroup.PROCESSED;
         this.quantityProduced = quantityProduced;
         this.pdf = pdf;
-    }
-
-    public AbstractProduct(String name, UUID uuid, int quantityProduced, StochasticTime pdf) {
-        this.name = name;
-        this.uuid = uuid;
-        this.itemGroup = ItemGroup.PROCESSED;
-        this.quantityProduced = quantityProduced;
-        this.pdf = pdf;
-    }
-
-    public ItemGroup getItemGroup() {
-        return itemGroup;
-    }
-
-    public Optional<Integer> getQuantityProduced() {
-        return getWithItemGroupCheck(quantityProduced);
     }
 
     public Boolean setQuantityProduced(int quantityProduced) {
@@ -92,10 +62,6 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         }
     }
 
-    public Optional<StochasticTime> getPdf() {
-        return getWithItemGroupCheck(pdf);
-    }
-
     public Boolean setPdf(StochasticTime pdf) {
         if (itemGroup == ItemGroup.PROCESSED) {
             this.pdf = pdf;
@@ -103,14 +69,6 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         } else {
             return false;
         }
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public boolean isProcessed() {
@@ -121,12 +79,8 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         }
     }
 
-    protected <T> Optional<T> getWithItemGroupCheck(T valueToReturn) {
-        if (itemGroup == ItemGroup.PROCESSED) {
-            return Optional.of(valueToReturn);
-        } else {
-            return Optional.empty();
-        }
+    public boolean isRawMaterial() {
+        return !isProcessed();
     }
 
     @Override
@@ -165,11 +119,11 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
 
         if (this.isProcessed()) {
 
-            if (!productToCompare.getQuantityProduced().get().equals(quantityProduced)) {
+            if (!productToCompare.getQuantityProduced().equals(quantityProduced)) {
                 return false;
             } else {
                 // Custom equals for pdf (StochasticTime doesn't implement it)
-                StochasticTime pdfToCompare = productToCompare.getPdf().get();
+                StochasticTime pdfToCompare = productToCompare.getPdf();
                 if (!pdfToCompare.getClass().isInstance(pdf)) {
                     return false;
                 } else {
