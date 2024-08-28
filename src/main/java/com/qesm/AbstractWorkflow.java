@@ -215,6 +215,26 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
             return false;
         }
 
+        if (dag.edgeSet().size() != workflowToCompare.dag.edgeSet().size()) {
+            return false;
+        }
+
+        ArrayList<CustomEdge> workflowEdges = new ArrayList<>(dag.edgeSet());
+        ArrayList<CustomEdge> workflowToCompareEdges = new ArrayList<>(workflowToCompare.dag.edgeSet());
+
+        for (CustomEdge customEdge : workflowEdges) {
+            Boolean edgeFound = false;
+            for (CustomEdge customEdgeToCompare : workflowToCompareEdges) {
+                if (customEdge.equalsNodesAttributes(customEdgeToCompare)) {
+                    edgeFound = true;
+                    break;
+                }
+            }
+            if (!edgeFound) {
+                return false;
+            }
+        }
+
         ArrayList<V> workflowNodes = new ArrayList<>();
         ArrayList<T> workflowToCompareNodes = new ArrayList<>();
 
