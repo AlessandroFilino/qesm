@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
@@ -65,7 +66,7 @@ public class RendererTest {
         WorkflowType workflowType = new WorkflowType();
         workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.getDagCopy(), ProductType.class);
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.CloneDag(), ProductType.class);
         structuredTree.buildStructuredTree();
 
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
@@ -77,7 +78,7 @@ public class RendererTest {
     @Test
     public void testRenderFixedStructureTree() {
 
-        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
         ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
@@ -100,7 +101,7 @@ public class RendererTest {
         dag.addEdge(v6, v3);
         WorkflowType wf1 = new WorkflowType(dag);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).getDagCopy(),
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).CloneDag(),
                 ProductType.class);
         structuredTree.buildStructuredTree();
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
@@ -114,7 +115,7 @@ public class RendererTest {
         workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         renderWorkflowType(workflowType);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.getDagCopy(), ProductType.class);
+        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.CloneDag(), ProductType.class);
 
         String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderTest");
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderTest");
@@ -149,7 +150,7 @@ public class RendererTest {
         String subgraphsDotFolder = mkEmptyDir("./output/subgraphsRenderTest");
         String subgraphsMediaFolder = mkEmptyDir("./media/subgraphsRenderTest");
 
-        for (ProductIstance nodeIstance : workflowIstance.getDagCopy().vertexSet()) {
+        for (ProductIstance nodeIstance : workflowIstance.CloneDag().vertexSet()) {
             if (nodeIstance.isProcessed()) {
                 workflowIstance.getProductWorkflow(nodeIstance).exportDotFileNoSerialization(
                         subgraphsDotFolder + "/subgraph" + nodeIstance.getName() + ".dot");

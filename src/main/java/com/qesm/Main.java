@@ -83,7 +83,7 @@ public class Main {
 
         // }
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<ProductType>(graphTest.getDagCopy(),
+        StructuredTree<ProductType> structuredTree = new StructuredTree<ProductType>(graphTest.CloneDag(),
                 ProductType.class);
 
         structuredTree.buildStructuredTree();

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
@@ -15,7 +16,7 @@ public class StructuredTreeTest {
     private WorkflowType wf1;
     private StructuredTree<ProductType> structuredTree1;
     private StructuredTree<ProductType> structuredTree2;
-    private ListenableDAG<ProductType, CustomEdge> dag;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
 
     // Nodes of wf1
     private ProductType v0;
@@ -38,7 +39,7 @@ public class StructuredTreeTest {
         // | |
         // v5 v6
 
-        dag = new ListenableDAG<>(CustomEdge.class);
+        dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         v1 = new ProductType("v1", 2, new UniformTime(2, 4));
         v2 = new ProductType("v2", 3, new UniformTime(4, 6));
@@ -61,12 +62,12 @@ public class StructuredTreeTest {
         dag.addEdge(v6, v3);
         wf1 = new WorkflowType(dag);
 
-        structuredTree1 = new StructuredTree<>(wf1.getDagCopy(), ProductType.class);
+        structuredTree1 = new StructuredTree<>(wf1.CloneDag(), ProductType.class);
     }
 
     @Test
     void testInitializeStructuredTree() {
-        ListenableDAG<STPNBlock, CustomEdge> structuredWorkflow2 = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow2 = new DirectedAcyclicGraph<>(CustomEdge.class);
 
         SimpleBlock simpleBlock0 = new SimpleBlock(v0);
         SimpleBlock simpleBlock1 = new SimpleBlock(v1);
@@ -91,7 +92,7 @@ public class StructuredTreeTest {
 
     @Test
     void testBuildStructuredTree() {
-        ListenableDAG<STPNBlock, CustomEdge> structuredWorkflow2 = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow2 = new DirectedAcyclicGraph<>(CustomEdge.class);
 
         STPNBlock simpleBlock0 = new SimpleBlock(v0);
         STPNBlock simpleBlock1 = new SimpleBlock(v1);

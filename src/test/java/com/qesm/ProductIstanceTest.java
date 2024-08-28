@@ -18,31 +18,33 @@ import com.qesm.AbstractProduct.ItemGroup;
 public class ProductIstanceTest {
 
     @Test
-    void testProductIstanceCreationCoverage(){
+    void testProductIstanceCreationCoverage() {
 
-        ProductIstance productIstance1 = new ProductIstance(new ProductType("p1", 1, new UniformTime(0,2)));
-        assertEquals(productIstance1.getPdf().get().getEFT(), BigDecimal.valueOf(0.0));
-        assertEquals(productIstance1.getPdf().get().getLFT(), BigDecimal.valueOf(2.0));
+        ProductIstance productIstance1 = new ProductIstance(new ProductType("p1", 1, new UniformTime(0, 2)));
+        assertEquals(productIstance1.getPdf().getEFT(), BigDecimal.valueOf(0.0));
+        assertEquals(productIstance1.getPdf().getLFT(), BigDecimal.valueOf(2.0));
 
-        ProductIstance productIstance2 = new ProductIstance(new ProductType("p2", 1, new DeterministicTime(BigDecimal.valueOf(2))));
-        assertEquals(productIstance2.getPdf().get().getEFT(), BigDecimal.valueOf(2));
-        assertEquals(productIstance2.getPdf().get().getLFT(), BigDecimal.valueOf(2));
+        ProductIstance productIstance2 = new ProductIstance(
+                new ProductType("p2", 1, new DeterministicTime(BigDecimal.valueOf(2))));
+        assertEquals(productIstance2.getPdf().getEFT(), BigDecimal.valueOf(2));
+        assertEquals(productIstance2.getPdf().getLFT(), BigDecimal.valueOf(2));
 
         ProductIstance productIstance3 = new ProductIstance(new ProductType("p3", 1, new ErlangTime(1, 2)));
-        assertTrue(productIstance3.getPdf().get() instanceof ErlangTime);
-        ErlangTime pdf3 = (ErlangTime) productIstance3.getPdf().get();
+        assertTrue(productIstance3.getPdf() instanceof ErlangTime);
+        ErlangTime pdf3 = (ErlangTime) productIstance3.getPdf();
         assertEquals(pdf3.getK(), 1);
         assertEquals(pdf3.getRate(), 2.0);
 
-        ProductIstance productIstance4 = new ProductIstance(new ProductType("p4", 1, new ExponentialTime(BigDecimal.valueOf(2))));
-        assertTrue(productIstance4.getPdf().get() instanceof ExponentialTime);
-        ExponentialTime pdf4 = (ExponentialTime) productIstance4.getPdf().get();
+        ProductIstance productIstance4 = new ProductIstance(
+                new ProductType("p4", 1, new ExponentialTime(BigDecimal.valueOf(2))));
+        assertTrue(productIstance4.getPdf() instanceof ExponentialTime);
+        ExponentialTime pdf4 = (ExponentialTime) productIstance4.getPdf();
         assertEquals(pdf4.getRate(), BigDecimal.valueOf(2));
 
         assertThrows(RuntimeException.class, () -> {
             new ProductIstance(new ProductType("p5", 1, new ExpolynomialTime()));
         });
-        
+
         ProductIstance productIstance6 = new ProductIstance(new ProductType("p6"));
         assertEquals(productIstance6.getName(), "p6");
         assertEquals(productIstance6.getItemGroup(), ItemGroup.RAW_MATERIAL);

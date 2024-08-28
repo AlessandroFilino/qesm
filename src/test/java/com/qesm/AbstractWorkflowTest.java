@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Optional;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
@@ -12,7 +13,7 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class AbstractWorkflowTest {
-    
+
     private WorkflowType wf1;
     private WorkflowType wf2;
     private WorkflowType wf2_copy;
@@ -32,19 +33,18 @@ public class AbstractWorkflowTest {
     private ProductType v1_copy;
     private ProductType v2_copy;
 
-
     @BeforeEach
-    public void setup(){
+    public void setup() {
         wf1 = new WorkflowType();
         wf1.generateRandomDAG(5, 5, 2, 2, 60, PdfType.UNIFORM);
         wf1Reference = wf1;
 
         wi1 = wf1.makeIstance();
 
-        ListenableDAG<ProductType, CustomEdge> dag2 = new ListenableDAG<>(CustomEdge.class);
-        v0 = new ProductType("v0", 1, new UniformTime(0,2));
-        v1 = new ProductType("v1", 2, new UniformTime(2,4));
-        v2 = new ProductType("v2", 3, new UniformTime(4,6));
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag2 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        v0 = new ProductType("v0", 1, new UniformTime(0, 2));
+        v1 = new ProductType("v1", 2, new UniformTime(2, 4));
+        v2 = new ProductType("v2", 3, new UniformTime(4, 6));
         dag2.addVertex(v0);
         dag2.addVertex(v1);
         dag2.addVertex(v2);
@@ -52,10 +52,10 @@ public class AbstractWorkflowTest {
         dag2.addEdge(v1, v0);
         wf2 = new WorkflowType(dag2);
 
-        ListenableDAG<ProductType, CustomEdge> dag2_copy = new ListenableDAG<>(CustomEdge.class);
-        v0_copy = new ProductType("v0", 1, new UniformTime(0,2));
-        v1_copy = new ProductType("v1", 2, new UniformTime(2,4));
-        v2_copy = new ProductType("v2", 3, new UniformTime(4,6));
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag2_copy = new DirectedAcyclicGraph<>(CustomEdge.class);
+        v0_copy = new ProductType("v0", 1, new UniformTime(0, 2));
+        v1_copy = new ProductType("v1", 2, new UniformTime(2, 4));
+        v2_copy = new ProductType("v2", 3, new UniformTime(4, 6));
         dag2_copy.addVertex(v0_copy);
         dag2_copy.addVertex(v1_copy);
         dag2_copy.addVertex(v2_copy);
@@ -63,8 +63,8 @@ public class AbstractWorkflowTest {
         dag2_copy.addEdge(v1_copy, v0_copy);
         wf2_copy = new WorkflowType(dag2_copy);
 
-        ListenableDAG<ProductType, CustomEdge> dag3 = new ListenableDAG<>(CustomEdge.class);
-        v3 = new ProductType("v3", 4, new UniformTime(6,8));
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag3 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        v3 = new ProductType("v3", 4, new UniformTime(6, 8));
         dag3.addVertex(v0);
         dag3.addVertex(v1);
         dag3.addVertex(v2);
@@ -76,7 +76,6 @@ public class AbstractWorkflowTest {
 
     }
 
-
     @Test
     void testEquals() {
         assertEquals(wf1, wf1Reference);
@@ -87,7 +86,7 @@ public class AbstractWorkflowTest {
     }
 
     @Test
-    void testGetRootNode(){
+    void testGetRootNode() {
         assertNotEquals(wf1.computeRootNode(), null);
         assertEquals(wf2.computeRootNode(), v0);
         assertEquals(wf2_copy.computeRootNode(), v0_copy);
@@ -107,5 +106,5 @@ public class AbstractWorkflowTest {
         // TODO TEST: Implement test
         wf1.computeParallelismValue();
     }
-    
+
 }

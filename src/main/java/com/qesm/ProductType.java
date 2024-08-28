@@ -2,9 +2,6 @@ package com.qesm;
 
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
 public class ProductType extends AbstractProduct {
 
     public ProductType(String nameType) {

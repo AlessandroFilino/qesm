@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
@@ -21,8 +22,8 @@ public class WorkflowTypeTest {
         workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
         WorkflowIstance workflowIstance = workflowType.makeIstance();
 
-        ListenableDAG<ProductType, CustomEdge> dagType = workflowType.getDagCopy();
-        ListenableDAG<ProductIstance, CustomEdge> dagIstance = workflowIstance.getDagCopy();
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.CloneDag();
+        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = workflowIstance.CloneDag();
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());
         assertEquals(dagType.edgeSet().size(), dagIstance.edgeSet().size());
@@ -46,9 +47,9 @@ public class WorkflowTypeTest {
 
     }
 
-    private ListenableDAG<ProductIstance, CustomEdge> createSubgraph(
-            ListenableDAG<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
-        ListenableDAG<ProductIstance, CustomEdge> subgraphDAG = new ListenableDAG<>(CustomEdge.class);
+    private DirectedAcyclicGraph<ProductIstance, CustomEdge> createSubgraph(
+            DirectedAcyclicGraph<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
+        DirectedAcyclicGraph<ProductIstance, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
 
         Set<ProductIstance> subgraphVertices = originalDAG.getAncestors(root);
         subgraphVertices.add(root);
@@ -78,7 +79,7 @@ public class WorkflowTypeTest {
         // Create a workflowtype, make an istance, modify the dag of WorkflowType and
         // make another istance.
         // Verify that the two istances are not equals
-        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
         ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
@@ -104,8 +105,8 @@ public class WorkflowTypeTest {
         assertEquals(workflowIstance1, workflowIstance2);
 
         ProductType v5 = new ProductType("v5");
-        workflowType.getDagCopy().addVertex(v5);
-        workflowType.getDagCopy().addEdge(v5, v3);
+        workflowType.CloneDag().addVertex(v5);
+        workflowType.CloneDag().addEdge(v5, v3);
 
         WorkflowIstance workflowIstance3 = workflowType.makeIstance();
 
@@ -122,7 +123,7 @@ public class WorkflowTypeTest {
         // v3
         // v4
 
-        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
         ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
@@ -154,11 +155,11 @@ public class WorkflowTypeTest {
         // v4
 
         assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).getDagCopy().containsVertex(v5));
+                workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).CloneDag().containsVertex(v5));
         assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).getDagCopy().containsVertex(v5));
+                workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).CloneDag().containsVertex(v5));
         assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).getDagCopy().containsVertex(v5));
+                workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).CloneDag().containsVertex(v5));
 
     }
 
@@ -171,7 +172,7 @@ public class WorkflowTypeTest {
         // v3
         // v4
 
-        ListenableDAG<ProductType, CustomEdge> dag = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
         ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));

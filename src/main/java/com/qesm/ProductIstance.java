@@ -6,9 +6,6 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
 public class ProductIstance extends AbstractProduct {
 
     public ProductIstance(ProductType productType) {

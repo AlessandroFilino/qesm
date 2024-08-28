@@ -48,7 +48,7 @@ public class DotFileConverterTest {
         // Renderer.renderDotFile("./output/workFlowType1.dot",
         // "./media/workFlowType1.svg", 3);
 
-        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.getDagCopy(),
+        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.CloneDag(),
                 ProductType.class);
         structuredTree1.buildStructuredTree();
         structuredTree1.exportDotFile("./output/structuredTree1.dot");

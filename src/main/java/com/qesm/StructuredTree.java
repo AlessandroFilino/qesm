@@ -341,7 +341,7 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
     }
 
     @Override
-    public DirectedAcyclicGraph<STPNBlock, CustomEdge> getDagCopy() {
+    public DirectedAcyclicGraph<STPNBlock, CustomEdge> CloneDag() {
         return structuredWorkflow;
     }
 

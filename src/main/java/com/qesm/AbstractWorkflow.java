@@ -3,7 +3,6 @@ package com.qesm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -140,9 +138,8 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     @Override
-    public DirectedAcyclicGraph<V, CustomEdge> getDagCopy() {
-        // TODO: generate dag copy (deepcopy ?)
-        return dag;
+    public DirectedAcyclicGraph<V, CustomEdge> CloneDag() {
+        return uncheckedCast(dag.clone());
     }
 
     @Override
@@ -199,7 +196,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
         AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
 
-        if (!this.dag.equals(workflowToCompare.getDagCopy())) {
+        if (!this.dag.equals(workflowToCompare.CloneDag())) {
             return false;
         }
         return true;
@@ -215,7 +212,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
             workflowNodes.add(iterWorkflow.next());
         }
 
-        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.getDagCopy());
+        Iterator<T> iterWorkflowToCompare = new DepthFirstIterator<T, CustomEdge>(workflowToCompare.CloneDag());
         while (iterWorkflowToCompare.hasNext()) {
             workflowToCompareNodes.add(iterWorkflowToCompare.next());
         }
@@ -253,45 +250,46 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
     // Jgrapht does the same
     @SuppressWarnings("unchecked")
-    private AbstractWorkflow<V> uncheckedCast(Object o) {
-        return (AbstractWorkflow<V>) o;
+    private <T> T uncheckedCast(Object o) {
+        return (T) o;
     }
 
     // Exposing CRUD methods of dag
-
     public CustomEdge connectVertex(V newVertex, V targetVertex) {
-        if (!checkDuplicateNames(newVertex)) {
-            throw new RuntimeException(
-                    "Error: a product with the same name of " + newVertex.toString()
-                            + " is already present in the dag");
-        }
         boolean added = dag.addVertex(newVertex);
         if (added) {
             CustomEdge e = dag.addEdge(newVertex, targetVertex);
-
+            if (e != null) {
+                validate(Set.of(targetVertex), Validation.LEAF_NODES);
+                buildChangedSubGraphs(dag.getDescendants(newVertex));
+            } else {
+                removeVertex(newVertex);
+            }
             return e;
         }
-
         return null;
     }
 
     public boolean removeVertex(V v) {
-        Set<V> ancestors = getAncestors(v);
-        Set<V> descendants = getDescendants(v);
-        boolean removed = super.removeVertex(v);
-        if (removed && graphListenersForRemoval.size() > 0) {
-            checkRootNode();
-            V rootNode = computeRootNode();
+        Set<V> ancestors = dag.getAncestors(v);
+        Set<V> descendants = dag.getDescendants(v);
+        V rootNode = computeRootNode();
+        boolean removed = false;
+        if (v != rootNode) {
+            removed = dag.removeVertex(v);
+        }
+
+        // If succefully removed, compute and remove also all pendents nodes (nodes that
+        // can't reach root node)
+        if (removed) {
             List<V> nodesToBeRemoved = new ArrayList<>();
             for (V ancestor : ancestors) {
-                if (!getDescendants(ancestor).contains(rootNode)) {
+                if (dag.getDescendants(ancestor).contains(rootNode)) {
                     nodesToBeRemoved.add(ancestor);
                 }
             }
-            super.removeAllVertices(nodesToBeRemoved);
-
-            notifyVertexRemoved(descendants);
-
+            dag.removeAllVertices(nodesToBeRemoved);
+            buildChangedSubGraphs(descendants);
         }
 
         return removed;
@@ -300,42 +298,44 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     public CustomEdge addEdge(V sourceVertex, V targetVertex) {
 
         CustomEdge edge = dag.addEdge(sourceVertex, targetVertex);
-        if (edge != null && graphListenersForInsertion.size() > 0) {
-            checkRootNode();
-            notifyEdgeAdded(edge);
+        if (edge != null) {
+            validate(Set.of(targetVertex), Validation.LEAF_NODES);
+            Set<V> changedVertexes = dag.getDescendants(targetVertex);
+            changedVertexes.add(targetVertex);
+            buildChangedSubGraphs(changedVertexes);
         }
 
         return edge;
     }
 
     public boolean removeEdge(CustomEdge e) {
-        boolean removed = super.removeEdge(e);
-        if (removed && graphListenersForRemoval.size() > 0) {
-            checkRootNode();
-            notifyEdgeRemoved(e);
+        V targetVertex = dag.getEdgeTarget(e);
+        V sourceVertex = dag.getEdgeSource(e);
+        V rootNode = computeRootNode();
+        Set<V> possiblyPendantVertexes = dag.getAncestors(sourceVertex);
+        possiblyPendantVertexes.add(sourceVertex);
+        boolean removed = dag.removeEdge(e);
+        if (removed) {
+            List<V> nodesToBeRemoved = new ArrayList<>();
+            for (V ancestor : possiblyPendantVertexes) {
+                if (dag.getDescendants(ancestor).contains(rootNode)) {
+                    nodesToBeRemoved.add(ancestor);
+                }
+            }
+            dag.removeAllVertices(nodesToBeRemoved);
+            Set<V> changedVertexes = dag.getDescendants(targetVertex);
+            changedVertexes.add(targetVertex);
+            buildChangedSubGraphs(changedVertexes);
         }
 
         return removed;
     }
 
     // Validation methods
-    public enum Validation {
-        DUPLICATE_NAME,
+    private enum Validation {
         ROOT_NODE,
         CONNECTIVITY,
         LEAF_NODES
-    }
-
-    private Boolean checkDuplicateNames(V vertexToCheck) {
-        AbstractProduct castedVertexToCheck = (AbstractProduct) vertexToCheck;
-        String nameToCheck = castedVertexToCheck.getName();
-        for (V vertex : dag.vertexSet()) {
-            AbstractProduct castedVertex = (AbstractProduct) vertex;
-            if (castedVertex.getName().equals(nameToCheck)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private Boolean checkRootNode() {
@@ -360,78 +360,44 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return connInspector.isConnected();
     }
 
-    private Boolean checkLeafNodes() {
-        // All leaf nodes should be raw materials and all raw_materials should be leaf
-        // nodes
-        for (V node : dag.vertexSet()) {
-
-            Boolean isLeafNode = dag.inDegreeOf(node) == 0 ? true : false;
-            Boolean isRawMaterial = !node.isProcessed();
-
-            if (isRawMaterial && !isLeafNode) {
-                return false;
-            } else if (isLeafNode && !isRawMaterial) {
+    private Boolean checkLeafNodes(Set<V> vertexToCheck) {
+        // all raw_materials should be leaf nodes
+        for (V node : vertexToCheck) {
+            if (node.isRawMaterial() && dag.inDegreeOf(node) != 0) {
                 return false;
             }
         }
         return true;
     }
 
-    private Boolean validateWorkflow(V vertexToCheck, Validation... args) {
-        Boolean valid = true;
+    public void validateWorkflow() {
+        validate(dag.vertexSet(), Validation.ROOT_NODE, Validation.CONNECTIVITY, Validation.LEAF_NODES);
+    }
+
+    private void validate(Set<V> vertexToCheck, Validation... args) {
         for (Validation validation : args) {
             // Apply a single validation
             switch (validation) {
                 case ROOT_NODE:
                     if (!checkRootNode()) {
-                        System.out.println("Invalid root node (duplicate or none)");
-                        valid = false;
+                        throw new WorkflowValidationException("Validation error: Root node (duplicate or none)");
                     }
                 case CONNECTIVITY:
                     if (!isDagConnected()) {
-                        System.out.println("Invalid, DAG not connected");
-                        valid = false;
+                        throw new WorkflowValidationException("Validation error: DAG not connected");
                     }
                 case LEAF_NODES:
-                    if (!checkLeafNodes()) {
-                        System.out.println("Invalid leaves nodes");
-                        valid = false;
+                    if (!checkLeafNodes(vertexToCheck)) {
+                        throw new WorkflowValidationException("Validation error: leaves nodes (wrong itemGroup)");
                     }
-                case DUPLICATE_NAME:
-                    if (vertexToCheck == null) {
-                        throw new RuntimeException("Missing vertex to check in Duplicate Name Validation");
-                    } else {
-                        if (!checkDuplicateNames(vertexToCheck)) {
-                            System.out.println("Invalid vertex name (duplicate)");
-                            valid = false;
-                        }
-                    }
-                    break;
                 default:
                     throw new RuntimeException("Unknown validation enum value");
-
-            }
-            // Check if we need to break the validation cicle because already one validation
-            // is broken
-            if (!valid) {
-                break;
             }
         }
-        return valid;
     }
 
     protected void updateAllSubgraphs() {
         buildChangedSubGraphs(dag.vertexSet());
-    }
-
-    private void updateChangedSubgraphsAfterInsertion(V vertexChanged, V edgeSource, V edgeTarget) {
-        if (vertexChanged != null) {
-            buildChangedSubGraphs(dag.getDescendants(vertexChanged));
-        } else if (edgeSource != null && edgeTarget != null) {
-            Set<V> vertexSet = dag.getDescendants(edgeSource);
-            vertexSet.addAll(dag.getDescendants(edgeTarget));
-            buildChangedSubGraphs(vertexSet);
-        }
     }
 
     protected abstract AbstractWorkflow<V> buildWorkflow(DirectedAcyclicGraph<V, CustomEdge> dag);

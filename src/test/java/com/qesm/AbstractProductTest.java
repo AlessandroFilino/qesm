@@ -52,7 +52,7 @@ public class AbstractProductTest {
     private ProductType prodTypeProcessedExponential1;
     private ProductType prodTypeProcessedExponential1Equal;
     private ProductType prodTypeProcessedExponential5;
-        
+
     private DeterministicTime deterministicTime1;
     private DeterministicTime deterministicTime1Equal;
     private DeterministicTime deterministicTime5;
@@ -64,7 +64,7 @@ public class AbstractProductTest {
     private ProductType prodTypeProcessedExpolynomial01;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         prodTypeRaw1 = new ProductType("p1", ItemGroup.RAW_MATERIAL);
         prodTypeRaw2 = new ProductType("p2", ItemGroup.RAW_MATERIAL);
         prodTypeProcessed1 = new ProductType("p1", ItemGroup.PROCESSED);
@@ -149,20 +149,19 @@ public class AbstractProductTest {
 
     @Test
     void testGetWithItemGroupCheck() {
-        assertTrue(StochasticTime.class.isAssignableFrom(prodTypeProcessedUniform01.getPdf().get().getClass()));
+        assertTrue(StochasticTime.class.isAssignableFrom(prodTypeProcessedUniform01.getPdf().getClass()));
         assertEquals(prodTypeRaw1.getPdf(), Optional.empty());
     }
 }
 
 // public Optional<StochasticTime> getPdf() {
-//     return getWithItemGroupCheck(pdf);
+// return getWithItemGroupCheck(pdf);
 // }
 // protected <T> Optional<T> getWithItemGroupCheck(T valueToReturn){
-//     if(itemGroup == ItemGroup.PROCESSED){
-//         return Optional.of(valueToReturn);
-//     }
-//     else{
-//         return Optional.empty();
-//     }
+// if(itemGroup == ItemGroup.PROCESSED){
+// return Optional.of(valueToReturn);
 // }
-
+// else{
+// return Optional.empty();
+// }
+// }

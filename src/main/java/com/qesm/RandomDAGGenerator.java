@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.oristool.eulero.modeling.stochastictime.DeterministicTime;
 import org.oristool.eulero.modeling.stochastictime.ErlangTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
@@ -18,24 +19,26 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import com.qesm.AbstractProduct.ItemGroup;
 
-public class RandomDAGGenerator{
+public class RandomDAGGenerator {
 
-    private ListenableDAG<ProductType, CustomEdge> dag;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
 
-    // Level definition: hop distance from root. A node can belong to more than one level
-    private int maxHeight;                  //Max level number
-    private int maxWidth;                   //Max number of vertex in each level
-    private int maxBranchingUpFactor;       //Max number of incoming edge for each node
-    private int maxBranchingDownFactor;     //Max number of outcoming edge for each node
-    private int branchingUpProbability;     // Probaility (range [0, 100]) of having more than one up branch
-    
+    // Level definition: hop distance from root. A node can belong to more than one
+    // level
+    private int maxHeight; // Max level number
+    private int maxWidth; // Max number of vertex in each level
+    private int maxBranchingUpFactor; // Max number of incoming edge for each node
+    private int maxBranchingDownFactor; // Max number of outcoming edge for each node
+    private int branchingUpProbability; // Probaility (range [0, 100]) of having more than one up branch
+
     private Random random;
     private int vId;
     private int maxRandomQuantity;
     private ProductType rootNode;
     private Supplier<ProductType> vSupplierRandom;
     private Supplier<ProductType> vSupplierProcessedType;
-    public enum PdfType{
+
+    public enum PdfType {
         DETERMINISTIC,
         ERLANG,
         EXPOLYNOMIAL,
@@ -45,10 +48,12 @@ public class RandomDAGGenerator{
         TRUNCEXP,
         UNIFORM
     };
+
     private PdfType pdfType;
 
-    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor, int branchingUpProbability, PdfType pdfType){
-        this.dag = new ListenableDAG<ProductType, CustomEdge>(CustomEdge.class);
+    public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor,
+            int branchingUpProbability, PdfType pdfType) {
+        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
         this.maxHeight = maxHeight;
         this.maxWidth = maxWidth;
         this.maxBranchingUpFactor = maxBranchingUpFactor;
@@ -59,33 +64,28 @@ public class RandomDAGGenerator{
         this.vId = 0;
         this.maxRandomQuantity = 10;
         this.pdfType = pdfType;
-        this.vSupplierRandom = new Supplier<ProductType>()
-        {
+        this.vSupplierRandom = new Supplier<ProductType>() {
             @Override
-            public ProductType get()
-            {
+            public ProductType get() {
                 ProductType vertex;
 
-                if(random.nextBoolean()){
+                if (random.nextBoolean()) {
                     vertex = new ProductType("v" + vId, ItemGroup.RAW_MATERIAL);
                     vId++;
-                }
-                else{
+                } else {
                     vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
                     vertex.setQuantityProduced(-1);
                     vertex.setPdf(getRandomPdf());
                     vId++;
                 }
-                
+
                 return vertex;
             }
         };
 
-        this.vSupplierProcessedType = new Supplier<ProductType>()
-        {
+        this.vSupplierProcessedType = new Supplier<ProductType>() {
             @Override
-            public ProductType get()
-            {
+            public ProductType get() {
                 ProductType vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
                 vertex.setQuantityProduced(-1);
                 vertex.setPdf(getRandomPdf());
@@ -95,7 +95,7 @@ public class RandomDAGGenerator{
         };
     }
 
-    private StochasticTime getRandomPdf(){
+    private StochasticTime getRandomPdf() {
 
         StochasticTime pdf = null;
         double eft = Math.round(random.nextDouble(0, 10));
@@ -106,20 +106,20 @@ public class RandomDAGGenerator{
                 pdf = new DeterministicTime(BigDecimal.valueOf(random.nextInt(0, 10)));
                 break;
             case ERLANG:
-                pdf = new ErlangTime(random.nextInt(1, 10) , random.nextDouble(0, 3) + 0.1);
+                pdf = new ErlangTime(random.nextInt(1, 10), random.nextDouble(0, 3) + 0.1);
                 break;
             // case EXPOLYNOMIAL:
-            //     pdf = new ExpolynomialTime(null, null, null);
-            //     break;
+            // pdf = new ExpolynomialTime(null, null, null);
+            // break;
             case EXPONENTIAL:
                 pdf = new ExponentialTime(BigDecimal.valueOf(random.nextDouble(0, 10) + 0.1));
                 break;
             // case HISTOGRAM:
-            //     pdf = new HistogramTime(null, null, null, null);
-            //     break;
+            // pdf = new HistogramTime(null, null, null, null);
+            // break;
             // case TRUNCEXPMIX:
-            //     pdf = new TruncatedExponentialMixtureTime(null, null);
-            //     break;
+            // pdf = new TruncatedExponentialMixtureTime(null, null);
+            // break;
             case TRUNCEXP:
                 pdf = new TruncatedExponentialTime(eft, lft, random.nextDouble(0, 10) + 0.1);
                 break;
@@ -130,14 +130,14 @@ public class RandomDAGGenerator{
                 System.err.println("Error pdfType: " + pdfType + " not supported in randomGeneration");
                 break;
         }
-        
+
         return pdf;
     }
 
-    public ListenableDAG<ProductType, CustomEdge> generateGraph(){
+    public DirectedAcyclicGraph<ProductType, CustomEdge> generateGraph() {
 
-        class DAGPopulator{
-            
+        class DAGPopulator {
+
             private HashMap<ProductType, ArrayList<Integer>> vertexToLevels = new HashMap<ProductType, ArrayList<Integer>>();
             private HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
             private ArrayList<ProductType> vTargetList = new ArrayList<ProductType>();
@@ -146,9 +146,7 @@ public class RandomDAGGenerator{
             private ArrayList<ProductType> vTargetListCopy;
             private ProductType targetVertex;
 
-
-
-            private void populate(){
+            private void populate() {
                 dag.setVertexSupplier(vSupplierProcessedType);
 
                 rootNode = dag.addVertex();
@@ -160,21 +158,18 @@ public class RandomDAGGenerator{
 
                 dag.setVertexSupplier(vSupplierRandom);
 
-                
-                while(true) {
-                    
+                while (true) {
+
                     sourceVertex = dag.addVertex();
                     vTargetListCopy = new ArrayList<ProductType>(vTargetList);
 
                     // Calculating branchingUpFactor to limit not well nested DAG
                     Integer branchingUpFactor;
-                    if(random.nextInt(1, 101) > branchingUpProbability){
+                    if (random.nextInt(1, 101) > branchingUpProbability) {
                         branchingUpFactor = random.nextInt(maxBranchingUpFactor) + 1;
-                    }
-                    else{
+                    } else {
                         branchingUpFactor = 1;
                     }
-                     
 
                     while (!vTargetListCopy.isEmpty()) {
                         targetVertex = vTargetListCopy.remove(random.nextInt(vTargetListCopy.size()));
@@ -185,53 +180,59 @@ public class RandomDAGGenerator{
                         // Calculate possible source levels if it will be connected to target
                         ArrayList<Integer> sourceLevels = new ArrayList<Integer>();
                         for (Integer targeLevel : vertexToLevels.get(targetVertex)) {
-                            sourceLevels.add(targeLevel + 1);   
+                            sourceLevels.add(targeLevel + 1);
                         }
 
                         // check maxHeight
                         for (Integer sourceLevel : sourceLevels) {
-                            if(sourceLevel > maxHeight){
+                            if (sourceLevel > maxHeight) {
                                 nonValidTarget = true;
-                                // System.out.println(sourceVertex.getNameType() + " -> " + targetVertex.getNameType() + " not valid for: maxHeight");
+                                // System.out.println(sourceVertex.getNameType() + " -> " +
+                                // targetVertex.getNameType() + " not valid for: maxHeight");
                                 break;
-                            }  
+                            }
                         }
-                        if(nonValidTarget){
+                        if (nonValidTarget) {
                             continue;
                         }
 
                         // check maxWidth
                         for (Integer sourceLevel : sourceLevels) {
-                            if(!levelToVertices.containsKey(sourceLevel)){
+                            if (!levelToVertices.containsKey(sourceLevel)) {
                                 levelToVertices.put(sourceLevel, new ArrayList<ProductType>());
                             }
-                            
-                            if(levelToVertices.get(sourceLevel).size() + 1 > maxWidth){
+
+                            if (levelToVertices.get(sourceLevel).size() + 1 > maxWidth) {
                                 nonValidTarget = true;
-                                // System.out.println(sourceVertex.getNameType() + " -> " + targetVertex.getNameType() + " not valid for: maxWidth");
+                                // System.out.println(sourceVertex.getNameType() + " -> " +
+                                // targetVertex.getNameType() + " not valid for: maxWidth");
                                 break;
                             }
-                            
-                            // System.out.println("sourceLevel: " + sourceLevel + " width: " + levelToVertices.get(sourceLevel).size());
-                            // System.out.println(sourceVertex.getNameType() + " -> " + targetVertex.getNameType());
+
+                            // System.out.println("sourceLevel: " + sourceLevel + " width: " +
+                            // levelToVertices.get(sourceLevel).size());
+                            // System.out.println(sourceVertex.getNameType() + " -> " +
+                            // targetVertex.getNameType());
                             levelToVertices.get(sourceLevel).add(sourceVertex);
                             changedLevelsToBeValidated.add(sourceLevel);
                         }
-                        if(nonValidTarget){
+                        if (nonValidTarget) {
                             resetChangesToLevels();
                             continue;
                         }
 
                         // check maxBranchingDownFactor
-                        if(dag.inDegreeOf(targetVertex) + 1 > maxBranchingDownFactor){
-                            // System.out.println(sourceVertex.getNameType() + " -> " + targetVertex.getNameType() + " not valid for: BFDown");
+                        if (dag.inDegreeOf(targetVertex) + 1 > maxBranchingDownFactor) {
+                            // System.out.println(sourceVertex.getNameType() + " -> " +
+                            // targetVertex.getNameType() + " not valid for: BFDown");
                             resetChangesToLevels();
                             continue;
                         }
 
                         // check maxBranchinUpFactor
-                        if(dag.outDegreeOf(sourceVertex) + 1 > branchingUpFactor){  
-                            // System.out.println(sourceVertex.getNameType() + " -> " + targetVertex.getNameType() + " not valid for: BFUp");
+                        if (dag.outDegreeOf(sourceVertex) + 1 > branchingUpFactor) {
+                            // System.out.println(sourceVertex.getNameType() + " -> " +
+                            // targetVertex.getNameType() + " not valid for: BFUp");
                             resetChangesToLevels();
                             break;
                         }
@@ -240,7 +241,7 @@ public class RandomDAGGenerator{
                         newEdge.setQuantityRequired(random.nextInt(maxRandomQuantity) + 1);
 
                         // Update vertexToLevels
-                        if(!vertexToLevels.containsKey(sourceVertex)){
+                        if (!vertexToLevels.containsKey(sourceVertex)) {
                             vertexToLevels.put(sourceVertex, new ArrayList<Integer>());
                         }
                         for (Integer sourceLevel : sourceLevels) {
@@ -250,13 +251,13 @@ public class RandomDAGGenerator{
                     }
 
                     // Update TargetList if vertex is connected to graph
-                    if(dag.outDegreeOf(sourceVertex) > 0){
-                        if(sourceVertex.isProcessed()){
+                    if (dag.outDegreeOf(sourceVertex) > 0) {
+                        if (sourceVertex.isProcessed()) {
                             vTargetList.add(sourceVertex);
                         }
-                    }
-                    else{
-                        // if vertex is not connected, it means that we can't append any more vertex to the DAG   
+                    } else {
+                        // if vertex is not connected, it means that we can't append any more vertex to
+                        // the DAG
                         dag.removeVertex(sourceVertex);
                         break;
                     }
@@ -264,11 +265,12 @@ public class RandomDAGGenerator{
                 }
             }
 
-            private void resetChangesToLevels(){
+            private void resetChangesToLevels() {
                 for (Integer levelFromWhichRemove : changedLevelsToBeValidated) {
-                    if(levelToVertices.containsKey(levelFromWhichRemove)){
+                    if (levelToVertices.containsKey(levelFromWhichRemove)) {
                         levelToVertices.get(levelFromWhichRemove).remove(sourceVertex);
-                        // System.out.println("Removed from level: " + levelFromWhichRemove + " " + sourceVertex.getNameType() + " -> " + targetVertex.getNameType());
+                        // System.out.println("Removed from level: " + levelFromWhichRemove + " " +
+                        // sourceVertex.getNameType() + " -> " + targetVertex.getNameType());
                     }
                 }
             }
@@ -283,14 +285,15 @@ public class RandomDAGGenerator{
         return dag;
     }
 
-    private void setLeafNodes(){
-        
-        // Copy vertex set to avoid modifying a collection while iterating over it (it can lead to a ConcurrentModificationException)
+    private void setLeafNodes() {
+
+        // Copy vertex set to avoid modifying a collection while iterating over it (it
+        // can lead to a ConcurrentModificationException)
         Set<ProductType> vertexSetCopy = new HashSet<ProductType>(dag.vertexSet());
 
         // Substitute every processedType leaf with rawMaterialType
         for (ProductType node : vertexSetCopy) {
-            if(dag.inDegreeOf(node) == 0 && node.isProcessed()){
+            if (dag.inDegreeOf(node) == 0 && node.isProcessed()) {
                 ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
                 for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
                     oldEdges.add(oldEdge);
@@ -307,10 +310,10 @@ public class RandomDAGGenerator{
         }
     }
 
-    private void updateQuantityProduced(){
+    private void updateQuantityProduced() {
         // Set quantityProduced according to upper nodes requirements
         for (ProductType node : dag.vertexSet()) {
-            if(node.isProcessed() && dag.outDegreeOf(node) > 0){
+            if (node.isProcessed() && dag.outDegreeOf(node) > 0) {
                 int totalQuantityNeeded = 0;
                 for (CustomEdge outEdge : dag.outgoingEdgesOf(node)) {
                     totalQuantityNeeded += outEdge.getQuantityRequired();
@@ -319,7 +322,6 @@ public class RandomDAGGenerator{
             }
         }
     }
-
 
     public ProductType getRootNode() {
         return rootNode;

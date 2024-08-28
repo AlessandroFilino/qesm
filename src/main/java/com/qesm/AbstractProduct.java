@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
@@ -18,14 +19,12 @@ import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
 @Setter
 @Getter
 public abstract class AbstractProduct implements Serializable, DotFileConvertible {
-    private String name;
+    private final String name;
     private Integer quantityProduced;
     private transient StochasticTime pdf;
 
@@ -94,6 +93,11 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -107,7 +111,7 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
 
         AbstractProduct productToCompare = (AbstractProduct) obj;
 
-        return equalsAttributes(productToCompare);
+        return name.equals(productToCompare.getName());
 
     }
 
