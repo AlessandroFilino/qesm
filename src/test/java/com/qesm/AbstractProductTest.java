@@ -1,11 +1,11 @@
 package com.qesm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,12 +112,11 @@ public class AbstractProductTest {
 
     @Test
     void testEquals() {
-        assertNotEquals(prodTypeRaw1, nullProductType);
-        assertNotEquals(prodTypeRaw1, prodTypeRaw2);
+        assertFalse(prodTypeRaw1.equalsAttributes(nullProductType));
+        assertFalse(prodTypeRaw1.equalsAttributes(prodTypeRaw2));
         assertNotEquals(prodTypeRaw1, prodIstanceRaw1);
         assertEquals(prodTypeRaw1, prodTypeRaw1);
         assertEquals(prodTypeRaw1, prodTypeRaw1Reference);
-
         assertNotEquals(prodIstanceRaw1, nullProductType);
     }
 
@@ -125,43 +124,30 @@ public class AbstractProductTest {
     void testEqualsAttributes() {
         assertNotEquals(prodTypeRaw1.getName(), prodTypeRaw2.getName());
         assertNotEquals(prodTypeRaw1.getItemGroup(), prodTypeProcessed1.getItemGroup());
-        assertNotEquals(prodTypeProcessed1, prodTypeProcessed1DifferentQuantity);
+        assertFalse(prodTypeProcessed1.equalsAttributes(prodTypeProcessed1DifferentQuantity));
+        assertFalse(prodTypeProcessedUniform01.equalsAttributes(prodTypeProcessedUniform15));
+        assertFalse(prodTypeProcessedUniform15.equalsAttributes(prodTypeProcessedUniform16));
+        assertFalse(prodTypeProcessedErlang01.equalsAttributes(prodTypeProcessedErlang15));
+        assertFalse(prodTypeProcessedErlang15.equalsAttributes(prodTypeProcessedErlang16));
+        assertFalse(prodTypeProcessedExponential1.equalsAttributes(prodTypeProcessedExponential5));
+        assertFalse(prodTypeProcessedDeterministic1.equalsAttributes(prodTypeProcessedDeterministic5));
 
-        assertNotEquals(prodTypeProcessedUniform01, prodTypeProcessedUniform15);
-        assertNotEquals(prodTypeProcessedUniform15, prodTypeProcessedUniform16);
-        assertNotEquals(prodTypeProcessedErlang01, prodTypeProcessedErlang15);
-        assertNotEquals(prodTypeProcessedErlang15, prodTypeProcessedErlang16);
-        assertNotEquals(prodTypeProcessedExponential1, prodTypeProcessedExponential5);
-        assertNotEquals(prodTypeProcessedDeterministic1, prodTypeProcessedDeterministic5);
+        assertFalse(prodTypeProcessedUniform01.equalsAttributes(prodTypeProcessedErlang01));
+        assertFalse(prodTypeProcessedErlang01.equalsAttributes(prodTypeProcessedExponential1));
+        assertFalse(prodTypeProcessedExponential1.equalsAttributes(prodTypeProcessedDeterministic1));
+        assertFalse(prodTypeProcessedDeterministic1.equalsAttributes(prodTypeProcessedUniform01));
 
-        assertNotEquals(prodTypeProcessedUniform01, prodTypeProcessedErlang01);
-        assertNotEquals(prodTypeProcessedErlang01, prodTypeProcessedExponential1);
-        assertNotEquals(prodTypeProcessedExponential1, prodTypeProcessedDeterministic1);
-        assertNotEquals(prodTypeProcessedDeterministic1, prodTypeProcessedUniform01);
+        assertTrue(prodTypeProcessedUniform01.equalsAttributes(prodTypeProcessedUniform01Equal));
+        assertTrue(prodTypeProcessedErlang01.equalsAttributes(prodTypeProcessedErlang01Equal));
+        assertTrue(prodTypeProcessedExponential1.equalsAttributes(prodTypeProcessedExponential1Equal));
+        assertTrue(prodTypeProcessedDeterministic1.equalsAttributes(prodTypeProcessedDeterministic1Equal));
 
-        assertEquals(prodTypeProcessedUniform01, prodTypeProcessedUniform01Equal);
-        assertEquals(prodTypeProcessedErlang01, prodTypeProcessedErlang01Equal);
-        assertEquals(prodTypeProcessedExponential1, prodTypeProcessedExponential1Equal);
-        assertEquals(prodTypeProcessedDeterministic1, prodTypeProcessedDeterministic1Equal);
-
-        assertNotEquals(prodTypeProcessedUniform01, prodTypeProcessedExpolynomial01);
+        assertFalse(prodTypeProcessedUniform01.equalsAttributes(prodTypeProcessedExpolynomial01));
     }
 
     @Test
     void testGetWithItemGroupCheck() {
         assertTrue(StochasticTime.class.isAssignableFrom(prodTypeProcessedUniform01.getPdf().getClass()));
-        assertEquals(prodTypeRaw1.getPdf(), Optional.empty());
+        assertEquals(prodTypeRaw1.getPdf(), null);
     }
 }
-
-// public Optional<StochasticTime> getPdf() {
-// return getWithItemGroupCheck(pdf);
-// }
-// protected <T> Optional<T> getWithItemGroupCheck(T valueToReturn){
-// if(itemGroup == ItemGroup.PROCESSED){
-// return Optional.of(valueToReturn);
-// }
-// else{
-// return Optional.empty();
-// }
-// }
