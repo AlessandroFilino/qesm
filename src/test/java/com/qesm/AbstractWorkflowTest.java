@@ -3,11 +3,15 @@ package com.qesm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.graph.GraphCycleProhibitedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
@@ -107,6 +111,51 @@ public class AbstractWorkflowTest {
     void testComputeParallelismValue() {
         // TODO TEST: Implement test
         wf1.computeParallelismValue();
+    }
+
+    @Test
+    void computeRootNode() {
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag4 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
+        dag4.addVertex(v0);
+        dag4.addVertex(v1);
+        dag4.addVertex(v3);
+        dag4.addEdge(v0, v1);
+        dag4.addEdge(v1, v3);
+        WorkflowType wf4 = new WorkflowType(dag4);
+        System.out.println(wf4.dag.vertexSet());
+        assertTrue(wf4.computeRootNode().equalsAttributes(v3));
+    }
+
+    @Test
+    void testAddEdge() {
+        // Adding a edge in a correct position
+        assertNotNull(wf2.addEdge(v2, v0));
+        // Adding an edge that already exists
+        assertNull(wf2.addEdge(v2, v1));
+
+        // Extra: Adding an edge that causes a cycle
+        assertThrows(GraphCycleProhibitedException.class, () -> wf2.dag.addEdge(v0, v2));
+    }
+
+    @Test
+    void testConnectVertex() {
+        ProductType v4 = new ProductType("v4", 1, new UniformTime(0, 2));
+        // Adding a new vertex
+        assertNotNull(wf2.connectVertex(v4, v0));
+        // Trying to add a vertex that already exists
+        assertNull(wf2.connectVertex(v2, v0));
+
+    }
+
+    @Test
+    void testRemoveEdge() {
+
+    }
+
+    @Test
+    void testRemoveVertex() {
+
     }
 
 }

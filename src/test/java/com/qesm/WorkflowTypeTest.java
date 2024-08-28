@@ -1,6 +1,7 @@
 package com.qesm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,20 +24,20 @@ public class WorkflowTypeTest {
         WorkflowIstance workflowIstance = workflowType.makeIstance();
 
         DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.CloneDag();
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = workflowIstance.CloneDag();
+        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagInstance = workflowIstance.CloneDag();
         // Checks the number of nodes and edges
-        assertEquals(dagType.vertexSet().size(), dagIstance.vertexSet().size());
-        assertEquals(dagType.edgeSet().size(), dagIstance.edgeSet().size());
+        assertEquals(dagType.vertexSet().size(), dagInstance.vertexSet().size());
+        assertEquals(dagType.edgeSet().size(), dagInstance.edgeSet().size());
 
         // Checks if all nodes matches (same attributes)
         assertTrue(workflowType.equalsNodesAttributes(workflowIstance));
 
         // Check in workflowIstance if all ProcessedTypes have their subgraph specified
-        for (ProductIstance nodeIstance : dagIstance.vertexSet()) {
+        for (ProductIstance nodeInstance : dagInstance.vertexSet()) {
 
-            if (nodeIstance.isProcessed()) {
-                WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagIstance, nodeIstance));
-                assertEquals(subgraphIstance, workflowIstance.getProductWorkflow(nodeIstance));
+            if (nodeInstance.isProcessed()) {
+                WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagInstance, nodeInstance));
+                assertTrue(subgraphIstance.equalsNodesAttributes(workflowIstance.getProductWorkflow(nodeInstance)));
                 // System.out.println(nodeIstance.getProductWorkflow().equals(subgraphIstance));
                 // System.out.println("Istance workflow");
                 // System.out.println(nodeIstance.getProductWorkflow());
@@ -102,15 +103,13 @@ public class WorkflowTypeTest {
         WorkflowIstance workflowIstance1 = workflowType.makeIstance();
         WorkflowIstance workflowIstance2 = workflowType.makeIstance();
 
-        assertEquals(workflowIstance1, workflowIstance2);
+        assertTrue(workflowIstance1.equalsNodesAttributes(workflowIstance2));
 
         ProductType v5 = new ProductType("v5");
-        workflowType.CloneDag().addVertex(v5);
-        workflowType.CloneDag().addEdge(v5, v3);
+        workflowType.connectVertex(v5, v3);
 
         WorkflowIstance workflowIstance3 = workflowType.makeIstance();
-
-        assertNotEquals(workflowIstance3, workflowIstance1);
+        assertFalse(workflowIstance3.equalsNodesAttributes(workflowIstance1));
 
     }
 

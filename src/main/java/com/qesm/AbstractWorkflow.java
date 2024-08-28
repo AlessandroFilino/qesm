@@ -44,6 +44,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         this.dag = dagToImport;
         this.isTopTierGraph = isTopTierGraph;
 
+        validateWorkflow();
         if (isTopTierGraph) {
             this.productToSubWorkflowMap = new HashMap<V, AbstractWorkflow<V>>();
             updateAllSubgraphs();
@@ -133,6 +134,9 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         // Restore originalDag
         this.dag = originalDag;
 
+        // Probably we don't need to validate again, control just to be sure
+        validateWorkflow();
+
         return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0
                 + "    NewLoadUnbalanceFactor: " + Math.round(C * 100.0) / 100.0 + "%";
     }
@@ -145,6 +149,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     @Override
     public void setDag(DirectedAcyclicGraph<V, CustomEdge> dagToSet) {
         dag = dagToSet;
+        validateWorkflow();
         if (isTopTierGraph) {
 
             updateAllSubgraphs();
@@ -157,12 +162,14 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     public V computeRootNode() {
+        V root = null;
         for (V node : dag.vertexSet()) {
             if (dag.outDegreeOf(node) == 0) {
-                return node;
+                root = node;
+                break;
             }
         }
-        throw new RuntimeException("ERROR: there isn't a root node");
+        return root;
     }
 
     public AbstractWorkflow<V> getProductWorkflow(V node) {
@@ -244,6 +251,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         DAGSharedToUnsharedConverter<V> dagConverter = new DAGSharedToUnsharedConverter<V>(dag, computeRootNode(),
                 vertexClass);
         dag = dagConverter.makeConversion();
+        validateWorkflow();
         if (isTopTierGraph) {
 
             updateAllSubgraphs();
@@ -269,13 +277,13 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     public CustomEdge connectVertex(V newVertex, V targetVertex) {
         boolean added = dag.addVertex(newVertex);
         if (added) {
+            // If we enter here it means it's first time we create vertex and it's not
+            // possible that there are edges associated to this vertex. For this reason the
+            // addEdge method is always going to return an Edge
             CustomEdge e = dag.addEdge(newVertex, targetVertex);
-            if (e != null) {
-                validate(Set.of(targetVertex), Validation.LEAF_NODES);
-                buildChangedSubGraphs(dag.getDescendants(newVertex));
-            } else {
-                removeVertex(newVertex);
-            }
+            validate(Set.of(targetVertex), Validation.LEAF_NODES);
+            buildChangedSubGraphs(dag.getDescendants(newVertex));
+
             return e;
         }
         return null;
@@ -381,11 +389,13 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return true;
     }
 
-    public void validateWorkflow() {
+    public void validateWorkflow() throws WorkflowValidationException, RuntimeException {
         validate(dag.vertexSet(), Validation.ROOT_NODE, Validation.CONNECTIVITY, Validation.LEAF_NODES);
     }
 
-    private void validate(Set<V> vertexToCheck, Validation... args) {
+    private void validate(Set<V> vertexToCheck, Validation... args)
+            throws WorkflowValidationException, RuntimeException {
+
         for (Validation validation : args) {
             // Apply a single validation
             switch (validation) {
@@ -393,14 +403,17 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
                     if (!checkRootNode()) {
                         throw new WorkflowValidationException("Validation error: Root node (duplicate or none)");
                     }
+                    break;
                 case CONNECTIVITY:
                     if (!isDagConnected()) {
                         throw new WorkflowValidationException("Validation error: DAG not connected");
                     }
+                    break;
                 case LEAF_NODES:
                     if (!checkLeafNodes(vertexToCheck)) {
                         throw new WorkflowValidationException("Validation error: leaves nodes (wrong itemGroup)");
                     }
+                    break;
                 default:
                     throw new RuntimeException("Unknown validation enum value");
             }
