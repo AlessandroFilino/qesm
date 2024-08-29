@@ -2,6 +2,8 @@ package com.qesm;
 
 import java.util.HashMap;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
+
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class WorkflowType extends AbstractWorkflow<ProductType> {
@@ -10,11 +12,11 @@ public class WorkflowType extends AbstractWorkflow<ProductType> {
         super(ProductType.class, true);
     }
 
-    public WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport) {
+    public WorkflowType(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport) {
         super(dagToImport, ProductType.class, true);
     }
 
-    private WorkflowType(ListenableDAG<ProductType, CustomEdge> dagToImport, Boolean isTopTierGraph) {
+    private WorkflowType(DirectedAcyclicGraph<ProductType, CustomEdge> dagToImport, Boolean isTopTierGraph) {
         super(dagToImport, ProductType.class, isTopTierGraph);
     }
 
@@ -23,12 +25,11 @@ public class WorkflowType extends AbstractWorkflow<ProductType> {
         RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
                 maxBranchingDownFactor, branchingUpProbability, pdfType);
         dag = randDAGGenerator.generateGraph();
-        setGraphListener();
         updateAllSubgraphs();
     }
 
     public WorkflowIstance makeIstance() {
-        ListenableDAG<ProductIstance, CustomEdge> dagIstance = new ListenableDAG<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
 
         HashMap<ProductType, ProductIstance> productTypeToProductMap = new HashMap<>();
 
@@ -53,7 +54,7 @@ public class WorkflowType extends AbstractWorkflow<ProductType> {
     }
 
     @Override
-    protected WorkflowType buildWorkflow(ListenableDAG<ProductType, CustomEdge> dag) {
+    protected WorkflowType buildWorkflow(DirectedAcyclicGraph<ProductType, CustomEdge> dag) {
         return new WorkflowType(dag, false);
     }
 

@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.RepeatedTest;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
 public class RandomDAGGeneratorTest {
 
-    private ListenableDAG<ProductType, CustomEdge> dag;
+    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
     ProductType rootNode;
     HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
 
@@ -28,29 +29,31 @@ public class RandomDAGGeneratorTest {
         int maxBranchingDownFactor = random.nextInt(5) + 1;
         int branchingUpProbability = random.nextInt(1, 101);
 
-        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor, maxBranchingDownFactor, branchingUpProbability, PdfType.UNIFORM);
+        RandomDAGGenerator randDAGGenerator = new RandomDAGGenerator(maxHeight, maxWidth, maxBranchingUpFactor,
+                maxBranchingDownFactor, branchingUpProbability, PdfType.UNIFORM);
         dag = randDAGGenerator.generateGraph();
 
         // Test maxBranchingDownFactor and maxBranchingUpFactor
         for (ProductType vertex : dag.vertexSet()) {
-            assertTrue(dag.inDegreeOf(vertex) <= maxBranchingDownFactor && dag.outDegreeOf(vertex) <= maxBranchingUpFactor);
+            assertTrue(dag.inDegreeOf(vertex) <= maxBranchingDownFactor
+                    && dag.outDegreeOf(vertex) <= maxBranchingUpFactor);
         }
 
-        
         rootNode = randDAGGenerator.getRootNode();
-        // Calculate levels for each vertex exploring all passible paths from vertex to rootNode
+        // Calculate levels for each vertex exploring all passible paths from vertex to
+        // rootNode
         for (ProductType vertex : dag.vertexSet()) {
-            if(vertex == rootNode){
+            if (vertex == rootNode) {
                 continue;
             }
             recursiveSearch(0, vertex, vertex);
         }
-        
+
         // Test maxWidth
         for (Integer level : levelToVertices.keySet()) {
             // System.out.println("Level: " + level);
             // for (ProductType vertex: levelToVertices.get(level)) {
-            //     System.out.println(vertex.getNameType());
+            // System.out.println(vertex.getNameType());
             // }
             assertTrue(levelToVertices.get(level).size() <= maxWidth);
         }
@@ -62,21 +65,19 @@ public class RandomDAGGeneratorTest {
 
     }
 
-    private void recursiveSearch(int currLevel, ProductType currVertex, ProductType sourceVertex){
-        if(currVertex == rootNode){
-            if(!levelToVertices.containsKey(currLevel)){
+    private void recursiveSearch(int currLevel, ProductType currVertex, ProductType sourceVertex) {
+        if (currVertex == rootNode) {
+            if (!levelToVertices.containsKey(currLevel)) {
                 levelToVertices.put(currLevel, new ArrayList<ProductType>(List.of(sourceVertex)));
-            }
-            else{
+            } else {
                 levelToVertices.get(currLevel).add(sourceVertex);
             }
             return;
-        }
-        else{
+        } else {
             for (CustomEdge edge : dag.outgoingEdgesOf(currVertex)) {
                 recursiveSearch(currLevel + 1, dag.getEdgeTarget(edge), sourceVertex);
             }
-        } 
+        }
     }
 
 }

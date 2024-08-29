@@ -23,7 +23,10 @@ public class CustomEdge extends DefaultEdge {
 
     @Override
     public String toString() {
-
+        if (getSource() instanceof AbstractProduct source && getTarget() instanceof AbstractProduct target) {
+            return "( " + source.getName() + " -> " + target.getName() + " quantityRequired: " + quantityRequired
+                    + " )";
+        }
         return "( " + this.getSource() + " -> " + this.getTarget() + " quantityRequired: " + quantityRequired + " )";
     }
 
@@ -46,6 +49,35 @@ public class CustomEdge extends DefaultEdge {
         if (!customEdgeToCompare.getSource().equals(this.getSource()) ||
                 !customEdgeToCompare.getTarget().equals(this.getTarget())) {
             return false;
+        }
+
+        return true;
+    }
+
+    public boolean equalsNodesAttributes(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        CustomEdge customEdgeToCompare = (CustomEdge) obj;
+        if (quantityRequired != customEdgeToCompare.getQuantityRequired()) {
+            return false;
+        }
+
+        if (customEdgeToCompare.getSource() instanceof AbstractProduct sourceToCompare
+                && customEdgeToCompare.getTarget() instanceof AbstractProduct targetToCompare
+                && getSource() instanceof AbstractProduct source && getTarget() instanceof AbstractProduct target) {
+            if (!source.equalsAttributes(sourceToCompare) ||
+                    !target.equalsAttributes(targetToCompare)) {
+                return false;
+            }
+
         }
 
         return true;

@@ -9,13 +9,11 @@ import org.oristool.eulero.modeling.Activity;
 import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
 
-
 public class StructuredTreeConverter {
 
     private DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow;
     private HashSet<Activity> notWellNestedActivities;
-    private HashMap<STPNBlock, Activity> blocksAlreadyConverted; 
-
+    private HashMap<STPNBlock, Activity> blocksAlreadyConverted;
 
     public StructuredTreeConverter(DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow) {
         this.structuredWorkflow = structuredWorkflow;
@@ -24,16 +22,15 @@ public class StructuredTreeConverter {
         this.blocksAlreadyConverted = new HashMap<>();
     }
 
-    public Activity convertToActivity(){
-        
+    public Activity convertToActivity() {
+
         for (STPNBlock stpnBlock : structuredWorkflow) {
             // find and start conversion from rootBlock;
-            if(structuredWorkflow.outDegreeOf(stpnBlock) == 0){
+            if (structuredWorkflow.outDegreeOf(stpnBlock) == 0) {
                 Activity rootActivity = recursiveExploration(stpnBlock);
-                if(rootActivity.pre().isEmpty()){
+                if (rootActivity.pre().isEmpty()) {
                     return ModelFactory.DAG(rootActivity);
-                }
-                else{
+                } else {
                     return ModelFactory.DAG(notWellNestedActivities.toArray(new Activity[0]));
                 }
             }
@@ -43,11 +40,10 @@ public class StructuredTreeConverter {
         return null;
     }
 
-    private Activity recursiveExploration(STPNBlock stpnBlock){
-        if(blocksAlreadyConverted.containsKey(stpnBlock)){
+    private Activity recursiveExploration(STPNBlock stpnBlock) {
+        if (blocksAlreadyConverted.containsKey(stpnBlock)) {
             return blocksAlreadyConverted.get(stpnBlock);
-        }
-        else{
+        } else {
             Activity currentActivity = calculateActivityFromBlock(stpnBlock);
             blocksAlreadyConverted.put(stpnBlock, currentActivity);
 
@@ -59,35 +55,33 @@ public class StructuredTreeConverter {
                 notWellNestedActivities.add(currentActivity);
                 notWellNestedActivities.add(childActivity);
             }
-    
+
             return currentActivity;
         }
     }
-    
-    private Activity calculateActivityFromBlock(STPNBlock stpnBlock){
+
+    private Activity calculateActivityFromBlock(STPNBlock stpnBlock) {
 
         Activity activity = null;
-        if(stpnBlock.getClass() == SimpleBlock.class){
-            activity = new Simple(stpnBlock.getSimpleElement().getName(), stpnBlock.getSimpleElement().getPdf().get());
-        }
-        else if (stpnBlock.getClass() == AndBlock.class){
+        if (stpnBlock.getClass() == SimpleBlock.class) {
+            activity = new Simple(stpnBlock.getSimpleElement().getName(), stpnBlock.getSimpleElement().getPdf());
+        } else if (stpnBlock.getClass() == AndBlock.class) {
             ArrayList<Activity> activityList = new ArrayList<>();
             for (STPNBlock stpnBlockNested : stpnBlock.getComposedElements()) {
                 activityList.add(calculateActivityFromBlock(stpnBlockNested));
             }
 
             activity = ModelFactory.forkJoin(activityList.toArray(new Activity[0]));
-        }
-        else if (stpnBlock.getClass() == SeqBlock.class){
+        } else if (stpnBlock.getClass() == SeqBlock.class) {
             ArrayList<Activity> activityList = new ArrayList<>();
             for (STPNBlock stpnBlockNested : stpnBlock.getComposedElements()) {
                 activityList.add(calculateActivityFromBlock(stpnBlockNested));
             }
 
             activity = ModelFactory.sequence(activityList.toArray(new Activity[0]));
-        }
-        else{
-            System.err.println("Error stpnBlock class: " + stpnBlock.getClass() + " not valid for convertion to Activity");
+        } else {
+            System.err.println(
+                    "Error stpnBlock class: " + stpnBlock.getClass() + " not valid for convertion to Activity");
         }
         return activity;
     }

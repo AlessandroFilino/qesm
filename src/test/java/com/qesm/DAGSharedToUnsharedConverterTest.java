@@ -16,19 +16,20 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class DAGSharedToUnsharedConverterTest {
 
-    
-    //To test this method we generate a shared graph, then we create a list of nodes end remove the duplicate. The final result is the edges number fo shared graph 
+    // To test this method we generate a shared graph, then we create a list of
+    // nodes end remove the duplicate. The final result is the edges number fo
+    // shared graph
     @Test
-    public void testCheckEdgeNumberFromUnsharedToShared(){
+    public void testCheckEdgeNumberFromUnsharedToShared() {
         WorkflowType graphTest = new WorkflowType();
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        int sharedEdgeNumber = graphTest.getDag().edgeSet().size();
-        
+        int sharedEdgeNumber = graphTest.CloneDag().edgeSet().size();
+
         graphTest.toUnshared();
         Set<String> connectedNodesUnshared = new HashSet<>();
-        for (CustomEdge edge : graphTest.getDag().edgeSet()) {
-            String source = graphTest.getDag().getEdgeSource(edge).getName();
-            String target = graphTest.getDag().getEdgeTarget(edge).getName();
+        for (CustomEdge edge : graphTest.CloneDag().edgeSet()) {
+            String source = graphTest.CloneDag().getEdgeSource(edge).getName();
+            String target = graphTest.CloneDag().getEdgeTarget(edge).getName();
             String nodePair = source.replaceAll("_.*", "") + "," + target.replaceAll("_.*", "");
             connectedNodesUnshared.add(nodePair);
         }
@@ -39,23 +40,24 @@ public class DAGSharedToUnsharedConverterTest {
     }
 
     @RepeatedTest(100)
-    public void testCheckConversion(RepetitionInfo repetitionInfo){
+    public void testCheckConversion(RepetitionInfo repetitionInfo) {
         WorkflowType workflowTypeTest = new WorkflowType();
         workflowTypeTest.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
 
-        HashMap<ProductType, Integer> nodeNumberAfterConvMap = new HashMap<ProductType, Integer> (); 
-        DirectedAcyclicGraph<ProductType,CustomEdge> workflowDag = workflowTypeTest.getDag();
+        HashMap<ProductType, Integer> nodeNumberAfterConvMap = new HashMap<ProductType, Integer>();
+        DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag = workflowTypeTest.CloneDag();
 
         Integer totalNodeNumberAfterConv = 0;
-        
+
         for (ProductType node : workflowDag.vertexSet()) {
             totalNodeNumberAfterConv += getNodeNumberAfterConversion(node, workflowDag, nodeNumberAfterConvMap);
         }
 
-        // System.out.println("Test ripetizione : " + repetitionInfo.getCurrentRepetition());
+        // System.out.println("Test ripetizione : " +
+        // repetitionInfo.getCurrentRepetition());
         // System.out.println(workflowTypeTest);
         workflowTypeTest.toUnshared();
-        workflowDag = workflowTypeTest.getDag();
+        workflowDag = workflowTypeTest.CloneDag();
         // System.out.println(workflowTypeTest);
 
         // Check if node number after conversion is as expected
@@ -66,21 +68,22 @@ public class DAGSharedToUnsharedConverterTest {
             assertTrue(workflowDag.outDegreeOf(node) <= 1);
         }
 
-
     }
 
-    private Integer getNodeNumberAfterConversion(ProductType node, DirectedAcyclicGraph<ProductType,CustomEdge> workflowDag, HashMap<ProductType, Integer> nodeNumberAfterConvMap){
-        if(nodeNumberAfterConvMap.containsKey(node)){
+    private Integer getNodeNumberAfterConversion(ProductType node,
+            DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag,
+            HashMap<ProductType, Integer> nodeNumberAfterConvMap) {
+        if (nodeNumberAfterConvMap.containsKey(node)) {
             return nodeNumberAfterConvMap.get(node);
-        }
-        else{
+        } else {
             Integer nodeNumberAfterConv = 0;
             for (CustomEdge descendantEdge : workflowDag.outgoingEdgesOf(node)) {
                 ProductType descendantNode = workflowDag.getEdgeTarget(descendantEdge);
-                nodeNumberAfterConv += getNodeNumberAfterConversion(descendantNode, workflowDag, nodeNumberAfterConvMap);
+                nodeNumberAfterConv += getNodeNumberAfterConversion(descendantNode, workflowDag,
+                        nodeNumberAfterConvMap);
             }
             // RootNode
-            if(nodeNumberAfterConv == 0){
+            if (nodeNumberAfterConv == 0) {
                 nodeNumberAfterConv = 1;
             }
             nodeNumberAfterConvMap.put(node, nodeNumberAfterConv);
