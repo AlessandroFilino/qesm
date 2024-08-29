@@ -8,13 +8,13 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class ProductInstance extends AbstractProduct {
 
-    public ProductInstance(ProductType productType) {
-        super(new String(productType.getName()), productType.getItemGroup());
+    public ProductInstance(ProductTemplate productTemplate) {
+        super(new String(productTemplate.getName()), productTemplate.getItemGroup());
 
-        if (productType.isProcessed()) {
-            setQuantityProduced(productType.getQuantityProduced());
+        if (productTemplate.isProcessed()) {
+            setQuantityProduced(productTemplate.getQuantityProduced());
 
-            StochasticTime pdfToCopy = productType.getPdf();
+            StochasticTime pdfToCopy = productTemplate.getPdf();
             Class<? extends StochasticTime> pdfClass = pdfToCopy.getClass();
 
             if (pdfClass == UniformTime.class) {
@@ -40,8 +40,8 @@ public class ProductInstance extends AbstractProduct {
         super(name);
     }
 
-    public ProductInstance(String nameType, Integer quantityProduced, StochasticTime pdf) {
-        super(nameType, quantityProduced, pdf);
+    public ProductInstance(String name, Integer quantityProduced, StochasticTime pdf) {
+        super(name, quantityProduced, pdf);
     }
 
 }

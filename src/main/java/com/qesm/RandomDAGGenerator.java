@@ -21,7 +21,7 @@ import com.qesm.AbstractProduct.ItemGroup;
 
 public class RandomDAGGenerator {
 
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    private DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag;
 
     // Level definition: hop distance from root. A node can belong to more than one
     // level
@@ -34,9 +34,9 @@ public class RandomDAGGenerator {
     private Random random;
     private int vId;
     private int maxRandomQuantity;
-    private ProductType rootNode;
-    private Supplier<ProductType> vSupplierRandom;
-    private Supplier<ProductType> vSupplierProcessedType;
+    private ProductTemplate rootNode;
+    private Supplier<ProductTemplate> vSupplierRandom;
+    private Supplier<ProductTemplate> vSupplierProcessedType;
 
     public enum PdfType {
         DETERMINISTIC,
@@ -53,7 +53,7 @@ public class RandomDAGGenerator {
 
     public RandomDAGGenerator(int maxHeight, int maxWidth, int maxBranchingUpFactor, int maxBranchingDownFactor,
             int branchingUpProbability, PdfType pdfType) {
-        this.dag = new DirectedAcyclicGraph<ProductType, CustomEdge>(CustomEdge.class);
+        this.dag = new DirectedAcyclicGraph<ProductTemplate, CustomEdge>(CustomEdge.class);
         this.maxHeight = maxHeight;
         this.maxWidth = maxWidth;
         this.maxBranchingUpFactor = maxBranchingUpFactor;
@@ -64,16 +64,16 @@ public class RandomDAGGenerator {
         this.vId = 0;
         this.maxRandomQuantity = 10;
         this.pdfType = pdfType;
-        this.vSupplierRandom = new Supplier<ProductType>() {
+        this.vSupplierRandom = new Supplier<ProductTemplate>() {
             @Override
-            public ProductType get() {
-                ProductType vertex;
+            public ProductTemplate get() {
+                ProductTemplate vertex;
 
                 if (random.nextBoolean()) {
-                    vertex = new ProductType("v" + vId, ItemGroup.RAW_MATERIAL);
+                    vertex = new ProductTemplate("v" + vId, ItemGroup.RAW_MATERIAL);
                     vId++;
                 } else {
-                    vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
+                    vertex = new ProductTemplate("v" + vId, ItemGroup.PROCESSED);
                     vertex.setQuantityProduced(-1);
                     vertex.setPdf(getRandomPdf());
                     vId++;
@@ -83,10 +83,10 @@ public class RandomDAGGenerator {
             }
         };
 
-        this.vSupplierProcessedType = new Supplier<ProductType>() {
+        this.vSupplierProcessedType = new Supplier<ProductTemplate>() {
             @Override
-            public ProductType get() {
-                ProductType vertex = new ProductType("v" + vId, ItemGroup.PROCESSED);
+            public ProductTemplate get() {
+                ProductTemplate vertex = new ProductTemplate("v" + vId, ItemGroup.PROCESSED);
                 vertex.setQuantityProduced(-1);
                 vertex.setPdf(getRandomPdf());
                 vId++;
@@ -134,17 +134,17 @@ public class RandomDAGGenerator {
         return pdf;
     }
 
-    public DirectedAcyclicGraph<ProductType, CustomEdge> generateGraph() {
+    public DirectedAcyclicGraph<ProductTemplate, CustomEdge> generateGraph() {
 
         class DAGPopulator {
 
-            private HashMap<ProductType, ArrayList<Integer>> vertexToLevels = new HashMap<ProductType, ArrayList<Integer>>();
-            private HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
-            private ArrayList<ProductType> vTargetList = new ArrayList<ProductType>();
+            private HashMap<ProductTemplate, ArrayList<Integer>> vertexToLevels = new HashMap<ProductTemplate, ArrayList<Integer>>();
+            private HashMap<Integer, ArrayList<ProductTemplate>> levelToVertices = new HashMap<Integer, ArrayList<ProductTemplate>>();
+            private ArrayList<ProductTemplate> vTargetList = new ArrayList<ProductTemplate>();
             private ArrayList<Integer> changedLevelsToBeValidated;
-            private ProductType sourceVertex;
-            private ArrayList<ProductType> vTargetListCopy;
-            private ProductType targetVertex;
+            private ProductTemplate sourceVertex;
+            private ArrayList<ProductTemplate> vTargetListCopy;
+            private ProductTemplate targetVertex;
 
             private void populate() {
                 dag.setVertexSupplier(vSupplierProcessedType);
@@ -153,7 +153,7 @@ public class RandomDAGGenerator {
 
                 rootNode.setQuantityProduced(1);
                 vertexToLevels.put(rootNode, new ArrayList<Integer>(List.of(0)));
-                levelToVertices.put(0, new ArrayList<ProductType>(List.of(rootNode)));
+                levelToVertices.put(0, new ArrayList<ProductTemplate>(List.of(rootNode)));
                 vTargetList.add(rootNode);
 
                 dag.setVertexSupplier(vSupplierRandom);
@@ -161,7 +161,7 @@ public class RandomDAGGenerator {
                 while (true) {
 
                     sourceVertex = dag.addVertex();
-                    vTargetListCopy = new ArrayList<ProductType>(vTargetList);
+                    vTargetListCopy = new ArrayList<ProductTemplate>(vTargetList);
 
                     // Calculating branchingUpFactor to limit not well nested DAG
                     Integer branchingUpFactor;
@@ -187,8 +187,8 @@ public class RandomDAGGenerator {
                         for (Integer sourceLevel : sourceLevels) {
                             if (sourceLevel > maxHeight) {
                                 nonValidTarget = true;
-                                // System.out.println(sourceVertex.getNameType() + " -> " +
-                                // targetVertex.getNameType() + " not valid for: maxHeight");
+                                // System.out.println(sourceVertex.getName() + " -> " +
+                                // targetVertex.getName() + " not valid for: maxHeight");
                                 break;
                             }
                         }
@@ -199,20 +199,20 @@ public class RandomDAGGenerator {
                         // check maxWidth
                         for (Integer sourceLevel : sourceLevels) {
                             if (!levelToVertices.containsKey(sourceLevel)) {
-                                levelToVertices.put(sourceLevel, new ArrayList<ProductType>());
+                                levelToVertices.put(sourceLevel, new ArrayList<ProductTemplate>());
                             }
 
                             if (levelToVertices.get(sourceLevel).size() + 1 > maxWidth) {
                                 nonValidTarget = true;
-                                // System.out.println(sourceVertex.getNameType() + " -> " +
-                                // targetVertex.getNameType() + " not valid for: maxWidth");
+                                // System.out.println(sourceVertex.getName() + " -> " +
+                                // targetVertex.getName() + " not valid for: maxWidth");
                                 break;
                             }
 
                             // System.out.println("sourceLevel: " + sourceLevel + " width: " +
                             // levelToVertices.get(sourceLevel).size());
-                            // System.out.println(sourceVertex.getNameType() + " -> " +
-                            // targetVertex.getNameType());
+                            // System.out.println(sourceVertex.getName() + " -> " +
+                            // targetVertex.getName());
                             levelToVertices.get(sourceLevel).add(sourceVertex);
                             changedLevelsToBeValidated.add(sourceLevel);
                         }
@@ -223,16 +223,16 @@ public class RandomDAGGenerator {
 
                         // check maxBranchingDownFactor
                         if (dag.inDegreeOf(targetVertex) + 1 > maxBranchingDownFactor) {
-                            // System.out.println(sourceVertex.getNameType() + " -> " +
-                            // targetVertex.getNameType() + " not valid for: BFDown");
+                            // System.out.println(sourceVertex.getName() + " -> " +
+                            // targetVertex.getName() + " not valid for: BFDown");
                             resetChangesToLevels();
                             continue;
                         }
 
                         // check maxBranchinUpFactor
                         if (dag.outDegreeOf(sourceVertex) + 1 > branchingUpFactor) {
-                            // System.out.println(sourceVertex.getNameType() + " -> " +
-                            // targetVertex.getNameType() + " not valid for: BFUp");
+                            // System.out.println(sourceVertex.getName() + " -> " +
+                            // targetVertex.getName() + " not valid for: BFUp");
                             resetChangesToLevels();
                             break;
                         }
@@ -270,7 +270,7 @@ public class RandomDAGGenerator {
                     if (levelToVertices.containsKey(levelFromWhichRemove)) {
                         levelToVertices.get(levelFromWhichRemove).remove(sourceVertex);
                         // System.out.println("Removed from level: " + levelFromWhichRemove + " " +
-                        // sourceVertex.getNameType() + " -> " + targetVertex.getNameType());
+                        // sourceVertex.getName() + " -> " + targetVertex.getName());
                     }
                 }
             }
@@ -289,10 +289,10 @@ public class RandomDAGGenerator {
 
         // Copy vertex set to avoid modifying a collection while iterating over it (it
         // can lead to a ConcurrentModificationException)
-        Set<ProductType> vertexSetCopy = new HashSet<ProductType>(dag.vertexSet());
+        Set<ProductTemplate> vertexSetCopy = new HashSet<ProductTemplate>(dag.vertexSet());
 
         // Substitute every processedType leaf with rawMaterialType
-        for (ProductType node : vertexSetCopy) {
+        for (ProductTemplate node : vertexSetCopy) {
             if (dag.inDegreeOf(node) == 0 && node.isProcessed()) {
                 ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
                 for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
@@ -300,7 +300,7 @@ public class RandomDAGGenerator {
                 }
 
                 dag.removeVertex(node);
-                ProductType newLeaf = new ProductType(node.getName(), ItemGroup.RAW_MATERIAL);
+                ProductTemplate newLeaf = new ProductTemplate(node.getName(), ItemGroup.RAW_MATERIAL);
                 dag.addVertex(newLeaf);
 
                 for (CustomEdge oldEdge : oldEdges) {
@@ -312,7 +312,7 @@ public class RandomDAGGenerator {
 
     private void updateQuantityProduced() {
         // Set quantityProduced according to upper nodes requirements
-        for (ProductType node : dag.vertexSet()) {
+        for (ProductTemplate node : dag.vertexSet()) {
             if (node.isProcessed() && dag.outDegreeOf(node) > 0) {
                 int totalQuantityNeeded = 0;
                 for (CustomEdge outEdge : dag.outgoingEdgesOf(node)) {
@@ -323,7 +323,7 @@ public class RandomDAGGenerator {
         }
     }
 
-    public ProductType getRootNode() {
+    public ProductTemplate getRootNode() {
         return rootNode;
     }
 

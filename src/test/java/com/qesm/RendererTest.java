@@ -20,33 +20,33 @@ public class RendererTest {
     }
 
     @Test
-    public void testRenderWorkflowType() {
+    public void testRenderWorkflowTemplate() {
 
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        renderWorkflowType(workflowType);
+        renderworkflowTemplate(workflowTemplate);
     }
 
     @Test
-    public void testRenderSharedAndUsharedWorkflowType() {
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        renderWorkflowType(workflowType);
-        workflowType.toUnshared();
-        workflowType.exportDotFileNoSerialization("./output/workflowTypeUnsharedRendererTest.dot");
+    public void testRenderSharedAndUsharedworkflowTemplate() {
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        renderworkflowTemplate(workflowTemplate);
+        workflowTemplate.toUnshared();
+        workflowTemplate.exportDotFileNoSerialization("./output/workflowTemplateUnsharedRendererTest.dot");
 
-        Renderer.renderDotFile("./output/workflowTypeUnsharedRendererTest.dot",
-                "./media/workflowTypeUnsharedRendererTest.svg");
-        // rmDotFile("./output/workflowTypeUnsharedRendererTest.dot");
+        Renderer.renderDotFile("./output/workflowTemplateUnsharedRendererTest.dot",
+                "./media/workflowTemplateUnsharedRendererTest.svg");
+        // rmDotFile("./output/workflowTemplateUnsharedRendererTest.dot");
 
     }
 
     @Test
     public void testRenderSharedAndUsharedWorkflowInstance() {
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        WorkflowInstance workflowInstance = workflowType.makeInstance();
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
         workflowInstance.exportDotFileNoSerialization("./output/workflowInstanceRendererTest.dot");
         Renderer.renderDotFile("./output/workflowInstanceRendererTest.dot", "./media/workflowInstanceRendererTest.svg");
@@ -63,10 +63,11 @@ public class RendererTest {
 
     @Test
     public void testRenderRandomStructureTree() {
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.cloneDag(), ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(workflowTemplate.cloneDag(),
+                ProductTemplate.class);
         structuredTree.buildStructuredTree();
 
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
@@ -78,14 +79,14 @@ public class RendererTest {
     @Test
     public void testRenderFixedStructureTree() {
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
-        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
-        ProductType v4 = new ProductType("v4");
-        ProductType v5 = new ProductType("v5");
-        ProductType v6 = new ProductType("v6");
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        ProductTemplate v4 = new ProductTemplate("v4");
+        ProductTemplate v5 = new ProductTemplate("v5");
+        ProductTemplate v6 = new ProductTemplate("v6");
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -99,10 +100,10 @@ public class RendererTest {
         dag.addEdge(v4, v1);
         dag.addEdge(v5, v2);
         dag.addEdge(v6, v3);
-        WorkflowType wf1 = new WorkflowType(dag);
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
-                ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
+                ProductTemplate.class);
         structuredTree.buildStructuredTree();
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
         Renderer.renderDotFile("./output/structuredTreeRenderTest.dot", "./media/structuredTreeRenderTest.svg");
@@ -111,11 +112,12 @@ public class RendererTest {
 
     @Test
     public void testRenderStructureTreeWithAllSteps() {
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        renderWorkflowType(workflowType);
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        renderworkflowTemplate(workflowTemplate);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(workflowType.cloneDag(), ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(workflowTemplate.cloneDag(),
+                ProductTemplate.class);
 
         String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderTest");
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderTest");
@@ -128,12 +130,12 @@ public class RendererTest {
 
     @Test
     public void testRenderWorkflowInstance() {
-        WorkflowType workflowType = new WorkflowType();
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
 
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        renderWorkflowType(workflowType);
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        renderworkflowTemplate(workflowTemplate);
 
-        WorkflowInstance workflowInstance = workflowType.makeInstance();
+        WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
         workflowInstance.exportDotFileNoSerialization("./output/workflowInstanceRendererTest.dot");
         Renderer.renderDotFile("./output/workflowInstanceRendererTest.dot", "./media/workflowInstanceRendererTest.svg");
@@ -143,9 +145,9 @@ public class RendererTest {
 
     @Test
     public void testRenderWorkflowInstanceSubgraphs() {
-        WorkflowType workflowType = new WorkflowType();
-        workflowType.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        WorkflowInstance workflowInstance = workflowType.makeInstance();
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
         String subgraphsDotFolder = mkEmptyDir("./output/subgraphsRenderTest");
         String subgraphsMediaFolder = mkEmptyDir("./media/subgraphsRenderTest");
@@ -177,11 +179,11 @@ public class RendererTest {
         });
     }
 
-    private static void renderWorkflowType(WorkflowType workflowTypeToRender) {
-        workflowTypeToRender.exportDotFileNoSerialization("./output/workflowTypeRenderTest.dot");
-        Renderer.renderDotFile("./output/workflowTypeRenderTest.dot", "./media/workflowTypeRenderTest.svg");
+    private static void renderworkflowTemplate(WorkflowTemplate workflowTemplateToRender) {
+        workflowTemplateToRender.exportDotFileNoSerialization("./output/workflowTemplateRenderTest.dot");
+        Renderer.renderDotFile("./output/workflowTemplateRenderTest.dot", "./media/workflowTemplateRenderTest.svg");
 
-        // rmDotFile("./output/workflowTypeRenderTest.dot");
+        // rmDotFile("./output/workflowTemplateRenderTest.dot");
     }
 
     private static void ensureFolderExists(String folderPath) {

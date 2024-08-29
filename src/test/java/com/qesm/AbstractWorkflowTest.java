@@ -20,58 +20,58 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class AbstractWorkflowTest {
 
-    private WorkflowType wf1;
-    DirectedAcyclicGraph<ProductType, CustomEdge> dag2;
-    private WorkflowType wf2;
-    private WorkflowType wf2_copy;
-    private WorkflowType wf3;
-    private WorkflowType wf1Reference;
-    private WorkflowType wfNull;
+    private WorkflowTemplate wf1;
+    DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag2;
+    private WorkflowTemplate wf2;
+    private WorkflowTemplate wf2_copy;
+    private WorkflowTemplate wf3;
+    private WorkflowTemplate wf1Reference;
+    private WorkflowTemplate wfNull;
     private WorkflowInstance wi1;
 
     // Nodes of wf2 and wf3
-    private ProductType v0;
-    private ProductType v1;
-    private ProductType v2;
-    private ProductType v3;
+    private ProductTemplate v0;
+    private ProductTemplate v1;
+    private ProductTemplate v2;
+    private ProductTemplate v3;
 
     // Nodes of wf2 copy
-    private ProductType v0_copy;
-    private ProductType v1_copy;
-    private ProductType v2_copy;
+    private ProductTemplate v0_copy;
+    private ProductTemplate v1_copy;
+    private ProductTemplate v2_copy;
 
     @BeforeEach
     public void setup() {
-        wf1 = new WorkflowType();
+        wf1 = new WorkflowTemplate();
         wf1.generateRandomDAG(3, 3, 2, 2, 60, PdfType.UNIFORM);
         wf1Reference = wf1;
 
         wi1 = wf1.makeInstance();
 
         dag2 = new DirectedAcyclicGraph<>(CustomEdge.class);
-        v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        v2 = new ProductType("v2", 3, new UniformTime(4, 6));
+        v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
         dag2.addVertex(v0);
         dag2.addVertex(v1);
         dag2.addVertex(v2);
         dag2.addEdge(v2, v1);
         dag2.addEdge(v1, v0);
-        wf2 = new WorkflowType(dag2);
+        wf2 = new WorkflowTemplate(dag2);
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag2_copy = new DirectedAcyclicGraph<>(CustomEdge.class);
-        v0_copy = new ProductType("v0", 1, new UniformTime(0, 2));
-        v1_copy = new ProductType("v1", 2, new UniformTime(2, 4));
-        v2_copy = new ProductType("v2", 3, new UniformTime(4, 6));
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag2_copy = new DirectedAcyclicGraph<>(CustomEdge.class);
+        v0_copy = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        v1_copy = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        v2_copy = new ProductTemplate("v2", 3, new UniformTime(4, 6));
         dag2_copy.addVertex(v0_copy);
         dag2_copy.addVertex(v1_copy);
         dag2_copy.addVertex(v2_copy);
         dag2_copy.addEdge(v2_copy, v1_copy);
         dag2_copy.addEdge(v1_copy, v0_copy);
-        wf2_copy = new WorkflowType(dag2_copy);
+        wf2_copy = new WorkflowTemplate(dag2_copy);
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag3 = new DirectedAcyclicGraph<>(CustomEdge.class);
-        v3 = new ProductType("v3", 4, new UniformTime(6, 8));
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag3 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
         dag3.addVertex(v0);
         dag3.addVertex(v1);
         dag3.addVertex(v2);
@@ -79,7 +79,7 @@ public class AbstractWorkflowTest {
         dag3.addEdge(v3, v2);
         dag3.addEdge(v2, v1);
         dag3.addEdge(v1, v0);
-        wf3 = new WorkflowType(dag3);
+        wf3 = new WorkflowTemplate(dag3);
 
     }
 
@@ -123,21 +123,21 @@ public class AbstractWorkflowTest {
 
     @Test
     void computeRootNode() {
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag4 = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag4 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v3 = new ProductTemplate("v3", 1, new UniformTime(0, 2));
         dag4.addVertex(v0);
         dag4.addVertex(v1);
         dag4.addVertex(v3);
         dag4.addEdge(v0, v1);
         dag4.addEdge(v1, v3);
-        WorkflowType wf4 = new WorkflowType(dag4);
+        WorkflowTemplate wf4 = new WorkflowTemplate(dag4);
         System.out.println(wf4.dag.vertexSet());
         assertTrue(wf4.computeRootNode().equalsAttributes(v3));
     }
 
     @Test
     void testValidation() {
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag5 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag5 = new DirectedAcyclicGraph<>(CustomEdge.class);
         dag5.addVertex(v0);
         dag5.addVertex(v1);
         dag5.addVertex(v2);
@@ -147,15 +147,15 @@ public class AbstractWorkflowTest {
         dag5.addEdge(v1, v3);
 
         // Root node validation
-        assertThrows(WorkflowValidationException.class, () -> new WorkflowType(dag5));
+        assertThrows(WorkflowValidationException.class, () -> new WorkflowTemplate(dag5));
         // Leaf node validation
         dag5.removeEdge(v1, v3);
         dag5.addEdge(v3, v1);
-        ProductType v4 = new ProductType("v4");
+        ProductTemplate v4 = new ProductTemplate("v4");
         dag5.addVertex(v4);
         dag5.addEdge(v1, v4);
         dag5.addEdge(v4, v0);
-        assertThrows(WorkflowValidationException.class, () -> new WorkflowType(dag5));
+        assertThrows(WorkflowValidationException.class, () -> new WorkflowTemplate(dag5));
     }
 
     @Test
@@ -171,7 +171,7 @@ public class AbstractWorkflowTest {
 
     @Test
     void testConnectVertex() {
-        ProductType v4 = new ProductType("v4", 1, new UniformTime(0, 2));
+        ProductTemplate v4 = new ProductTemplate("v4", 1, new UniformTime(0, 2));
         // Adding a new vertex
         assertNotNull(wf2.connectVertex(v4, v0));
         // Trying to add a vertex that already exists
@@ -181,13 +181,13 @@ public class AbstractWorkflowTest {
 
     @Test
     void testRemoveEdge() {
-        WorkflowType wf4 = new WorkflowType(dag2);
+        WorkflowTemplate wf4 = new WorkflowTemplate(dag2);
         // Removing not existing edges
         assertFalse(wf4.removeEdge(v0, v1));
         assertFalse(wf4.removeEdge(new CustomEdge()));
         // Removing edge correctly
         assertTrue(wf4.removeEdge(v1, v0));
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf4.cloneDag();
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dagCopy = wf4.cloneDag();
         assertEquals(wf4.toString(), dagCopy.toString());
         assertTrue(dagCopy.vertexSet().size() == 1);
         assertTrue(dagCopy.vertexSet().contains(v0));
@@ -196,13 +196,13 @@ public class AbstractWorkflowTest {
 
     @Test
     void testRemoveVertex() {
-        WorkflowType wf5 = new WorkflowType(dag2);
+        WorkflowTemplate wf5 = new WorkflowTemplate(dag2);
         // Removing not existing vertex
         assertFalse(wf5.removeVertex(v3));
         assertFalse(wf5.removeEdge(null));
         // Removing vertex correctly
         assertTrue(wf5.removeVertex(v1));
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf5.cloneDag();
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dagCopy = wf5.cloneDag();
         assertEquals(wf5.toString(), dagCopy.toString());
         assertTrue(dagCopy.vertexSet().size() == 1);
         assertTrue(dagCopy.vertexSet().contains(v0));

@@ -22,13 +22,13 @@ public class StructuredTreeConverterTest {
         // / \
         // v2 v3
 
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
-        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
-        ProductType v4 = new ProductType("v4");
-        ProductType v5 = new ProductType("v5");
-        ProductType v6 = new ProductType("v6");
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        ProductTemplate v4 = new ProductTemplate("v4");
+        ProductTemplate v5 = new ProductTemplate("v5");
+        ProductTemplate v6 = new ProductTemplate("v6");
 
         DirectedAcyclicGraph<STPNBlock, CustomEdge> structuredWorkflow = new DirectedAcyclicGraph<>(CustomEdge.class);
 
@@ -45,7 +45,8 @@ public class StructuredTreeConverterTest {
 
         structuredWorkflow.addVertex(seqBlock1);
 
-        StructuredTree<ProductType> structuredTree = new StructuredTree<>(null, structuredWorkflow, ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(null, structuredWorkflow,
+                ProductTemplate.class);
 
         structuredTree.buildStructuredTree();
 

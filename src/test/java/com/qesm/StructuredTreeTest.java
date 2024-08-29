@@ -13,19 +13,19 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 public class StructuredTreeTest {
 
-    private WorkflowType wf1;
-    private StructuredTree<ProductType> structuredTree1;
-    private StructuredTree<ProductType> structuredTree2;
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
+    private WorkflowTemplate wf1;
+    private StructuredTree<ProductTemplate> structuredTree1;
+    private StructuredTree<ProductTemplate> structuredTree2;
+    private DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag;
 
     // Nodes of wf1
-    private ProductType v0;
-    private ProductType v1;
-    private ProductType v2;
-    private ProductType v3;
-    private ProductType v4;
-    private ProductType v5;
-    private ProductType v6;
+    private ProductTemplate v0;
+    private ProductTemplate v1;
+    private ProductTemplate v2;
+    private ProductTemplate v3;
+    private ProductTemplate v4;
+    private ProductTemplate v5;
+    private ProductTemplate v6;
 
     @BeforeEach
     public void setup() {
@@ -40,13 +40,13 @@ public class StructuredTreeTest {
         // v5 v6
 
         dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        v2 = new ProductType("v2", 3, new UniformTime(4, 6));
-        v3 = new ProductType("v3", 4, new UniformTime(6, 8));
-        v4 = new ProductType("v4");
-        v5 = new ProductType("v5");
-        v6 = new ProductType("v6");
+        v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        v4 = new ProductTemplate("v4");
+        v5 = new ProductTemplate("v5");
+        v6 = new ProductTemplate("v6");
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -60,9 +60,9 @@ public class StructuredTreeTest {
         dag.addEdge(v4, v1);
         dag.addEdge(v5, v2);
         dag.addEdge(v6, v3);
-        wf1 = new WorkflowType(dag);
+        wf1 = new WorkflowTemplate(dag);
 
-        structuredTree1 = new StructuredTree<>(wf1.cloneDag(), ProductType.class);
+        structuredTree1 = new StructuredTree<>(wf1.cloneDag(), ProductTemplate.class);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class StructuredTreeTest {
         structuredWorkflow2.addEdge(simpleBlock2, simpleBlock1);
         structuredWorkflow2.addEdge(simpleBlock1, simpleBlock0);
 
-        structuredTree2 = new StructuredTree<>(null, structuredWorkflow2, ProductType.class);
+        structuredTree2 = new StructuredTree<>(null, structuredWorkflow2, ProductTemplate.class);
 
         assertEquals(structuredTree1, structuredTree2);
     }
@@ -107,7 +107,7 @@ public class StructuredTreeTest {
 
         structuredWorkflow2.addVertex(seqBlock1);
 
-        structuredTree2 = new StructuredTree<>(null, structuredWorkflow2, ProductType.class);
+        structuredTree2 = new StructuredTree<>(null, structuredWorkflow2, ProductTemplate.class);
 
         structuredTree1.buildStructuredTree();
 
@@ -117,10 +117,10 @@ public class StructuredTreeTest {
 
     @Test
     void testEquals() {
-        StructuredTree<ProductType> structuredTree1Reference = structuredTree1;
+        StructuredTree<ProductTemplate> structuredTree1Reference = structuredTree1;
         assertEquals(structuredTree1Reference, structuredTree1);
 
-        StructuredTree<ProductType> structuredTree2 = new StructuredTree<>(dag, ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree2 = new StructuredTree<>(dag, ProductTemplate.class);
         assertEquals(structuredTree1, structuredTree2);
 
         structuredTree1.buildStructuredTree();
@@ -129,11 +129,11 @@ public class StructuredTreeTest {
         structuredTree2.buildStructuredTree();
         assertEquals(structuredTree1, structuredTree2);
 
-        ProductType v7 = new ProductType("v7");
+        ProductTemplate v7 = new ProductTemplate("v7");
         dag.addVertex(v7);
         dag.addEdge(v7, v3);
 
-        StructuredTree<ProductType> structuredTree3 = new StructuredTree<>(dag, ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree3 = new StructuredTree<>(dag, ProductTemplate.class);
 
         structuredTree3.buildStructuredTree();
 

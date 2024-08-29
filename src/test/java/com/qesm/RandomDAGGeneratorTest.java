@@ -15,9 +15,9 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class RandomDAGGeneratorTest {
 
-    private DirectedAcyclicGraph<ProductType, CustomEdge> dag;
-    ProductType rootNode;
-    HashMap<Integer, ArrayList<ProductType>> levelToVertices = new HashMap<Integer, ArrayList<ProductType>>();
+    private DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag;
+    ProductTemplate rootNode;
+    HashMap<Integer, ArrayList<ProductTemplate>> levelToVertices = new HashMap<Integer, ArrayList<ProductTemplate>>();
 
     @RepeatedTest(100)
     void testGenerateGraph() {
@@ -34,7 +34,7 @@ public class RandomDAGGeneratorTest {
         dag = randDAGGenerator.generateGraph();
 
         // Test maxBranchingDownFactor and maxBranchingUpFactor
-        for (ProductType vertex : dag.vertexSet()) {
+        for (ProductTemplate vertex : dag.vertexSet()) {
             assertTrue(dag.inDegreeOf(vertex) <= maxBranchingDownFactor
                     && dag.outDegreeOf(vertex) <= maxBranchingUpFactor);
         }
@@ -42,7 +42,7 @@ public class RandomDAGGeneratorTest {
         rootNode = randDAGGenerator.getRootNode();
         // Calculate levels for each vertex exploring all passible paths from vertex to
         // rootNode
-        for (ProductType vertex : dag.vertexSet()) {
+        for (ProductTemplate vertex : dag.vertexSet()) {
             if (vertex == rootNode) {
                 continue;
             }
@@ -52,8 +52,8 @@ public class RandomDAGGeneratorTest {
         // Test maxWidth
         for (Integer level : levelToVertices.keySet()) {
             // System.out.println("Level: " + level);
-            // for (ProductType vertex: levelToVertices.get(level)) {
-            // System.out.println(vertex.getNameType());
+            // for (ProductTemplate vertex: levelToVertices.get(level)) {
+            // System.out.println(vertex.getName());
             // }
             assertTrue(levelToVertices.get(level).size() <= maxWidth);
         }
@@ -65,10 +65,10 @@ public class RandomDAGGeneratorTest {
 
     }
 
-    private void recursiveSearch(int currLevel, ProductType currVertex, ProductType sourceVertex) {
+    private void recursiveSearch(int currLevel, ProductTemplate currVertex, ProductTemplate sourceVertex) {
         if (currVertex == rootNode) {
             if (!levelToVertices.containsKey(currLevel)) {
-                levelToVertices.put(currLevel, new ArrayList<ProductType>(List.of(sourceVertex)));
+                levelToVertices.put(currLevel, new ArrayList<ProductTemplate>(List.of(sourceVertex)));
             } else {
                 levelToVertices.get(currLevel).add(sourceVertex);
             }

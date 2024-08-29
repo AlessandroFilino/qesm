@@ -21,7 +21,7 @@ public class DAGSharedToUnsharedConverterTest {
     // shared graph
     @Test
     public void testCheckEdgeNumberFromUnsharedToShared() {
-        WorkflowType graphTest = new WorkflowType();
+        WorkflowTemplate graphTest = new WorkflowTemplate();
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         int sharedEdgeNumber = graphTest.cloneDag().edgeSet().size();
 
@@ -41,44 +41,44 @@ public class DAGSharedToUnsharedConverterTest {
 
     @RepeatedTest(100)
     public void testCheckConversion(RepetitionInfo repetitionInfo) {
-        WorkflowType workflowTypeTest = new WorkflowType();
-        workflowTypeTest.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+        workflowTemplate.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
 
-        HashMap<ProductType, Integer> nodeNumberAfterConvMap = new HashMap<ProductType, Integer>();
-        DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag = workflowTypeTest.cloneDag();
+        HashMap<ProductTemplate, Integer> nodeNumberAfterConvMap = new HashMap<ProductTemplate, Integer>();
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> workflowDag = workflowTemplate.cloneDag();
 
         Integer totalNodeNumberAfterConv = 0;
 
-        for (ProductType node : workflowDag.vertexSet()) {
+        for (ProductTemplate node : workflowDag.vertexSet()) {
             totalNodeNumberAfterConv += getNodeNumberAfterConversion(node, workflowDag, nodeNumberAfterConvMap);
         }
 
         // System.out.println("Test ripetizione : " +
         // repetitionInfo.getCurrentRepetition());
-        // System.out.println(workflowTypeTest);
-        workflowTypeTest.toUnshared();
-        workflowDag = workflowTypeTest.cloneDag();
-        // System.out.println(workflowTypeTest);
+        // System.out.println(workflowTemplate);
+        workflowTemplate.toUnshared();
+        workflowDag = workflowTemplate.cloneDag();
+        // System.out.println(workflowTemplate);
 
         // Check if node number after conversion is as expected
         assertEquals(totalNodeNumberAfterConv, workflowDag.vertexSet().size());
 
         // Check that after conversion all nodes has not more of one outGoingEdge
-        for (ProductType node : workflowDag) {
+        for (ProductTemplate node : workflowDag) {
             assertTrue(workflowDag.outDegreeOf(node) <= 1);
         }
 
     }
 
-    private Integer getNodeNumberAfterConversion(ProductType node,
-            DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag,
-            HashMap<ProductType, Integer> nodeNumberAfterConvMap) {
+    private Integer getNodeNumberAfterConversion(ProductTemplate node,
+            DirectedAcyclicGraph<ProductTemplate, CustomEdge> workflowDag,
+            HashMap<ProductTemplate, Integer> nodeNumberAfterConvMap) {
         if (nodeNumberAfterConvMap.containsKey(node)) {
             return nodeNumberAfterConvMap.get(node);
         } else {
             Integer nodeNumberAfterConv = 0;
             for (CustomEdge descendantEdge : workflowDag.outgoingEdgesOf(node)) {
-                ProductType descendantNode = workflowDag.getEdgeTarget(descendantEdge);
+                ProductTemplate descendantNode = workflowDag.getEdgeTarget(descendantEdge);
                 nodeNumberAfterConv += getNodeNumberAfterConversion(descendantNode, workflowDag,
                         nodeNumberAfterConvMap);
             }

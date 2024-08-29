@@ -20,32 +20,32 @@ public class ProductInstanceTest {
     @Test
     void testProductInstanceCreationCoverage() {
 
-        ProductInstance productInstance1 = new ProductInstance(new ProductType("p1", 1, new UniformTime(0, 2)));
+        ProductInstance productInstance1 = new ProductInstance(new ProductTemplate("p1", 1, new UniformTime(0, 2)));
         assertEquals(productInstance1.getPdf().getEFT(), BigDecimal.valueOf(0.0));
         assertEquals(productInstance1.getPdf().getLFT(), BigDecimal.valueOf(2.0));
 
         ProductInstance productInstance2 = new ProductInstance(
-                new ProductType("p2", 1, new DeterministicTime(BigDecimal.valueOf(2))));
+                new ProductTemplate("p2", 1, new DeterministicTime(BigDecimal.valueOf(2))));
         assertEquals(productInstance2.getPdf().getEFT(), BigDecimal.valueOf(2));
         assertEquals(productInstance2.getPdf().getLFT(), BigDecimal.valueOf(2));
 
-        ProductInstance productInstance3 = new ProductInstance(new ProductType("p3", 1, new ErlangTime(1, 2)));
+        ProductInstance productInstance3 = new ProductInstance(new ProductTemplate("p3", 1, new ErlangTime(1, 2)));
         assertTrue(productInstance3.getPdf() instanceof ErlangTime);
         ErlangTime pdf3 = (ErlangTime) productInstance3.getPdf();
         assertEquals(pdf3.getK(), 1);
         assertEquals(pdf3.getRate(), 2.0);
 
         ProductInstance productInstance4 = new ProductInstance(
-                new ProductType("p4", 1, new ExponentialTime(BigDecimal.valueOf(2))));
+                new ProductTemplate("p4", 1, new ExponentialTime(BigDecimal.valueOf(2))));
         assertTrue(productInstance4.getPdf() instanceof ExponentialTime);
         ExponentialTime pdf4 = (ExponentialTime) productInstance4.getPdf();
         assertEquals(pdf4.getRate(), BigDecimal.valueOf(2));
 
         assertThrows(RuntimeException.class, () -> {
-            new ProductInstance(new ProductType("p5", 1, new ExpolynomialTime()));
+            new ProductInstance(new ProductTemplate("p5", 1, new ExpolynomialTime()));
         });
 
-        ProductInstance productInstance6 = new ProductInstance(new ProductType("p6"));
+        ProductInstance productInstance6 = new ProductInstance(new ProductTemplate("p6"));
         assertEquals(productInstance6.getName(), "p6");
         assertEquals(productInstance6.getItemGroup(), ItemGroup.RAW_MATERIAL);
 

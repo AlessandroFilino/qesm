@@ -16,56 +16,56 @@ public class DotFileConverterTest {
     private PdfType pdfType4 = PdfType.DETERMINISTIC;
 
     @Test
-    void workflowTypeIOTest() {
-        workflowTypeIO(pdfType1);
-        workflowTypeIO(pdfType2);
-        workflowTypeIO(pdfType3);
-        workflowTypeIO(pdfType4);
+    void workflowTemplateIOTest() {
+        workflowTemplateIO(pdfType1);
+        workflowTemplateIO(pdfType2);
+        workflowTemplateIO(pdfType3);
+        workflowTemplateIO(pdfType4);
     }
 
-    private void workflowTypeIO(PdfType pdfType) {
-        WorkflowType workFlowType1 = new WorkflowType();
-        WorkflowType workFlowType2 = new WorkflowType();
+    private void workflowTemplateIO(PdfType pdfType) {
+        WorkflowTemplate workflowTemplate1 = new WorkflowTemplate();
+        WorkflowTemplate workflowTemplate2 = new WorkflowTemplate();
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(3, 3, 2, 5, 60, pdfType);
-        workFlowType1.exportDotFile("./output/workFlowType1.dot");
+        workflowTemplate1.generateRandomDAG(3, 3, 2, 5, 60, pdfType);
+        workflowTemplate1.exportDotFile("./output/workflowTemplate1.dot");
 
-        workFlowType2.importDotFile("./output/workFlowType1.dot");
-        workFlowType2.exportDotFile("./output/workFlowType2.dot");
+        workflowTemplate2.importDotFile("./output/workflowTemplate1.dot");
+        workflowTemplate2.exportDotFile("./output/workflowTemplate2.dot");
 
-        // Renderer.renderDotFile("./output/workFlowType1.dot",
-        // "./media/workFlowType1.svg");
-        // Renderer.renderDotFile("./output/workFlowType2.dot",
-        // "./media/workFlowType2.svg");
+        // Renderer.renderDotFile("./output/workflowTemplate1.dot",
+        // "./media/workflowTemplate1.svg");
+        // Renderer.renderDotFile("./output/workflowTemplate2.dot",
+        // "./media/workflowTemplate2.svg");
 
-        // System.out.println(workFlowType1);
-        // System.out.println(workFlowType2);
+        // System.out.println(workflowTemplate1);
+        // System.out.println(workflowTemplate2);
 
-        assertTrue(workFlowType1.equalsNodesAttributes(workFlowType2));
+        assertTrue(workflowTemplate1.equalsNodesAttributes(workflowTemplate2));
 
-        rmDotFile("./output/workFlowType1.dot");
-        rmDotFile("./output/workFlowType2.dot");
+        rmDotFile("./output/workflowTemplate1.dot");
+        rmDotFile("./output/workflowTemplate2.dot");
     }
 
     @Test
     void structuredTreeIOTest() {
-        WorkflowType workFlowType1 = new WorkflowType();
+        WorkflowTemplate workflowTemplate1 = new WorkflowTemplate();
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
-        // workFlowType1.exportDotFile("./output/workFlowType1.dot");
-        // Renderer.renderDotFile("./output/workFlowType1.dot",
-        // "./media/workFlowType1.svg", 3);
+        workflowTemplate1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
+        // workflowTemplate1.exportDotFile("./output/workflowTemplate1.dot");
+        // Renderer.renderDotFile("./output/workflowTemplate1.dot",
+        // "./media/workflowTemplate1.svg", 3);
 
-        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.cloneDag(),
-                ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree1 = new StructuredTree<>(workflowTemplate1.cloneDag(),
+                ProductTemplate.class);
         structuredTree1.buildStructuredTree();
         structuredTree1.exportDotFile("./output/structuredTree1.dot");
 
-        StructuredTree<ProductType> structuredTree2 = new StructuredTree<>(ProductType.class);
+        StructuredTree<ProductTemplate> structuredTree2 = new StructuredTree<>(ProductTemplate.class);
         structuredTree2.importDotFile("./output/structuredTree1.dot");
         structuredTree2.exportDotFile("./output/structuredTree2.dot");
 
@@ -76,23 +76,23 @@ public class DotFileConverterTest {
         // Renderer.renderDotFile("./output/structuredTree2.dot",
         // "./media/structuredTree2.svg", 3);
 
-        // rmDotFile("./output/workFlowType1.dot");
+        // rmDotFile("./output/workflowTemplate1.dot");
         rmDotFile("./output/structuredTree1.dot");
         rmDotFile("./output/structuredTree2.dot");
     }
 
     @Test
     void workflowInstanceIOTest() {
-        WorkflowType workFlowType1 = new WorkflowType();
+        WorkflowTemplate workflowTemplate1 = new WorkflowTemplate();
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
-        // workFlowType1.exportDotFile("./output/workFlowType1.dot");
-        // Renderer.renderDotFile("./output/workFlowType1.dot",
-        // "./media/workFlowType1.svg", 3);
+        workflowTemplate1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
+        // workflowTemplate1.exportDotFile("./output/workflowTemplate1.dot");
+        // Renderer.renderDotFile("./output/workflowTemplate1.dot",
+        // "./media/workflowTemplate1.svg", 3);
 
-        WorkflowInstance workFlowInstance1 = workFlowType1.makeInstance();
+        WorkflowInstance workFlowInstance1 = workflowTemplate1.makeInstance();
         workFlowInstance1.exportDotFile("./output/workFlowInstance1.dot");
 
         WorkflowInstance workFlowInstance2 = new WorkflowInstance();

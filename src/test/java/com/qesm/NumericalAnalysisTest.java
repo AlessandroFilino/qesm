@@ -377,14 +377,14 @@ public class NumericalAnalysisTest {
         // v5 v6
 
         // Workflow generation
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
-        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
-        ProductType v4 = new ProductType("v4");
-        ProductType v5 = new ProductType("v5");
-        ProductType v6 = new ProductType("v6");
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        ProductTemplate v4 = new ProductTemplate("v4");
+        ProductTemplate v5 = new ProductTemplate("v5");
+        ProductTemplate v6 = new ProductTemplate("v6");
         dag.addVertex(v0);
         dag.addVertex(v1);
         dag.addVertex(v2);
@@ -398,35 +398,35 @@ public class NumericalAnalysisTest {
         dag.addEdge(v4, v1);
         dag.addEdge(v5, v2);
         dag.addEdge(v6, v3);
-        WorkflowType wf1 = new WorkflowType(dag);
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
 
-        StructuredTree<ProductType> structuredTreev0 = new StructuredTree<>(
+        StructuredTree<ProductTemplate> structuredTreev0 = new StructuredTree<>(
                 wf1.getProductWorkflow(v0).cloneDag(),
-                ProductType.class);
+                ProductTemplate.class);
         structuredTreev0.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv0 = new StructuredTreeConverter(
                 structuredTreev0.getStructuredWorkflow());
         activityWellNestedV0 = structuredTreeConverterv0.convertToActivity();
 
-        StructuredTree<ProductType> structuredTreev1 = new StructuredTree<>(
+        StructuredTree<ProductTemplate> structuredTreev1 = new StructuredTree<>(
                 wf1.getProductWorkflow(v1).cloneDag(),
-                ProductType.class);
+                ProductTemplate.class);
         structuredTreev1.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv1 = new StructuredTreeConverter(
                 structuredTreev1.getStructuredWorkflow());
         activityWellNestedV1 = structuredTreeConverterv1.convertToActivity();
 
-        StructuredTree<ProductType> structuredTreev2 = new StructuredTree<>(
+        StructuredTree<ProductTemplate> structuredTreev2 = new StructuredTree<>(
                 wf1.getProductWorkflow(v2).cloneDag(),
-                ProductType.class);
+                ProductTemplate.class);
         structuredTreev2.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv2 = new StructuredTreeConverter(
                 structuredTreev2.getStructuredWorkflow());
         activityWellNestedV2 = structuredTreeConverterv2.convertToActivity();
 
-        StructuredTree<ProductType> structuredTreev3 = new StructuredTree<>(
+        StructuredTree<ProductTemplate> structuredTreev3 = new StructuredTree<>(
                 wf1.getProductWorkflow(v3).cloneDag(),
-                ProductType.class);
+                ProductTemplate.class);
         structuredTreev3.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv3 = new StructuredTreeConverter(
                 structuredTreev3.getStructuredWorkflow());
@@ -445,15 +445,15 @@ public class NumericalAnalysisTest {
         //
         // Workflow generation
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 2, new UniformTime(2, 4));
-        ProductType v2 = new ProductType("v2", 3, new UniformTime(4, 6));
-        ProductType v3 = new ProductType("v3", 4, new UniformTime(6, 8));
-        ProductType v7 = new ProductType("v7", 5, new UniformTime(8, 10));
-        ProductType v4 = new ProductType("v4");
-        ProductType v5 = new ProductType("v5");
-        ProductType v6 = new ProductType("v6");
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        ProductTemplate v7 = new ProductTemplate("v7", 5, new UniformTime(8, 10));
+        ProductTemplate v4 = new ProductTemplate("v4");
+        ProductTemplate v5 = new ProductTemplate("v5");
+        ProductTemplate v6 = new ProductTemplate("v6");
 
         dag.addVertex(v0);
         dag.addVertex(v1);
@@ -472,11 +472,11 @@ public class NumericalAnalysisTest {
         dag.addEdge(v2, v7);
         dag.addEdge(v7, v0);
 
-        WorkflowType wf1 = new WorkflowType(dag);
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
 
-        StructuredTree<ProductType> structuredTreev0 = new StructuredTree<>(
+        StructuredTree<ProductTemplate> structuredTreev0 = new StructuredTree<>(
                 wf1.getProductWorkflow(v0).cloneDag(),
-                ProductType.class);
+                ProductTemplate.class);
         structuredTreev0.buildStructuredTree();
         StructuredTreeConverter structuredTreeConverterv0 = new StructuredTreeConverter(
                 structuredTreev0.getStructuredWorkflow());

@@ -12,24 +12,24 @@ import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
 import com.qesm.RandomDAGGenerator.PdfType;
 
-public class WorkflowTypeTest {
+public class WorkflowTemplateTest {
 
     @Test
     void testMakeInstance() {
-        // Check if the WorkflowInstance' dag matches the WorkflowType's one
-        WorkflowType workflowType = new WorkflowType();
+        // Check if the WorkflowInstance' dag matches the workflowTemplate's one
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
 
-        workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
-        WorkflowInstance workflowInstance = workflowType.makeInstance();
+        workflowTemplate.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
+        WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.cloneDag();
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dagTemplate = workflowTemplate.cloneDag();
         DirectedAcyclicGraph<ProductInstance, CustomEdge> dagInstance = workflowInstance.cloneDag();
         // Checks the number of nodes and edges
-        assertEquals(dagType.vertexSet().size(), dagInstance.vertexSet().size());
-        assertEquals(dagType.edgeSet().size(), dagInstance.edgeSet().size());
+        assertEquals(dagTemplate.vertexSet().size(), dagInstance.vertexSet().size());
+        assertEquals(dagTemplate.edgeSet().size(), dagInstance.edgeSet().size());
 
         // Checks if all nodes matches (same attributes)
-        assertTrue(workflowType.equalsNodesAttributes(workflowInstance));
+        assertTrue(workflowTemplate.equalsNodesAttributes(workflowInstance));
 
         // Check in workflowInstance if all ProcessedTypes have their subgraph specified
         for (ProductInstance nodeInstance : dagInstance.vertexSet()) {
@@ -75,15 +75,16 @@ public class WorkflowTypeTest {
 
     @Test
     void testReflection() {
-        // Create a workflowtype, make an instance, modify the dag of WorkflowType and
+        // Create a workflowTemplate, make an instance, modify the dag of
+        // workflowTemplate and
         // make another instance.
         // Verify that the two instances are not equals
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
-        ProductType v4 = new ProductType("v4");
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 1, new UniformTime(0, 2));
+        ProductTemplate v2 = new ProductTemplate("v2", 1, new UniformTime(0, 2));
+        ProductTemplate v3 = new ProductTemplate("v3", 1, new UniformTime(0, 2));
+        ProductTemplate v4 = new ProductTemplate("v4");
 
         dag.addVertex(v0);
         dag.addVertex(v1);
@@ -97,16 +98,16 @@ public class WorkflowTypeTest {
         dag.addEdge(v2, v1);
         dag.addEdge(v1, v0);
 
-        WorkflowType workflowType = new WorkflowType(dag);
-        WorkflowInstance workflowInstance1 = workflowType.makeInstance();
-        WorkflowInstance workflowInstance2 = workflowType.makeInstance();
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate(dag);
+        WorkflowInstance workflowInstance1 = workflowTemplate.makeInstance();
+        WorkflowInstance workflowInstance2 = workflowTemplate.makeInstance();
 
         assertTrue(workflowInstance1.equalsNodesAttributes(workflowInstance2));
 
-        ProductType v5 = new ProductType("v5");
-        workflowType.connectVertex(v5, v3);
+        ProductTemplate v5 = new ProductTemplate("v5");
+        workflowTemplate.connectVertex(v5, v3);
 
-        WorkflowInstance workflowInstance3 = workflowType.makeInstance();
+        WorkflowInstance workflowInstance3 = workflowTemplate.makeInstance();
         assertFalse(workflowInstance3.equalsNodesAttributes(workflowInstance1));
 
     }
@@ -120,12 +121,12 @@ public class WorkflowTypeTest {
         // v3
         // v4
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
-        ProductType v4 = new ProductType("v4");
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 1, new UniformTime(0, 2));
+        ProductTemplate v2 = new ProductTemplate("v2", 1, new UniformTime(0, 2));
+        ProductTemplate v3 = new ProductTemplate("v3", 1, new UniformTime(0, 2));
+        ProductTemplate v4 = new ProductTemplate("v4");
 
         dag.addVertex(v0);
         dag.addVertex(v1);
@@ -138,12 +139,12 @@ public class WorkflowTypeTest {
         dag.addEdge(v2, v1);
         dag.addEdge(v1, v0);
 
-        WorkflowType workflowType = new WorkflowType(dag);
-        WorkflowType workflowTypeV2 = (WorkflowType) workflowType
-                .getProductWorkflow(workflowType.findProduct("v2").get());
-        WorkflowInstance workflowInstanceV2 = workflowTypeV2.makeInstance();
+        WorkflowTemplate workflowTemplate = new WorkflowTemplate(dag);
+        WorkflowTemplate workflowTemplateV2 = (WorkflowTemplate) workflowTemplate
+                .getProductWorkflow(workflowTemplate.findProduct("v2").get());
+        WorkflowInstance workflowInstanceV2 = workflowTemplateV2.makeInstance();
 
-        assertTrue(workflowTypeV2.equalsNodesAttributes(workflowInstanceV2));
+        assertTrue(workflowTemplateV2.equalsNodesAttributes(workflowInstanceV2));
 
     }
 }
