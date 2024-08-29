@@ -23,13 +23,13 @@ public class DAGSharedToUnsharedConverterTest {
     public void testCheckEdgeNumberFromUnsharedToShared() {
         WorkflowType graphTest = new WorkflowType();
         graphTest.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-        int sharedEdgeNumber = graphTest.CloneDag().edgeSet().size();
+        int sharedEdgeNumber = graphTest.cloneDag().edgeSet().size();
 
         graphTest.toUnshared();
         Set<String> connectedNodesUnshared = new HashSet<>();
-        for (CustomEdge edge : graphTest.CloneDag().edgeSet()) {
-            String source = graphTest.CloneDag().getEdgeSource(edge).getName();
-            String target = graphTest.CloneDag().getEdgeTarget(edge).getName();
+        for (CustomEdge edge : graphTest.cloneDag().edgeSet()) {
+            String source = graphTest.cloneDag().getEdgeSource(edge).getName();
+            String target = graphTest.cloneDag().getEdgeTarget(edge).getName();
             String nodePair = source.replaceAll("_.*", "") + "," + target.replaceAll("_.*", "");
             connectedNodesUnshared.add(nodePair);
         }
@@ -45,7 +45,7 @@ public class DAGSharedToUnsharedConverterTest {
         workflowTypeTest.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
 
         HashMap<ProductType, Integer> nodeNumberAfterConvMap = new HashMap<ProductType, Integer>();
-        DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag = workflowTypeTest.CloneDag();
+        DirectedAcyclicGraph<ProductType, CustomEdge> workflowDag = workflowTypeTest.cloneDag();
 
         Integer totalNodeNumberAfterConv = 0;
 
@@ -57,7 +57,7 @@ public class DAGSharedToUnsharedConverterTest {
         // repetitionInfo.getCurrentRepetition());
         // System.out.println(workflowTypeTest);
         workflowTypeTest.toUnshared();
-        workflowDag = workflowTypeTest.CloneDag();
+        workflowDag = workflowTypeTest.cloneDag();
         // System.out.println(workflowTypeTest);
 
         // Check if node number after conversion is as expected

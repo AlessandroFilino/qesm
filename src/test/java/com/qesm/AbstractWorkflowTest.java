@@ -27,7 +27,7 @@ public class AbstractWorkflowTest {
     private WorkflowType wf3;
     private WorkflowType wf1Reference;
     private WorkflowType wfNull;
-    private WorkflowIstance wi1;
+    private WorkflowInstance wi1;
 
     // Nodes of wf2 and wf3
     private ProductType v0;
@@ -46,7 +46,7 @@ public class AbstractWorkflowTest {
         wf1.generateRandomDAG(3, 3, 2, 2, 60, PdfType.UNIFORM);
         wf1Reference = wf1;
 
-        wi1 = wf1.makeIstance();
+        wi1 = wf1.makeInstance();
 
         dag2 = new DirectedAcyclicGraph<>(CustomEdge.class);
         v0 = new ProductType("v0", 1, new UniformTime(0, 2));
@@ -187,7 +187,7 @@ public class AbstractWorkflowTest {
         assertFalse(wf4.removeEdge(new CustomEdge()));
         // Removing edge correctly
         assertTrue(wf4.removeEdge(v1, v0));
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf4.CloneDag();
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf4.cloneDag();
         assertEquals(wf4.toString(), dagCopy.toString());
         assertTrue(dagCopy.vertexSet().size() == 1);
         assertTrue(dagCopy.vertexSet().contains(v0));
@@ -202,7 +202,7 @@ public class AbstractWorkflowTest {
         assertFalse(wf5.removeEdge(null));
         // Removing vertex correctly
         assertTrue(wf5.removeVertex(v1));
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf5.CloneDag();
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf5.cloneDag();
         assertEquals(wf5.toString(), dagCopy.toString());
         assertTrue(dagCopy.vertexSet().size() == 1);
         assertTrue(dagCopy.vertexSet().contains(v0));

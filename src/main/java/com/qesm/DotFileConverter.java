@@ -47,7 +47,7 @@ public interface DotFileConverter<T extends DotFileConvertible> {
         // export graph to dotFile
         try {
             FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(this.CloneDag(), writer);
+            exporter.exportGraph(this.cloneDag(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +61,7 @@ public interface DotFileConverter<T extends DotFileConvertible> {
         // export graph to dotFile
         try {
             FileWriter writer = new FileWriter(filePath);
-            exporter.exportGraph(this.CloneDag(), writer);
+            exporter.exportGraph(this.cloneDag(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,7 +82,7 @@ public interface DotFileConverter<T extends DotFileConvertible> {
         }
     }
 
-    public DirectedAcyclicGraph<T, CustomEdge> CloneDag();
+    public DirectedAcyclicGraph<T, CustomEdge> cloneDag();
 
     public void setDag(DirectedAcyclicGraph<T, CustomEdge> dagToSet);
 

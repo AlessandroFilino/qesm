@@ -28,15 +28,15 @@ public class WorkflowType extends AbstractWorkflow<ProductType> {
         updateAllSubgraphs();
     }
 
-    public WorkflowIstance makeIstance() {
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagIstance = new DirectedAcyclicGraph<>(CustomEdge.class);
+    public WorkflowInstance makeInstance() {
+        DirectedAcyclicGraph<ProductInstance, CustomEdge> dagInstance = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-        HashMap<ProductType, ProductIstance> productTypeToProductMap = new HashMap<>();
+        HashMap<ProductType, ProductInstance> productTypeToProductMap = new HashMap<>();
 
         // Deepcopy of all vertexes
         for (ProductType vertex : dag.vertexSet()) {
-            ProductIstance product = new ProductIstance(vertex);
-            dagIstance.addVertex(product);
+            ProductInstance product = new ProductInstance(vertex);
+            dagInstance.addVertex(product);
             productTypeToProductMap.put(vertex, product);
         }
 
@@ -44,13 +44,13 @@ public class WorkflowType extends AbstractWorkflow<ProductType> {
         for (CustomEdge edge : dag.edgeSet()) {
             ProductType sourceType = dag.getEdgeSource(edge);
             ProductType targetType = dag.getEdgeTarget(edge);
-            dagIstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType),
+            dagInstance.addEdge(productTypeToProductMap.get(sourceType), productTypeToProductMap.get(targetType),
                     new CustomEdge(edge));
         }
 
-        WorkflowIstance workflowIstance = new WorkflowIstance(dagIstance);
+        WorkflowInstance workflowInstance = new WorkflowInstance(dagInstance);
 
-        return workflowIstance;
+        return workflowInstance;
     }
 
     @Override

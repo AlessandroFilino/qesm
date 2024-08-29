@@ -60,7 +60,7 @@ public class DotFileConverterTest {
         // Renderer.renderDotFile("./output/workFlowType1.dot",
         // "./media/workFlowType1.svg", 3);
 
-        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.CloneDag(),
+        StructuredTree<ProductType> structuredTree1 = new StructuredTree<>(workFlowType1.cloneDag(),
                 ProductType.class);
         structuredTree1.buildStructuredTree();
         structuredTree1.exportDotFile("./output/structuredTree1.dot");
@@ -82,7 +82,7 @@ public class DotFileConverterTest {
     }
 
     @Test
-    void workflowIstanceIOTest() {
+    void workflowInstanceIOTest() {
         WorkflowType workFlowType1 = new WorkflowType();
 
         ensureFolderExists("output");
@@ -92,15 +92,15 @@ public class DotFileConverterTest {
         // Renderer.renderDotFile("./output/workFlowType1.dot",
         // "./media/workFlowType1.svg", 3);
 
-        WorkflowIstance workFlowIstance1 = workFlowType1.makeIstance();
-        workFlowIstance1.exportDotFile("./output/workFlowIstance1.dot");
+        WorkflowInstance workFlowInstance1 = workFlowType1.makeInstance();
+        workFlowInstance1.exportDotFile("./output/workFlowInstance1.dot");
 
-        WorkflowIstance workFlowIstance2 = new WorkflowIstance();
-        workFlowIstance2.importDotFile("./output/workFlowIstance1.dot");
+        WorkflowInstance workFlowInstance2 = new WorkflowInstance();
+        workFlowInstance2.importDotFile("./output/workFlowInstance1.dot");
 
-        assertTrue(workFlowIstance1.equalsNodesAttributes(workFlowIstance2));
+        assertTrue(workFlowInstance1.equalsNodesAttributes(workFlowInstance2));
 
-        rmDotFile("./output/workFlowIstance1.dot");
+        rmDotFile("./output/workFlowInstance1.dot");
 
     }
 

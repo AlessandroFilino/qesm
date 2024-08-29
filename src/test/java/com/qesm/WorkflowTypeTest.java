@@ -15,53 +15,53 @@ import com.qesm.RandomDAGGenerator.PdfType;
 public class WorkflowTypeTest {
 
     @Test
-    void testMakeIstance() {
-        // Check if the WorkflowIstance' dag matches the WorkflowType's one
+    void testMakeInstance() {
+        // Check if the WorkflowInstance' dag matches the WorkflowType's one
         WorkflowType workflowType = new WorkflowType();
 
         workflowType.generateRandomDAG(3, 3, 2, 5, 60, PdfType.UNIFORM);
-        WorkflowIstance workflowIstance = workflowType.makeIstance();
+        WorkflowInstance workflowInstance = workflowType.makeInstance();
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.CloneDag();
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> dagInstance = workflowIstance.CloneDag();
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagType = workflowType.cloneDag();
+        DirectedAcyclicGraph<ProductInstance, CustomEdge> dagInstance = workflowInstance.cloneDag();
         // Checks the number of nodes and edges
         assertEquals(dagType.vertexSet().size(), dagInstance.vertexSet().size());
         assertEquals(dagType.edgeSet().size(), dagInstance.edgeSet().size());
 
         // Checks if all nodes matches (same attributes)
-        assertTrue(workflowType.equalsNodesAttributes(workflowIstance));
+        assertTrue(workflowType.equalsNodesAttributes(workflowInstance));
 
-        // Check in workflowIstance if all ProcessedTypes have their subgraph specified
-        for (ProductIstance nodeInstance : dagInstance.vertexSet()) {
+        // Check in workflowInstance if all ProcessedTypes have their subgraph specified
+        for (ProductInstance nodeInstance : dagInstance.vertexSet()) {
 
             if (nodeInstance.isProcessed()) {
-                WorkflowIstance subgraphIstance = new WorkflowIstance(createSubgraph(dagInstance, nodeInstance));
-                assertTrue(subgraphIstance.equalsNodesAttributes(workflowIstance.getProductWorkflow(nodeInstance)));
-                // System.out.println(nodeIstance.getProductWorkflow().equals(subgraphIstance));
-                // System.out.println("Istance workflow");
-                // System.out.println(nodeIstance.getProductWorkflow());
+                WorkflowInstance subgraphInstance = new WorkflowInstance(createSubgraph(dagInstance, nodeInstance));
+                assertTrue(subgraphInstance.equalsNodesAttributes(workflowInstance.getProductWorkflow(nodeInstance)));
+                // System.out.println(nodeInstance.getProductWorkflow().equals(subgraphInstance));
+                // System.out.println("Instance workflow");
+                // System.out.println(nodeInstance.getProductWorkflow());
                 // System.out.println("SubgraphGenerated workflow");
-                // System.out.println(subgraphIstance);
+                // System.out.println(subgraphInstance);
             }
         }
     }
 
-    private DirectedAcyclicGraph<ProductIstance, CustomEdge> createSubgraph(
-            DirectedAcyclicGraph<ProductIstance, CustomEdge> originalDAG, ProductIstance root) {
-        DirectedAcyclicGraph<ProductIstance, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
+    private DirectedAcyclicGraph<ProductInstance, CustomEdge> createSubgraph(
+            DirectedAcyclicGraph<ProductInstance, CustomEdge> originalDAG, ProductInstance root) {
+        DirectedAcyclicGraph<ProductInstance, CustomEdge> subgraphDAG = new DirectedAcyclicGraph<>(CustomEdge.class);
 
-        Set<ProductIstance> subgraphVertices = originalDAG.getAncestors(root);
+        Set<ProductInstance> subgraphVertices = originalDAG.getAncestors(root);
         subgraphVertices.add(root);
 
         // Add vertices and edges to the subgraph
-        for (ProductIstance vertex : subgraphVertices) {
+        for (ProductInstance vertex : subgraphVertices) {
             subgraphDAG.addVertex(vertex);
         }
 
-        for (ProductIstance vertex : subgraphVertices) {
+        for (ProductInstance vertex : subgraphVertices) {
             Set<CustomEdge> edges = originalDAG.outgoingEdgesOf(vertex);
             for (CustomEdge edge : edges) {
-                ProductIstance target = originalDAG.getEdgeTarget(edge);
+                ProductInstance target = originalDAG.getEdgeTarget(edge);
                 if (subgraphVertices.contains(target)) {
                     CustomEdge subgraphEdge = new CustomEdge();
                     subgraphEdge.setQuantityRequired(edge.getQuantityRequired());
@@ -75,9 +75,9 @@ public class WorkflowTypeTest {
 
     @Test
     void testReflection() {
-        // Create a workflowtype, make an istance, modify the dag of WorkflowType and
-        // make another istance.
-        // Verify that the two istances are not equals
+        // Create a workflowtype, make an instance, modify the dag of WorkflowType and
+        // make another instance.
+        // Verify that the two instances are not equals
         DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
         ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
@@ -98,21 +98,21 @@ public class WorkflowTypeTest {
         dag.addEdge(v1, v0);
 
         WorkflowType workflowType = new WorkflowType(dag);
-        WorkflowIstance workflowIstance1 = workflowType.makeIstance();
-        WorkflowIstance workflowIstance2 = workflowType.makeIstance();
+        WorkflowInstance workflowInstance1 = workflowType.makeInstance();
+        WorkflowInstance workflowInstance2 = workflowType.makeInstance();
 
-        assertTrue(workflowIstance1.equalsNodesAttributes(workflowIstance2));
+        assertTrue(workflowInstance1.equalsNodesAttributes(workflowInstance2));
 
         ProductType v5 = new ProductType("v5");
         workflowType.connectVertex(v5, v3);
 
-        WorkflowIstance workflowIstance3 = workflowType.makeIstance();
-        assertFalse(workflowIstance3.equalsNodesAttributes(workflowIstance1));
+        WorkflowInstance workflowInstance3 = workflowType.makeInstance();
+        assertFalse(workflowInstance3.equalsNodesAttributes(workflowInstance1));
 
     }
 
     @Test
-    public void testMakeIstanceOfSubGraph() {
+    public void testMakeInstanceOfSubGraph() {
         // DAG:
         // v0
         // v1
@@ -141,9 +141,9 @@ public class WorkflowTypeTest {
         WorkflowType workflowType = new WorkflowType(dag);
         WorkflowType workflowTypeV2 = (WorkflowType) workflowType
                 .getProductWorkflow(workflowType.findProduct("v2").get());
-        WorkflowIstance workflowIstanceV2 = workflowTypeV2.makeIstance();
+        WorkflowInstance workflowInstanceV2 = workflowTypeV2.makeInstance();
 
-        assertTrue(workflowTypeV2.equalsNodesAttributes(workflowIstanceV2));
+        assertTrue(workflowTypeV2.equalsNodesAttributes(workflowInstanceV2));
 
     }
 }

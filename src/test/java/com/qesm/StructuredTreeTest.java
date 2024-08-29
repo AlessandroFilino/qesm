@@ -62,7 +62,7 @@ public class StructuredTreeTest {
         dag.addEdge(v6, v3);
         wf1 = new WorkflowType(dag);
 
-        structuredTree1 = new StructuredTree<>(wf1.CloneDag(), ProductType.class);
+        structuredTree1 = new StructuredTree<>(wf1.cloneDag(), ProductType.class);
     }
 
     @Test

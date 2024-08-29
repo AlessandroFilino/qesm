@@ -26,7 +26,7 @@ public class AbstractProductTest {
     private ProductType prodTypeProcessed1DifferentQuantity;
     private ProductType prodTypeRaw1Reference;
     private ProductType nullProductType;
-    private ProductIstance prodIstanceRaw1;
+    private ProductInstance prodInstanceRaw1;
 
     private UniformTime uniformTime01;
     private UniformTime uniformTime01Equal;
@@ -70,7 +70,7 @@ public class AbstractProductTest {
         prodTypeProcessed1 = new ProductType("p1", ItemGroup.PROCESSED);
         prodTypeProcessed1DifferentQuantity = new ProductType("p1", ItemGroup.PROCESSED);
         prodTypeProcessed1DifferentQuantity.setQuantityProduced(10);
-        prodIstanceRaw1 = new ProductIstance(prodTypeRaw1);
+        prodInstanceRaw1 = new ProductInstance(prodTypeRaw1);
         prodTypeRaw1Reference = prodTypeRaw1;
 
         uniformTime01 = new UniformTime(0, 1);
@@ -114,10 +114,10 @@ public class AbstractProductTest {
     void testEquals() {
         assertFalse(prodTypeRaw1.equalsAttributes(nullProductType));
         assertFalse(prodTypeRaw1.equalsAttributes(prodTypeRaw2));
-        assertNotEquals(prodTypeRaw1, prodIstanceRaw1);
+        assertNotEquals(prodTypeRaw1, prodInstanceRaw1);
         assertEquals(prodTypeRaw1, prodTypeRaw1);
         assertEquals(prodTypeRaw1, prodTypeRaw1Reference);
-        assertNotEquals(prodIstanceRaw1, nullProductType);
+        assertNotEquals(prodInstanceRaw1, nullProductType);
     }
 
     @Test

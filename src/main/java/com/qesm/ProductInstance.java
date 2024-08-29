@@ -6,9 +6,9 @@ import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.StochasticTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-public class ProductIstance extends AbstractProduct {
+public class ProductInstance extends AbstractProduct {
 
-    public ProductIstance(ProductType productType) {
+    public ProductInstance(ProductType productType) {
         super(new String(productType.getName()), productType.getItemGroup());
 
         if (productType.isProcessed()) {
@@ -32,15 +32,15 @@ public class ProductIstance extends AbstractProduct {
 
     }
 
-    public ProductIstance(String name, ItemGroup itemGroup) {
+    public ProductInstance(String name, ItemGroup itemGroup) {
         super(name, itemGroup);
     }
 
-    public ProductIstance(String name) {
+    public ProductInstance(String name) {
         super(name);
     }
 
-    public ProductIstance(String nameType, Integer quantityProduced, StochasticTime pdf) {
+    public ProductInstance(String nameType, Integer quantityProduced, StochasticTime pdf) {
         super(nameType, quantityProduced, pdf);
     }
 

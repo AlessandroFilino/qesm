@@ -141,7 +141,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     @Override
-    public DirectedAcyclicGraph<V, CustomEdge> CloneDag() {
+    public DirectedAcyclicGraph<V, CustomEdge> cloneDag() {
         return uncheckedCast(dag.clone());
     }
 
@@ -202,7 +202,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
         AbstractWorkflow<V> workflowToCompare = uncheckedCast(obj);
 
-        if (!this.dag.equals(workflowToCompare.CloneDag())) {
+        if (!this.dag.equals(workflowToCompare.cloneDag())) {
             return false;
         }
         return true;
