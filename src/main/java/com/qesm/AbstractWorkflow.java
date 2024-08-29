@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
@@ -310,6 +309,9 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     public boolean removeVertex(V v) {
+        if (v == null || !dag.containsVertex(v)) {
+            return false;
+        }
         Set<V> ancestors = dag.getAncestors(v);
         Set<V> descendants = dag.getDescendants(v);
         V rootNode = computeRootNode();
@@ -323,7 +325,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         if (removed) {
             List<V> nodesToBeRemoved = new ArrayList<>();
             for (V ancestor : ancestors) {
-                if (dag.getDescendants(ancestor).contains(rootNode)) {
+                if (!dag.getDescendants(ancestor).contains(rootNode)) {
                     nodesToBeRemoved.add(ancestor);
                 }
             }
@@ -347,7 +349,14 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return edge;
     }
 
+    public boolean removeEdge(V sourceVertex, V targetVertex) {
+        return removeEdge(dag.getEdge(sourceVertex, targetVertex));
+    }
+
     public boolean removeEdge(CustomEdge e) {
+        if (e == null) {
+            return false;
+        }
         V targetVertex = dag.getEdgeTarget(e);
         V sourceVertex = dag.getEdgeSource(e);
         V rootNode = computeRootNode();
@@ -356,9 +365,9 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         boolean removed = dag.removeEdge(e);
         if (removed) {
             List<V> nodesToBeRemoved = new ArrayList<>();
-            for (V ancestor : possiblyPendantVertexes) {
-                if (dag.getDescendants(ancestor).contains(rootNode)) {
-                    nodesToBeRemoved.add(ancestor);
+            for (V possiblyPendantVertex : possiblyPendantVertexes) {
+                if (!dag.getDescendants(possiblyPendantVertex).contains(rootNode)) {
+                    nodesToBeRemoved.add(possiblyPendantVertex);
                 }
             }
             dag.removeAllVertices(nodesToBeRemoved);
@@ -373,7 +382,6 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     // Validation methods
     private enum Validation {
         ROOT_NODE,
-        CONNECTIVITY,
         LEAF_NODES
     }
 
@@ -393,12 +401,6 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         }
     }
 
-    private boolean isDagConnected() {
-        ConnectivityInspector<V, CustomEdge> connInspector = new ConnectivityInspector<V, CustomEdge>(
-                dag);
-        return connInspector.isConnected();
-    }
-
     private Boolean checkLeafNodes(Set<V> vertexToCheck) {
         // all raw_materials should be leaf nodes
         for (V node : vertexToCheck) {
@@ -410,7 +412,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
     }
 
     public void validateWorkflow() throws WorkflowValidationException, RuntimeException {
-        validate(dag.vertexSet(), Validation.ROOT_NODE, Validation.CONNECTIVITY, Validation.LEAF_NODES);
+        validate(dag.vertexSet(), Validation.ROOT_NODE, Validation.LEAF_NODES);
     }
 
     private void validate(Set<V> vertexToCheck, Validation... args)
@@ -422,11 +424,6 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
                 case ROOT_NODE:
                     if (!checkRootNode()) {
                         throw new WorkflowValidationException("Validation error: Root node (duplicate or none)");
-                    }
-                    break;
-                case CONNECTIVITY:
-                    if (!isDagConnected()) {
-                        throw new WorkflowValidationException("Validation error: DAG not connected");
                     }
                     break;
                 case LEAF_NODES:

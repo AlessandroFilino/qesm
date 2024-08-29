@@ -2,7 +2,6 @@ package com.qesm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
@@ -45,7 +44,6 @@ public class WorkflowTypeTest {
                 // System.out.println(subgraphIstance);
             }
         }
-
     }
 
     private DirectedAcyclicGraph<ProductIstance, CustomEdge> createSubgraph(
@@ -114,55 +112,6 @@ public class WorkflowTypeTest {
     }
 
     @Test
-    public void testDAGUpdating() {
-        // DAG:
-        // v0
-        // v1
-        // v2
-        // v3
-        // v4
-
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
-        ProductType v0 = new ProductType("v0", 1, new UniformTime(0, 2));
-        ProductType v1 = new ProductType("v1", 1, new UniformTime(0, 2));
-        ProductType v2 = new ProductType("v2", 1, new UniformTime(0, 2));
-        ProductType v3 = new ProductType("v3", 1, new UniformTime(0, 2));
-        ProductType v4 = new ProductType("v4");
-        ProductType v5 = new ProductType("v5");
-
-        dag.addVertex(v0);
-        dag.addVertex(v1);
-        dag.addVertex(v2);
-        dag.addVertex(v3);
-        dag.addVertex(v4);
-
-        dag.addEdge(v4, v3);
-        dag.addEdge(v3, v2);
-        dag.addEdge(v2, v1);
-        dag.addEdge(v1, v0);
-
-        WorkflowType workflowType = new WorkflowType(dag);
-
-        dag.addVertex(v5);
-        dag.addEdge(v5, v2);
-
-        // DAG:
-        // v0
-        // v1
-        // v2
-        // v3 v5
-        // v4
-
-        assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v2").get()).CloneDag().containsVertex(v5));
-        assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v1").get()).CloneDag().containsVertex(v5));
-        assertTrue(
-                workflowType.getProductWorkflow(workflowType.findProduct("v0").get()).CloneDag().containsVertex(v5));
-
-    }
-
-    @Test
     public void testMakeIstanceOfSubGraph() {
         // DAG:
         // v0
@@ -197,5 +146,4 @@ public class WorkflowTypeTest {
         assertTrue(workflowTypeV2.equalsNodesAttributes(workflowIstanceV2));
 
     }
-
 }

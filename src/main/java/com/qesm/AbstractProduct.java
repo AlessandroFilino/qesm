@@ -90,6 +90,8 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
             productString += " quantityProduced: " + quantityProduced + " pdf: ";
             if (pdf instanceof ExponentialTime pdfExponetial) {
                 productString += "[exp rate: " + pdfExponetial.getRate() + " ]";
+            } else if (pdf instanceof DeterministicTime pdfDeterministic) {
+                productString += "[deterministic: " + pdfDeterministic.getEFT() + " ]";
             } else {
                 productString += pdf;
             }
@@ -168,7 +170,7 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
                     } else if (pdfToCompare.getClass() == DeterministicTime.class) {
                         // Don't need to add "|| pdfToCompare.getLFT() != pdf.getLFT()" because for
                         // Deterministic EFT == LFT
-                        if (pdfToCompare.getEFT() != pdf.getEFT()) {
+                        if (!pdfToCompare.getEFT().equals(pdf.getEFT())) {
                             return false;
                         }
                     } else {

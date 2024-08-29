@@ -53,5 +53,13 @@ public class ProductIstanceTest {
         assertEquals(productIstance7.getName(), "p7");
         assertEquals(productIstance7.getItemGroup(), ItemGroup.RAW_MATERIAL);
 
+        ProductIstance productIstance8 = new ProductIstance("p8");
+        assertEquals(productIstance8.getName(), "p8");
+
+        ProductIstance productIstance9 = new ProductIstance("p9", 1, new UniformTime(0, 2));
+        assertEquals(productIstance9.getName(), "p9");
+        assertEquals(productIstance9.getQuantityProduced(), 1);
+        assertEquals(productIstance9.getPdf().getEFT(), BigDecimal.valueOf(0.0));
+        assertEquals(productIstance9.getPdf().getLFT(), BigDecimal.valueOf(2.0));
     }
 }

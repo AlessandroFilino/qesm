@@ -21,6 +21,7 @@ import com.qesm.RandomDAGGenerator.PdfType;
 public class AbstractWorkflowTest {
 
     private WorkflowType wf1;
+    DirectedAcyclicGraph<ProductType, CustomEdge> dag2;
     private WorkflowType wf2;
     private WorkflowType wf2_copy;
     private WorkflowType wf3;
@@ -47,7 +48,7 @@ public class AbstractWorkflowTest {
 
         wi1 = wf1.makeIstance();
 
-        DirectedAcyclicGraph<ProductType, CustomEdge> dag2 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        dag2 = new DirectedAcyclicGraph<>(CustomEdge.class);
         v0 = new ProductType("v0", 1, new UniformTime(0, 2));
         v1 = new ProductType("v1", 2, new UniformTime(2, 4));
         v2 = new ProductType("v2", 3, new UniformTime(4, 6));
@@ -92,6 +93,13 @@ public class AbstractWorkflowTest {
     }
 
     @Test
+    void testDefaultEquals() {
+        assertEquals(wf1, wf1Reference);
+        assertNotEquals(wf1, wfNull);
+        assertNotEquals(wf1, wf2);
+    }
+
+    @Test
     void testGetRootNode() {
         assertNotEquals(wf1.computeRootNode(), null);
         assertEquals(wf2.computeRootNode(), v0);
@@ -128,6 +136,29 @@ public class AbstractWorkflowTest {
     }
 
     @Test
+    void testValidation() {
+        DirectedAcyclicGraph<ProductType, CustomEdge> dag5 = new DirectedAcyclicGraph<>(CustomEdge.class);
+        dag5.addVertex(v0);
+        dag5.addVertex(v1);
+        dag5.addVertex(v2);
+        dag5.addVertex(v3);
+        dag5.addEdge(v1, v0);
+        dag5.addEdge(v2, v1);
+        dag5.addEdge(v1, v3);
+
+        // Root node validation
+        assertThrows(WorkflowValidationException.class, () -> new WorkflowType(dag5));
+        // Leaf node validation
+        dag5.removeEdge(v1, v3);
+        dag5.addEdge(v3, v1);
+        ProductType v4 = new ProductType("v4");
+        dag5.addVertex(v4);
+        dag5.addEdge(v1, v4);
+        dag5.addEdge(v4, v0);
+        assertThrows(WorkflowValidationException.class, () -> new WorkflowType(dag5));
+    }
+
+    @Test
     void testAddEdge() {
         // Adding a edge in a correct position
         assertNotNull(wf2.addEdge(v2, v0));
@@ -150,12 +181,32 @@ public class AbstractWorkflowTest {
 
     @Test
     void testRemoveEdge() {
-
+        WorkflowType wf4 = new WorkflowType(dag2);
+        // Removing not existing edges
+        assertFalse(wf4.removeEdge(v0, v1));
+        assertFalse(wf4.removeEdge(new CustomEdge()));
+        // Removing edge correctly
+        assertTrue(wf4.removeEdge(v1, v0));
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf4.CloneDag();
+        assertEquals(wf4.toString(), dagCopy.toString());
+        assertTrue(dagCopy.vertexSet().size() == 1);
+        assertTrue(dagCopy.vertexSet().contains(v0));
+        assertTrue(dagCopy.edgeSet().isEmpty());
     }
 
     @Test
     void testRemoveVertex() {
-
+        WorkflowType wf5 = new WorkflowType(dag2);
+        // Removing not existing vertex
+        assertFalse(wf5.removeVertex(v3));
+        assertFalse(wf5.removeEdge(null));
+        // Removing vertex correctly
+        assertTrue(wf5.removeVertex(v1));
+        DirectedAcyclicGraph<ProductType, CustomEdge> dagCopy = wf5.CloneDag();
+        assertEquals(wf5.toString(), dagCopy.toString());
+        assertTrue(dagCopy.vertexSet().size() == 1);
+        assertTrue(dagCopy.vertexSet().contains(v0));
+        assertTrue(dagCopy.edgeSet().isEmpty());
     }
 
 }

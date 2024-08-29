@@ -23,7 +23,10 @@ public class CustomEdge extends DefaultEdge {
 
     @Override
     public String toString() {
-
+        if (getSource() instanceof AbstractProduct source && getTarget() instanceof AbstractProduct target) {
+            return "( " + source.getName() + " -> " + target.getName() + " quantityRequired: " + quantityRequired
+                    + " )";
+        }
         return "( " + this.getSource() + " -> " + this.getTarget() + " quantityRequired: " + quantityRequired + " )";
     }
 

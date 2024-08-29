@@ -10,31 +10,43 @@ import com.qesm.RandomDAGGenerator.PdfType;
 
 public class DotFileConverterTest {
 
-    private PdfType pdfType = PdfType.EXPONENTIAL;
+    private PdfType pdfType1 = PdfType.UNIFORM;
+    private PdfType pdfType2 = PdfType.EXPONENTIAL;
+    private PdfType pdfType3 = PdfType.ERLANG;
+    private PdfType pdfType4 = PdfType.DETERMINISTIC;
 
     @Test
     void workflowTypeIOTest() {
+        workflowTypeIO(pdfType1);
+        workflowTypeIO(pdfType2);
+        workflowTypeIO(pdfType3);
+        workflowTypeIO(pdfType4);
+    }
+
+    private void workflowTypeIO(PdfType pdfType) {
         WorkflowType workFlowType1 = new WorkflowType();
         WorkflowType workFlowType2 = new WorkflowType();
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType);
+        workFlowType1.generateRandomDAG(3, 3, 2, 5, 60, pdfType);
         workFlowType1.exportDotFile("./output/workFlowType1.dot");
 
         workFlowType2.importDotFile("./output/workFlowType1.dot");
         workFlowType2.exportDotFile("./output/workFlowType2.dot");
 
         // Renderer.renderDotFile("./output/workFlowType1.dot",
-        // "./media/workFlowType1.svg", 3);
+        // "./media/workFlowType1.svg");
         // Renderer.renderDotFile("./output/workFlowType2.dot",
-        // "./media/workFlowType2.svg", 3);
+        // "./media/workFlowType2.svg");
+
+        // System.out.println(workFlowType1);
+        // System.out.println(workFlowType2);
 
         assertTrue(workFlowType1.equalsNodesAttributes(workFlowType2));
 
         rmDotFile("./output/workFlowType1.dot");
         rmDotFile("./output/workFlowType2.dot");
-
     }
 
     @Test
@@ -43,7 +55,7 @@ public class DotFileConverterTest {
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType);
+        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
         // Renderer.renderDotFile("./output/workFlowType1.dot",
         // "./media/workFlowType1.svg", 3);
@@ -75,7 +87,7 @@ public class DotFileConverterTest {
 
         ensureFolderExists("output");
 
-        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType);
+        workFlowType1.generateRandomDAG(5, 5, 2, 5, 60, pdfType1);
         // workFlowType1.exportDotFile("./output/workFlowType1.dot");
         // Renderer.renderDotFile("./output/workFlowType1.dot",
         // "./media/workFlowType1.svg", 3);
