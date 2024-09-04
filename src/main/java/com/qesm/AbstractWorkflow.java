@@ -175,6 +175,15 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         return productToSubWorkflowMap.get(node);
     }
 
+    public AbstractWorkflow<V> getProductWorkflow(String productName) {
+        Optional<V> node = findProduct(productName);
+        if (node.isPresent()) {
+            return productToSubWorkflowMap.get(node.get());
+        } else {
+            return null;
+        }
+    }
+
     public HashMap<V, AbstractWorkflow<V>> getProductToSubWorkflowMap() {
         return this.productToSubWorkflowMap;
     }
