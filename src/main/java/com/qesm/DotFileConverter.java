@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -65,6 +67,20 @@ public interface DotFileConverter<T extends DotFileConvertible> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    default public ByteArrayOutputStream exportDotFileNoSerialization() {
+        DOTExporter<T, CustomEdge> exporter = setExporterProviders(false);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        // export graph to dotFile
+        try (OutputStreamWriter writer = new OutputStreamWriter(byteArrayOutputStream, StandardCharsets.UTF_8)) {
+            exporter.exportGraph(this.cloneDag(), writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return byteArrayOutputStream;
     }
 
     default public void importDotFile(String filePath) {
