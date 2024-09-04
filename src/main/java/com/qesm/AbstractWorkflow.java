@@ -128,13 +128,13 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
                 + Math.pow(totalProcessedNodesNum / 2.0 - totalProcessedNodesNum - 1, 2);
         // C /= maxUnbalance * 100;
         C = C == 0 ? 0 : 100 * (Math.log(C + 1) / Math.log(maxUnbalance + 1));
-        System.out.println(C);
+        // System.out.println(C);
 
         // Restore originalDag
         this.dag = originalDag;
 
-        // Probably we don't need to validate again, control just to be sure
-        validateWorkflow();
+        // TODO: Probably we don't need to validate again, control just to be sure
+        // validateWorkflow();
 
         return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0
                 + "    NewLoadUnbalanceFactor: " + Math.round(C * 100.0) / 100.0 + "%";
