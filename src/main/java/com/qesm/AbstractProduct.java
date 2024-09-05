@@ -143,43 +143,50 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
             } else {
                 // Custom equals for pdf (StochasticTime doesn't implement it)
                 StochasticTime pdfToCompare = productToCompare.getPdf();
-                if (!pdfToCompare.getClass().isInstance(pdf)) {
+                if (!arePdfEquals(pdf, pdfToCompare)) {
                     return false;
-                } else {
-
-                    if (pdfToCompare.getClass() == UniformTime.class) {
-                        if (!pdfToCompare.getEFT().equals(pdf.getEFT()) ||
-                                !pdfToCompare.getLFT().equals(pdf.getLFT())) {
-                            return false;
-                        }
-                    } else if (pdfToCompare.getClass() == ErlangTime.class) {
-                        ErlangTime erlangPdfToCompare = (ErlangTime) pdfToCompare;
-                        ErlangTime erlangPdf = (ErlangTime) pdf;
-
-                        if (erlangPdfToCompare.getK() != (erlangPdf.getK()) ||
-                                erlangPdfToCompare.getRate() != (erlangPdf.getRate())) {
-                            return false;
-                        }
-                    } else if (pdfToCompare.getClass() == ExponentialTime.class) {
-                        ExponentialTime exponentialPdfToCompare = (ExponentialTime) pdfToCompare;
-                        ExponentialTime exponentialPdf = (ExponentialTime) pdf;
-
-                        if (!exponentialPdfToCompare.getRate().equals(exponentialPdf.getRate())) {
-                            return false;
-                        }
-                    } else if (pdfToCompare.getClass() == DeterministicTime.class) {
-                        // Don't need to add "|| pdfToCompare.getLFT() != pdf.getLFT()" because for
-                        // Deterministic EFT == LFT
-                        if (!pdfToCompare.getEFT().equals(pdf.getEFT())) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
                 }
             }
         }
 
+        return true;
+    }
+
+    public static Boolean arePdfEquals(StochasticTime pdf, StochasticTime pdfToCompare) {
+        if (!pdfToCompare.getClass().isInstance(pdf)) {
+            return false;
+        } else {
+
+            if (pdfToCompare.getClass() == UniformTime.class) {
+                if (!pdfToCompare.getEFT().equals(pdf.getEFT()) ||
+                        !pdfToCompare.getLFT().equals(pdf.getLFT())) {
+                    return false;
+                }
+            } else if (pdfToCompare.getClass() == ErlangTime.class) {
+                ErlangTime erlangPdfToCompare = (ErlangTime) pdfToCompare;
+                ErlangTime erlangPdf = (ErlangTime) pdf;
+
+                if (erlangPdfToCompare.getK() != (erlangPdf.getK()) ||
+                        erlangPdfToCompare.getRate() != (erlangPdf.getRate())) {
+                    return false;
+                }
+            } else if (pdfToCompare.getClass() == ExponentialTime.class) {
+                ExponentialTime exponentialPdfToCompare = (ExponentialTime) pdfToCompare;
+                ExponentialTime exponentialPdf = (ExponentialTime) pdf;
+
+                if (!exponentialPdfToCompare.getRate().equals(exponentialPdf.getRate())) {
+                    return false;
+                }
+            } else if (pdfToCompare.getClass() == DeterministicTime.class) {
+                // Don't need to add "|| pdfToCompare.getLFT() != pdf.getLFT()" because for
+                // Deterministic EFT == LFT
+                if (!pdfToCompare.getEFT().equals(pdf.getEFT())) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
         return true;
     }
 
