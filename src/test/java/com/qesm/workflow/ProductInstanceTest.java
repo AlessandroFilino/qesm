@@ -13,8 +13,6 @@ import org.oristool.eulero.modeling.stochastictime.ExpolynomialTime;
 import org.oristool.eulero.modeling.stochastictime.ExponentialTime;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.workflow.ProductInstance;
-import com.qesm.workflow.ProductTemplate;
 import com.qesm.workflow.AbstractProduct.ItemGroup;
 
 public class ProductInstanceTest {

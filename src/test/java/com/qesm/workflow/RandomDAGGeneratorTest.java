@@ -11,9 +11,6 @@ import java.util.Random;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.RepeatedTest;
 
-import com.qesm.workflow.CustomEdge;
-import com.qesm.workflow.ProductTemplate;
-import com.qesm.workflow.RandomDAGGenerator;
 import com.qesm.workflow.RandomDAGGenerator.PdfType;
 
 public class RandomDAGGeneratorTest {

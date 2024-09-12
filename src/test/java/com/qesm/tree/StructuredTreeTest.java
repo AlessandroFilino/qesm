@@ -11,11 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.tree.AndBlock;
-import com.qesm.tree.STPNBlock;
-import com.qesm.tree.SeqBlock;
-import com.qesm.tree.SimpleBlock;
-import com.qesm.tree.StructuredTree;
 import com.qesm.workflow.CustomEdge;
 import com.qesm.workflow.ProductTemplate;
 import com.qesm.workflow.WorkflowTemplate;

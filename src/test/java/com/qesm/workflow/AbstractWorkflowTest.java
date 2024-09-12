@@ -16,11 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.workflow.CustomEdge;
-import com.qesm.workflow.ProductTemplate;
-import com.qesm.workflow.WorkflowInstance;
-import com.qesm.workflow.WorkflowTemplate;
-import com.qesm.workflow.WorkflowValidationException;
 import com.qesm.workflow.RandomDAGGenerator.PdfType;
 
 public class AbstractWorkflowTest {

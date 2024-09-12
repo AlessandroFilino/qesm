@@ -12,12 +12,6 @@ import org.oristool.eulero.modeling.ModelFactory;
 import org.oristool.eulero.modeling.Simple;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.tree.AndBlock;
-import com.qesm.tree.STPNBlock;
-import com.qesm.tree.SeqBlock;
-import com.qesm.tree.SimpleBlock;
-import com.qesm.tree.StructuredTree;
-import com.qesm.tree.StructuredTreeConverter;
 import com.qesm.workflow.CustomEdge;
 import com.qesm.workflow.ProductTemplate;
 

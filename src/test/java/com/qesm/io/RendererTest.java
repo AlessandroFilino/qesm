@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.io.Renderer;
+
 import com.qesm.tree.StructuredTree;
 import com.qesm.workflow.CustomEdge;
 import com.qesm.workflow.ProductInstance;

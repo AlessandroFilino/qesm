@@ -135,9 +135,6 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         // Restore originalDag
         this.dag = originalDag;
 
-        // TODO: Probably we don't need to validate again, control just to be sure
-        // validateWorkflow();
-
         return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0
                 + "    NewLoadUnbalanceFactor: " + Math.round(C * 100.0) / 100.0 + "%";
     }

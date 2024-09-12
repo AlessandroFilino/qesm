@@ -10,11 +10,6 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-import com.qesm.workflow.CustomEdge;
-import com.qesm.workflow.ProductInstance;
-import com.qesm.workflow.ProductTemplate;
-import com.qesm.workflow.WorkflowInstance;
-import com.qesm.workflow.WorkflowTemplate;
 import com.qesm.workflow.RandomDAGGenerator.PdfType;
 
 public class WorkflowTemplateTest {

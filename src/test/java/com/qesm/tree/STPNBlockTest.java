@@ -13,10 +13,6 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.qesm.tree.AndBlock;
-import com.qesm.tree.STPNBlock;
-import com.qesm.tree.SeqBlock;
-import com.qesm.tree.SimpleBlock;
 import com.qesm.workflow.ProductTemplate;
 
 public class STPNBlockTest {
