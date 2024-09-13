@@ -61,7 +61,7 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
 
         // Then compute metrics
         int A = 0;
-        // A paramater: sum all incoming edges of Processed node if they have more than
+        // A parameter: sum all incoming edges of Processed node if they have more than
         // 2 incoming edges
         for (V node : dag.vertexSet()) {
             if (node.getItemGroup() == AbstractProduct.ItemGroup.PROCESSED && dag.inDegreeOf(node) >= 2) {
@@ -126,8 +126,8 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         // 1 - 8 - 8 : (21.71 + 5.44 + 5.44)/3 = 10.86
 
         Integer totalProcessedNodesNum = totalProcessedNodes.size();
-        Double maxUnbalance = Math.pow(totalProcessedNodesNum / 2.0 - 1, 2)
-                + Math.pow(totalProcessedNodesNum / 2.0 - totalProcessedNodesNum - 1, 2);
+        Double maxUnbalance = (Math.pow(totalProcessedNodesNum / 2.0 - 1, 2)
+                + Math.pow(totalProcessedNodesNum / 2.0 - (totalProcessedNodesNum - 1), 2)) / 2.0;
         // C /= maxUnbalance * 100;
         C = C == 0 ? 0 : 100 * (Math.log(C + 1) / Math.log(maxUnbalance + 1));
         // System.out.println(C);
@@ -135,8 +135,8 @@ public abstract class AbstractWorkflow<V extends AbstractProduct> implements Dot
         // Restore originalDag
         this.dag = originalDag;
 
-        return "A: " + A + "    OldLoadUnbalanceFactor: " + Math.round(B * 100.0) / 100.0
-                + "    NewLoadUnbalanceFactor: " + Math.round(C * 100.0) / 100.0 + "%";
+        return "SynchronizationOverHead: " + A + "    LoadUnbalanceFactorV1: " + Math.round(B * 100.0) / 100.0
+                + "    LoadUnbalanceFactorV2: " + Math.round(C * 100.0) / 100.0 + "%";
     }
 
     @Override

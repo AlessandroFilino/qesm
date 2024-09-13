@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.oristool.eulero.modeling.stochastictime.UniformTime;
 
-
 import com.qesm.tree.StructuredTree;
 import com.qesm.workflow.CustomEdge;
 import com.qesm.workflow.ProductInstance;
@@ -20,28 +19,27 @@ import com.qesm.workflow.RandomDAGGenerator.PdfType;
 
 public class RendererTest {
 
+    private static WorkflowTemplate workflowTemplate = new WorkflowTemplate();
+
     @BeforeAll
     private static void setupFolders() {
         ensureFolderExists("output");
         ensureFolderExists("media");
+
+        workflowTemplate.generateRandomDAG(6, 4, 3, 5, 1, PdfType.UNIFORM);
     }
 
     @Test
     public void testRenderWorkflowTemplate() {
-
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
-
         renderworkflowTemplate(workflowTemplate);
     }
 
     @Test
     public void testRenderSharedAndUsharedworkflowTemplate() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         renderworkflowTemplate(workflowTemplate);
-        workflowTemplate.toUnshared();
-        workflowTemplate.exportDotFileNoSerialization("./output/workflowTemplateUnsharedRendererTest.dot");
+        WorkflowTemplate workflowTemplateUnshared = new WorkflowTemplate(workflowTemplate.cloneDag());
+        workflowTemplateUnshared.toUnshared();
+        workflowTemplateUnshared.exportDotFileNoSerialization("./output/workflowTemplateUnsharedRendererTest.dot");
 
         Renderer.renderDotFile("./output/workflowTemplateUnsharedRendererTest.dot",
                 "./media/workflowTemplateUnsharedRendererTest.svg");
@@ -51,8 +49,6 @@ public class RendererTest {
 
     @Test
     public void testRenderSharedAndUsharedWorkflowInstance() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
         workflowInstance.exportDotFileNoSerialization("./output/workflowInstanceRendererTest.dot");
@@ -70,8 +66,6 @@ public class RendererTest {
 
     @Test
     public void testRenderRandomStructureTree() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
 
         StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(workflowTemplate.cloneDag(),
                 ProductTemplate.class);
@@ -112,15 +106,14 @@ public class RendererTest {
         StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
                 ProductTemplate.class);
         structuredTree.buildStructuredTree();
-        structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderTest.dot");
-        Renderer.renderDotFile("./output/structuredTreeRenderTest.dot", "./media/structuredTreeRenderTest.svg");
+        structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderFixedTest.dot");
+        Renderer.renderDotFile("./output/structuredTreeRenderFixedTest.dot",
+                "./media/structuredTreeRenderFixedTest.svg");
 
     }
 
     @Test
     public void testRenderStructureTreeWithAllSteps() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         renderworkflowTemplate(workflowTemplate);
 
         StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(workflowTemplate.cloneDag(),
@@ -137,9 +130,6 @@ public class RendererTest {
 
     @Test
     public void testRenderWorkflowInstance() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         renderworkflowTemplate(workflowTemplate);
 
         WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
@@ -152,8 +142,6 @@ public class RendererTest {
 
     @Test
     public void testRenderWorkflowInstanceSubgraphs() {
-        WorkflowTemplate workflowTemplate = new WorkflowTemplate();
-        workflowTemplate.generateRandomDAG(5, 5, 2, 5, 60, PdfType.UNIFORM);
         WorkflowInstance workflowInstance = workflowTemplate.makeInstance();
 
         String subgraphsDotFolder = mkEmptyDir("./output/subgraphsRenderTest");
@@ -173,6 +161,53 @@ public class RendererTest {
     }
 
     @Test
+    void testRenderParallelismValue() {
+        // TODO TEST: Implement test
+
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 1, new UniformTime(0, 2));
+        ProductTemplate v2 = new ProductTemplate("v2", 1, new UniformTime(0, 2));
+        ProductTemplate v3 = new ProductTemplate("v3", 1, new UniformTime(0, 2));
+        ProductTemplate v4 = new ProductTemplate("v4", 1, new UniformTime(0, 2));
+        ProductTemplate v5 = new ProductTemplate("v5", 1, new UniformTime(0, 2));
+        ProductTemplate v6 = new ProductTemplate("v6", 1, new UniformTime(0, 2));
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dagParallelism1 = new DirectedAcyclicGraph<>(
+                CustomEdge.class);
+
+        dagParallelism1.addVertex(v0);
+        dagParallelism1.addVertex(v1);
+        dagParallelism1.addVertex(v2);
+        dagParallelism1.addVertex(v3);
+        dagParallelism1.addVertex(v4);
+
+        dagParallelism1.addEdge(v1, v0).setQuantityRequired(1);
+        dagParallelism1.addEdge(v2, v0).setQuantityRequired(1);
+        dagParallelism1.addEdge(v3, v2).setQuantityRequired(1);
+        dagParallelism1.addEdge(v4, v3).setQuantityRequired(1);
+
+        WorkflowTemplate workflowTemplateParallelism1 = new WorkflowTemplate(dagParallelism1);
+        workflowTemplateParallelism1.exportDotFileNoSerialization("./output/ParallelismMetricsTest1.dot");
+        Renderer.renderDotFile("./output/ParallelismMetricsTest1.dot", "./media/ParallelismMetricsTest1.svg");
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dagParallelism2 = workflowTemplateParallelism1.cloneDag();
+        dagParallelism2.addVertex(v5);
+        dagParallelism2.addVertex(v6);
+
+        dagParallelism2.removeEdge(v4, v3);
+        dagParallelism2.addEdge(v4, v1).setQuantityRequired(1);
+        dagParallelism2.addEdge(v5, v1).setQuantityRequired(1);
+        dagParallelism2.addEdge(v6, v2).setQuantityRequired(1);
+
+        WorkflowTemplate workflowTemplateParallelism2 = new WorkflowTemplate(dagParallelism2);
+        workflowTemplateParallelism2.exportDotFileNoSerialization("./output/ParallelismMetricsTest2.dot");
+        Renderer.renderDotFile("./output/ParallelismMetricsTest2.dot", "./media/ParallelismMetricsTest2.svg");
+
+        // System.out.println("Parallelism values: " +
+        // workflowTemplateParallelism.computeParallelismValue());
+    }
+
+    @Test
     public void testFileError() {
         assertThrows(RuntimeException.class, () -> {
             Renderer.renderDotFile("test", "test");
@@ -187,6 +222,7 @@ public class RendererTest {
     }
 
     private static void renderworkflowTemplate(WorkflowTemplate workflowTemplateToRender) {
+
         workflowTemplateToRender.exportDotFileNoSerialization("./output/workflowTemplateRenderTest.dot");
         Renderer.renderDotFile("./output/workflowTemplateRenderTest.dot", "./media/workflowTemplateRenderTest.svg");
 
