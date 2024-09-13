@@ -131,7 +131,7 @@ public class AbstractWorkflowTest {
         dag4.addEdge(v0, v1);
         dag4.addEdge(v1, v3);
         WorkflowTemplate wf4 = new WorkflowTemplate(dag4);
-        System.out.println(wf4.cloneDag().vertexSet());
+        // System.out.println(wf4.cloneDag().vertexSet());
         assertTrue(wf4.computeRootNode().equalsAttributes(v3));
     }
 

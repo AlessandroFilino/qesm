@@ -174,6 +174,20 @@ public class RandomDAGGenerator {
                     while (!vTargetListCopy.isEmpty()) {
                         targetVertex = vTargetListCopy.remove(random.nextInt(vTargetListCopy.size()));
 
+                        // check maxBranchinUpFactor
+                        if (dag.outDegreeOf(sourceVertex) + 1 > branchingUpFactor) {
+                            // System.out.println(sourceVertex.getName() + " -> " +
+                            // targetVertex.getName() + " not valid for: BFUp");
+                            break;
+                        }
+
+                        // check maxBranchingDownFactor
+                        if (dag.inDegreeOf(targetVertex) + 1 > maxBranchingDownFactor) {
+                            // System.out.println(sourceVertex.getName() + " -> " +
+                            // targetVertex.getName() + " not valid for: BFDown");
+                            continue;
+                        }
+
                         boolean nonValidTarget = false;
                         changedLevelsToBeValidated = new ArrayList<Integer>();
 
@@ -217,24 +231,15 @@ public class RandomDAGGenerator {
                             changedLevelsToBeValidated.add(sourceLevel);
                         }
                         if (nonValidTarget) {
-                            resetChangesToLevels();
+                            // Reset changes to levels
+                            for (Integer levelFromWhichRemove : changedLevelsToBeValidated) {
+                                if (levelToVertices.containsKey(levelFromWhichRemove)) {
+                                    levelToVertices.get(levelFromWhichRemove).remove(sourceVertex);
+                                    // System.out.println("Removed from level: " + levelFromWhichRemove + " " +
+                                    // sourceVertex.getName() + " -> " + targetVertex.getName());
+                                }
+                            }
                             continue;
-                        }
-
-                        // check maxBranchingDownFactor
-                        if (dag.inDegreeOf(targetVertex) + 1 > maxBranchingDownFactor) {
-                            // System.out.println(sourceVertex.getName() + " -> " +
-                            // targetVertex.getName() + " not valid for: BFDown");
-                            resetChangesToLevels();
-                            continue;
-                        }
-
-                        // check maxBranchinUpFactor
-                        if (dag.outDegreeOf(sourceVertex) + 1 > branchingUpFactor) {
-                            // System.out.println(sourceVertex.getName() + " -> " +
-                            // targetVertex.getName() + " not valid for: BFUp");
-                            resetChangesToLevels();
-                            break;
                         }
 
                         CustomEdge newEdge = dag.addEdge(sourceVertex, targetVertex);
@@ -265,16 +270,6 @@ public class RandomDAGGenerator {
                 }
             }
 
-            private void resetChangesToLevels() {
-                for (Integer levelFromWhichRemove : changedLevelsToBeValidated) {
-                    if (levelToVertices.containsKey(levelFromWhichRemove)) {
-                        levelToVertices.get(levelFromWhichRemove).remove(sourceVertex);
-                        // System.out.println("Removed from level: " + levelFromWhichRemove + " " +
-                        // sourceVertex.getName() + " -> " + targetVertex.getName());
-                    }
-                }
-            }
-
         }
 
         DAGPopulator dagPopulator = new DAGPopulator();
@@ -294,18 +289,7 @@ public class RandomDAGGenerator {
         // Substitute every processedType leaf with rawMaterialType
         for (ProductTemplate node : vertexSetCopy) {
             if (dag.inDegreeOf(node) == 0 && node.isProcessed()) {
-                ArrayList<CustomEdge> oldEdges = new ArrayList<CustomEdge>();
-                for (CustomEdge oldEdge : dag.outgoingEdgesOf(node)) {
-                    oldEdges.add(oldEdge);
-                }
-
-                dag.removeVertex(node);
-                ProductTemplate newLeaf = new ProductTemplate(node.getName(), ItemGroup.RAW_MATERIAL);
-                dag.addVertex(newLeaf);
-
-                for (CustomEdge oldEdge : oldEdges) {
-                    dag.addEdge(newLeaf, dag.getEdgeTarget(oldEdge), new CustomEdge(oldEdge));
-                }
+                node.setItemGroup(ItemGroup.RAW_MATERIAL);
             }
         }
     }

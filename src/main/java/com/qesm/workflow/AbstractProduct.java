@@ -214,6 +214,14 @@ public abstract class AbstractProduct implements Serializable, DotFileConvertibl
         return name;
     }
 
+    public void setItemGroup(ItemGroup itemGroup) {
+        if (itemGroup.equals(ItemGroup.RAW_MATERIAL)) {
+            this.itemGroup = itemGroup;
+            this.quantityProduced = null;
+            this.pdf = null;
+        }
+    }
+
     // Custom serialization logic for StochasticTime
     private void writeObject(ObjectOutputStream oos) throws IOException {
 

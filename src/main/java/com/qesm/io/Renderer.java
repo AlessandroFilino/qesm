@@ -20,7 +20,6 @@ public class Renderer {
             Graphviz.fromFile(new File(dotFilePath))
                     .render(Format.SVG) // Render to PNG format
                     .toFile(new File(outputFilePath)); // Save the rendered graph to a file
-            System.out.println("Graph rendered successfully.");
         } catch (IOException e) {
             throw new RuntimeException("Error while rendering DOT file");
         }
