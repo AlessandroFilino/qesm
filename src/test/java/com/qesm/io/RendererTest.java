@@ -26,7 +26,7 @@ public class RendererTest {
         ensureFolderExists("output");
         ensureFolderExists("media");
 
-        workflowTemplate.generateRandomDAG(6, 6, 3, 5, 60, PdfType.UNIFORM);
+        workflowTemplate.generateRandomDAG(4, 4, 3, 2, 60, PdfType.UNIFORM);
     }
 
     @Test
@@ -207,6 +207,88 @@ public class RendererTest {
 
         String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderFixedV4Test");
         String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderFixedV4Test");
+
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
+
+        rmDotFileFolder(structuredTreeDotFolder);
+
+    }
+
+    @Test
+    public void testRenderFixedStructureTreeV5() {
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 1, new UniformTime(0, 2));
+        ProductTemplate v2 = new ProductTemplate("v2");
+        ProductTemplate v3 = new ProductTemplate("v3", 1, new UniformTime(0, 2));
+        ProductTemplate v4 = new ProductTemplate("v4", 1, new UniformTime(0, 2));
+        ProductTemplate v5 = new ProductTemplate("v5", 1, new UniformTime(0, 2));
+        ProductTemplate v6 = new ProductTemplate("v6", 1, new UniformTime(0, 2));
+        ProductTemplate v7 = new ProductTemplate("v7");
+        ProductTemplate v8 = new ProductTemplate("v8");
+        ProductTemplate v9 = new ProductTemplate("v9", 1, new UniformTime(0, 2));
+        ProductTemplate v10 = new ProductTemplate("v10");
+        ProductTemplate v11 = new ProductTemplate("v11");
+        ProductTemplate v12 = new ProductTemplate("v12", 1, new UniformTime(0, 2));
+        ProductTemplate v13 = new ProductTemplate("v13", 1, new UniformTime(0, 2));
+        ProductTemplate v14 = new ProductTemplate("v14");
+        ProductTemplate v15 = new ProductTemplate("v15");
+        ProductTemplate v16 = new ProductTemplate("v16");
+
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+        dag.addVertex(v5);
+        dag.addVertex(v6);
+        dag.addVertex(v7);
+        dag.addVertex(v8);
+        dag.addVertex(v9);
+        dag.addVertex(v10);
+        dag.addVertex(v11);
+        dag.addVertex(v12);
+        dag.addVertex(v13);
+        dag.addVertex(v14);
+        dag.addVertex(v15);
+        dag.addVertex(v16);
+
+        dag.addEdge(v1, v0);
+        dag.addEdge(v2, v0);
+        dag.addEdge(v3, v0);
+        dag.addEdge(v3, v1);
+        dag.addEdge(v4, v1);
+        dag.addEdge(v5, v1);
+        dag.addEdge(v5, v4);
+        dag.addEdge(v6, v3);
+        dag.addEdge(v7, v1);
+        dag.addEdge(v7, v4);
+        dag.addEdge(v7, v5);
+        dag.addEdge(v8, v6);
+        dag.addEdge(v9, v6);
+        dag.addEdge(v10, v0);
+        dag.addEdge(v11, v1);
+        dag.addEdge(v12, v9);
+        dag.addEdge(v13, v9);
+        dag.addEdge(v14, v9);
+        dag.addEdge(v15, v12);
+        dag.addEdge(v16, v0);
+        dag.addEdge(v16, v12);
+        dag.addEdge(v16, v13);
+
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
+
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
+                ProductTemplate.class);
+
+        // wf1.exportDotFileNoSerialization("./output/workflowTemplateRenderFixedV5Test.dot");
+        // Renderer.renderDotFile("./output/workflowTemplateRenderFixedV5Test.dot",
+        // "./media/workflowTemplateRenderFixedV5Test.svg");
+
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderFixedV5Test");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderFixedV5Test");
 
         structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
         Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
