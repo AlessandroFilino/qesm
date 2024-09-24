@@ -3,8 +3,12 @@ package com.qesm.tree;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.nio.Attribute;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.oristool.eulero.modeling.Activity;
 
@@ -171,16 +175,25 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
         ArrayList<ArrayList<STPNBlock>> seqList = new ArrayList<>();
         for (STPNBlock block : structuredWorkflow.vertexSet()) {
 
-            if (block == structuredTreeRootBlock && structuredWorkflow.inDegreeOf(block) == 1) {
+            if (structuredWorkflow.inDegreeOf(block) == 1) {
                 ArrayList<STPNBlock> seq = new ArrayList<>();
-                calculateSeq(block, seq);
-                seqList.add(seq);
-            } else if (structuredWorkflow.outDegreeOf(block) == 1 && structuredWorkflow.inDegreeOf(block) == 1) {
+                Boolean isFirstNodeInSeq = false;
 
-                STPNBlock parentBlock = structuredWorkflow
-                        .getEdgeTarget(structuredWorkflow.outgoingEdgesOf(block).iterator().next());
-                if (structuredWorkflow.outDegreeOf(parentBlock) > 1 || structuredWorkflow.inDegreeOf(parentBlock) > 1) {
-                    ArrayList<STPNBlock> seq = new ArrayList<>();
+                // Stop case 1: root block
+                // Stop case 2: fork
+                if (block.equals(structuredTreeRootBlock) || structuredWorkflow.outDegreeOf(block) > 1) {
+                    isFirstNodeInSeq = true;
+                }
+                // Stop case 3: nested seq
+                else if (structuredWorkflow.outDegreeOf(block) == 1) {
+                    STPNBlock parentBlock = structuredWorkflow
+                            .getEdgeTarget(structuredWorkflow.outgoingEdgesOf(block).iterator().next());
+                    if (structuredWorkflow.inDegreeOf(parentBlock) > 1) {
+                        isFirstNodeInSeq = true;
+                    }
+                }
+
+                if (isFirstNodeInSeq) {
                     calculateSeq(block, seq);
                     seqList.add(seq);
                 }
@@ -194,17 +207,21 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
                 SeqBlock seqBlock = new SeqBlock(seq);
                 structuredWorkflow.addVertex(seqBlock);
 
+                // Handle seqStartNode connections
                 if (seq.get(0) == structuredTreeRootBlock) {
                     structuredTreeRootBlock = seqBlock;
                 } else {
-                    STPNBlock targetBlock = structuredWorkflow
-                            .getEdgeTarget(structuredWorkflow.outgoingEdgesOf(seq.get(0)).iterator().next());
-                    structuredWorkflow.addEdge(seqBlock, targetBlock);
+
+                    for (CustomEdge outEdge : structuredWorkflow.outgoingEdgesOf(seq.get(0))) {
+                        STPNBlock targetBlock = structuredWorkflow.getEdgeTarget(outEdge);
+                        structuredWorkflow.addEdge(seqBlock, targetBlock);
+                    }
+
                 }
 
-                if (structuredWorkflow.inDegreeOf(seq.get(seq.size() - 1)) == 1) {
-                    STPNBlock sourceBlock = structuredWorkflow.getEdgeSource(
-                            structuredWorkflow.incomingEdgesOf(seq.get(seq.size() - 1)).iterator().next());
+                // Handle seqEndNode connections
+                for (CustomEdge inEdge : structuredWorkflow.incomingEdgesOf(seq.get(seq.size() - 1))) {
+                    STPNBlock sourceBlock = structuredWorkflow.getEdgeSource(inEdge);
                     structuredWorkflow.addEdge(sourceBlock, seqBlock);
                 }
 
@@ -231,7 +248,8 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
             if (structuredWorkflow.outDegreeOf(currentBlock) == 1) {
                 if (structuredWorkflow.inDegreeOf(currentBlock) == 1) {
                     seq.add(currentBlock);
-                } else if (structuredWorkflow.inDegreeOf(currentBlock) == 0) {
+                } else if (structuredWorkflow.inDegreeOf(currentBlock) == 0
+                        || structuredWorkflow.inDegreeOf(currentBlock) > 1) {
                     seq.add(currentBlock);
                     break;
                 } else {
@@ -384,6 +402,16 @@ public class StructuredTree<V extends AbstractProduct> implements DotFileConvert
     @Override
     public Class<STPNBlock> getVertexClass() {
         return STPNBlock.class;
+    }
+
+    @Override
+    public Function<CustomEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
+        Function<CustomEdge, Map<String, Attribute>> edgeAttributeProvider = e -> {
+            Map<String, Attribute> map = new LinkedHashMap<String, Attribute>();
+            return map;
+        };
+
+        return edgeAttributeProvider;
     }
 
     @Override

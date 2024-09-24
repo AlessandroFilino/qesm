@@ -106,10 +106,11 @@ public class StructuredTreeTest {
         STPNBlock simpleBlock3 = new SimpleBlock(v3);
         simpleBlock3.addEnablingToken(v6);
 
+        STPNBlock seqBlock1 = new SeqBlock(new ArrayList<>(List.of(simpleBlock0, simpleBlock1)));
         STPNBlock andBlock1 = new AndBlock(new ArrayList<>(List.of(simpleBlock2, simpleBlock3)));
-        STPNBlock seqBlock1 = new SeqBlock(new ArrayList<>(List.of(simpleBlock0, simpleBlock1, andBlock1)));
+        STPNBlock seqBlock2 = new SeqBlock(new ArrayList<>(List.of(seqBlock1, andBlock1)));
 
-        structuredWorkflow2.addVertex(seqBlock1);
+        structuredWorkflow2.addVertex(seqBlock2);
 
         structuredTree2 = new StructuredTree<>(null, structuredWorkflow2, ProductTemplate.class);
 

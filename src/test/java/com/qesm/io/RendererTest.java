@@ -26,7 +26,7 @@ public class RendererTest {
         ensureFolderExists("output");
         ensureFolderExists("media");
 
-        workflowTemplate.generateRandomDAG(6, 4, 3, 5, 1, PdfType.UNIFORM);
+        workflowTemplate.generateRandomDAG(6, 6, 3, 5, 60, PdfType.UNIFORM);
     }
 
     @Test
@@ -109,6 +109,109 @@ public class RendererTest {
         structuredTree.exportDotFileNoSerialization("./output/structuredTreeRenderFixedTest.dot");
         Renderer.renderDotFile("./output/structuredTreeRenderFixedTest.dot",
                 "./media/structuredTreeRenderFixedTest.svg");
+
+    }
+
+    @Test
+    public void testRenderFixedStructureTreeV2() {
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+        ProductTemplate v4 = new ProductTemplate("v4", 5, new UniformTime(8, 10));
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+        dag.addVertex(v4);
+
+        dag.addEdge(v1, v0);
+        dag.addEdge(v2, v0);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v3, v2);
+        dag.addEdge(v4, v3);
+
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
+
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
+                ProductTemplate.class);
+
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderFixedV2Test");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderFixedV2Test");
+
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
+
+        rmDotFileFolder(structuredTreeDotFolder);
+
+    }
+
+    @Test
+    public void testRenderFixedStructureTreeV3() {
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+
+        dag.addEdge(v1, v0);
+        dag.addEdge(v2, v1);
+        dag.addEdge(v3, v2);
+        dag.addEdge(v3, v0);
+
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
+
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
+                ProductTemplate.class);
+
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderFixedV3Test");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderFixedV3Test");
+
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
+
+        rmDotFileFolder(structuredTreeDotFolder);
+
+    }
+
+    @Test
+    public void testRenderFixedStructureTreeV4() {
+
+        DirectedAcyclicGraph<ProductTemplate, CustomEdge> dag = new DirectedAcyclicGraph<>(CustomEdge.class);
+        ProductTemplate v0 = new ProductTemplate("v0", 1, new UniformTime(0, 2));
+        ProductTemplate v1 = new ProductTemplate("v1", 2, new UniformTime(2, 4));
+        ProductTemplate v2 = new ProductTemplate("v2", 3, new UniformTime(4, 6));
+        ProductTemplate v3 = new ProductTemplate("v3", 4, new UniformTime(6, 8));
+
+        dag.addVertex(v0);
+        dag.addVertex(v1);
+        dag.addVertex(v2);
+        dag.addVertex(v3);
+
+        dag.addEdge(v1, v0);
+        dag.addEdge(v3, v1);
+        dag.addEdge(v2, v1);
+
+        WorkflowTemplate wf1 = new WorkflowTemplate(dag);
+
+        StructuredTree<ProductTemplate> structuredTree = new StructuredTree<>(wf1.getProductWorkflow(v0).cloneDag(),
+                ProductTemplate.class);
+
+        String structuredTreeDotFolder = mkEmptyDir("./output/structuredTreeRenderFixedV4Test");
+        String structuredTreeMediaFolder = mkEmptyDir("./media/structuredTreeRenderFixedV4Test");
+
+        structuredTree.buildStructuredTreeAndExportSteps(structuredTreeDotFolder, false);
+        Renderer.renderAllDotFile(structuredTreeDotFolder, structuredTreeMediaFolder);
+
+        rmDotFileFolder(structuredTreeDotFolder);
 
     }
 
